@@ -1,0 +1,82 @@
+{
+  "userPersonalDetails": {
+    "email_id": "finkedadefault@gmail.com",
+    "business_name": "default Shop",
+    "aadhaar_masked_no": "xxxxxxxx8452",
+    "name_as_per_aadhaar": "FINKEDA DEFAULT",
+    "gender": "M",
+    "user_mobile": "3444444447",
+    "dateOfBirth": "1997-07-01",
+    "business_pin_code": "201307",
+    "user_pan": "BBBBE0000C",
+    "business_state": "Haryana"
+  },
+  "panCardData": {
+    "lastName": "Default",
+    "mobile_no": "3444444447",
+    "pan": "BBBBE0000C",
+    "firstName": "Finkeda",
+    "name": "FINKEDA DEFAULT",
+    "middleName": "",
+    "businessName": null,
+    "email": null,
+    "state": null,
+    "pinCode": null
+  },
+  "accounts": [
+    {
+      "bankName": "HDFC BANK LTD.",
+      "accountNumber": "50100545711830",
+      "ifscCode": "HDFC0001278",
+      "accountType": "SAVINGS",
+      "defaultAccount": false,
+      "isAccountVerified": true,
+      "accountVerificationStage": "COMPLETED"
+    },
+    {
+      "bankName": "ICICI BANK LTD.",
+      "accountNumber": "055501001994",
+      "ifscCode": "ICIC0000555",
+      "accountType": "SAVINGS",
+      "defaultAccount": false,
+      "isAccountVerified": true,
+      "accountVerificationStage": "COMPLETED"
+    },
+    {
+      "bankName": "Indusind Bank",
+      "accountNumber": "11111111111111",
+      "ifscCode": "INDB000001",
+      "accountType": "Savings",
+      "defaultAccount": true,
+      "isAccountVerified": true,
+      "accountVerificationStage": "COMPLETED"
+    },
+    {
+      "bankName": "INDUSIND BANK LTD",
+      "accountNumber": "157081616685",
+      "ifscCode": "INDB0000051",
+      "accountType": "SAVINGS",
+      "defaultAccount": false,
+      "isAccountVerified": true,
+      "accountVerificationStage": "COMPLETED"
+    },
+    {
+      "bankName": "STATE BANK OF INDIA",
+      "accountNumber": "33863713164",
+      "ifscCode": "SBIN0003281",
+      "accountType": "SAVINGS",
+      "defaultAccount": false,
+      "isAccountVerified": true,
+      "accountVerificationStage": "COMPLETED"
+    },
+    {
+      "bankName": "AXIS BANK",
+      "accountNumber": "921010028629457",
+      "ifscCode": "UTIB0000082",
+      "accountType": "SAVINGS",
+      "defaultAccount": false,
+      "isAccountVerified": true,
+      "accountVerificationStage": "COMPLETED"
+    }
+  ]
+}

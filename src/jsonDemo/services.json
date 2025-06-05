@@ -1,0 +1,119 @@
+{
+  "services": [
+    {
+      "label": "Credit Card Bill Payment",
+      "key": "creditCardBill",
+      "alias": "CC",
+      "type": "payout",
+      "uploadSlip": true,
+      "sequence": [
+        "getSender",
+        "getSlabDetails",
+        "getChargeDetails",
+        "uploadSlip",
+        "initPayout"
+      ]
+    },
+    {
+      "label": "Fund Withdrawal",
+      "key": "fundWithdrawal",
+      "alias": "FW",
+      "type": "payout",
+      "uploadSlip": true,
+      "sequence": [
+        "getSlabDetails",
+        "getChargeDetails",
+        "uploadSlip",
+        "initPayout"
+      ]
+    },
+    {
+      "label": "Rent Payment",
+      "key": "rentPayment",
+      "alias": "RP",
+      "type": "payout",
+      "uploadSlip": true,
+      "sequence": [
+        "getSender",
+        "getSlabDetails",
+        "getChargeDetails",
+        "uploadSlip",
+        "initPayout"
+      ]
+    },
+    {
+      "label": "Education Fees",
+      "key": "educationFees",
+      "type": "pgPayout",
+      "alias": "EF",
+      "uploadSlip": true,
+      "sequence": [
+        "getSender",
+        "getSlabDetails",
+        "getChargeDetails",
+        "uploadSlip",
+        "initPgPayout",
+        "initVerify"
+      ]
+    },
+    {
+      "label": "Fund Settlement",
+      "key": "fundSettlement",
+      "type": "payout",
+      "alias": "FS",
+      "uploadSlip": false,
+      "sequence": [
+        "getSender",
+        "getSlabDetails",
+        "getChargeDetails",
+        "initPayout"
+      ]
+    }
+  ],
+  "endPoints": {
+    "initPgPayout": {
+      "method": "POST",
+      "enc": true,
+      "url": "/api/v1/transaction"
+    },
+    "initVerify": {
+      "method": "POST",
+      "enc": true,
+      "url": "/api/v1/transaction/verify"
+    },
+    "initPayout": {
+      "method": "POST",
+      "enc": true,
+      "url": "/api/v1/transaction/payout"
+    },
+    "uploadSlip": {
+      "method": "POST",
+      "enc": true,
+      "url": "/api/v1/upload/slip"
+    },
+    "getChargeDetails": {
+      "method": "GET",
+      "url": "/api/v1/charges"
+    },
+    "getSlabDetails": {
+      "method": "GET",
+      "queryParams": ["type", "cardType", "transferType"],
+      "enc": false,
+      "url": "/api/v1/slab",
+      "headers": {
+        "urn": "{{urn}}"
+      }
+    },
+    "getSender": {
+      "method": "POST",
+      "enc": true,
+      "queryParams": ["mobileNumber"],
+      "url": "/api/v1/sender/get"
+    },
+    "getbankList": {
+      "method": "GET",
+      "queryParams": ["type"],
+      "url": "/api/v1/bank"
+    }
+  }
+}

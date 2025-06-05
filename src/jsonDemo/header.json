@@ -1,0 +1,40 @@
+{
+  "headerTitle": [
+    {
+      "label": "Education Fees",
+      "icon": null,
+      "transactionSummary": {
+        "success": 20,
+        "failure": 30,
+        "totalAmount": 5000
+      }
+    },
+    {
+      "label": "Rent Payment",
+      "icon": null,
+      "transactionSummary": {
+        "success": 0,
+        "failure": 0,
+        "totalAmount": 10
+      }
+    },
+    {
+      "label": "Total Load",
+      "icon": null,
+      "transactionSummary": {
+        "success": 0,
+        "failure": 0,
+        "totalAmount": 0
+      }
+    },
+    {
+      "label": "Total Payout",
+      "icon": null,
+      "transactionSummary": {
+        "success": 0,
+        "failure": 0,
+        "totalAmount": 0
+      }
+    }
+  ]
+}

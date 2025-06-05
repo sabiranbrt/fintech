@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+    "jsx": "react-jsx",
+    "strict": true,
+    "baseUrl": ".",
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "paths": {
+      "@/*": ["src/*"],
+      "@components": ["src/components/index.ts"],
+      "@assets/*": ["src/assets/*"]
+    },
+  },
+   "include": ["src"],
+  "exclude": ["node_modules"],
+}
