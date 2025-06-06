@@ -8,11 +8,7 @@ const FundWithdrawal = () => {
       <div className="w-full flex gap-5 ">
         <div className="min-w-[247px] ">
           <div>
-            <SenderDetails
-              senderData={senderData?.panCardData}
-              showBankAcc={false}
-              selectedOption={selectedOption}
-            />
+            <SenderDetails showBankAcc={false} />
           </div>
         </div>
 

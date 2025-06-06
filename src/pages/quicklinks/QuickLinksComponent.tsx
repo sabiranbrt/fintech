@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import services from "@/jsonDemo/services.json";
+import { setEndpoints } from "@/redux/slices/endpointsSlice";
 import { setSelectedService, updateIsText } from "@/redux/slices/serviceSlice";
+import { useEffect } from "react";
 import { BiSolidWallet } from "react-icons/bi";
 import { FaHeadset } from "react-icons/fa";
 import { FaMoneyBillTransfer, FaRegCreditCard } from "react-icons/fa6";
@@ -8,12 +11,9 @@ import { HiBanknotes } from "react-icons/hi2";
 import { IoPersonOutline } from "react-icons/io5";
 import { MdOutlinePayments, MdOutlineSwitchAccount } from "react-icons/md";
 import { PiHandWithdrawFill } from "react-icons/pi";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import QuickLinksTitle from "./components/QuickLinksTitle";
-import { setEndpoints } from "@/redux/slices/endpointsSlice";
-import { useEffect } from "react";
-import { RootState } from "@/redux/store";
-import { useServiceRunner } from "@/hooks/dynamicQuery";
+import { useServicesList } from "@/hooks/service";
 
 const serviceIcons = {
   "Credit Card Bill Payment": (
@@ -65,16 +65,8 @@ const ExtraServiceLabel = [
 type ServiceLabel = keyof typeof serviceIcons;
 
 const QuickLinksComponent = () => {
+  const { data: serviceList } = useServicesList();
   const dispatch = useDispatch();
-  const { endpoints } = useSelector((state: RootState) => state.endPoints);
-  const { selectedService } = useSelector((state: RootState) => state.service);
-  console.log("endpoints", endpoints);
-
-  const { run } = useServiceRunner({
-    serviceKey: "creditCardBill",
-    services: selectedService,
-    endPoints: endpoints,
-  });
 
   useEffect(() => {
     if (services?.endPoints) {
@@ -101,8 +93,8 @@ const QuickLinksComponent = () => {
         <p className="text-base text-center font-bold md:text-xl mb-5 ">
           Quick Links
         </p>
-        {services && services.services.length > 0 ? (
-          services.services.map((service) => {
+        {serviceList && serviceList.services.length > 0 ? (
+          serviceList.services.map((service: any) => {
             const label = service.label as ServiceLabel;
             return (
               <div key={service.label}>

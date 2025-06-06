@@ -1,3 +1,5 @@
+import { AxiosRequestConfig } from "axios";
+
 export enum QuickLinksType {
     CC = "Credit Card Bill Payment",
     FW = "Fund Withdrawal",
@@ -10,4 +12,13 @@ export enum QuickLinksType {
     LP = "Load Wallet",
     AL = "Account Ledger",
     RM = "Relationship Manager"
+}
+
+
+export interface DynamicRequest {
+    url: string;
+    method: AxiosRequestConfig['method'];
+    params?: Record<string, unknown>;
+    headers?: Record<string, string>;
+    data?: unknown;
 }

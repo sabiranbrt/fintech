@@ -1,15 +1,15 @@
 import { MdOutlinePending } from "react-icons/md";
+import agents from "@/jsonDemo/agent.json";
 
-const SenderDetails = ({ senderData, showBankAcc = true, selectedOption }) => {
+interface IProps {
+  showBankAcc: boolean;
+}
+
+const SenderDetails = ({ showBankAcc = true }: IProps) => {
+  const senderData = agents?.panCardData;
   return (
     <div
-      className={`${
-        !selectedOption
-          ? `w-[245px] rounded-xl h-[calc(100%-70px)] max-h-[calc(100%-140px)] bg-white `
-          : ` w-[245px] rounded-xl max-h-[calc(100%)] bg-white shadow-md ${
-              !showBankAcc && `min-h-[60vh]`
-            }`
-      }`}
+      className={`w-[245px] rounded-xl h-[calc(100%-70px)] max-h-[calc(100%-140px)] bg-white `}
     >
       <div className="bg-gradient-to-r from-[#4b5a9f] to-[#4fb5b7] p-4 rounded-t-xl text-white">
         <div className="flex items-center space-x-4">
@@ -28,15 +28,15 @@ const SenderDetails = ({ senderData, showBankAcc = true, selectedOption }) => {
               {senderData?.mobile_no || ""}
             </p>
             {showBankAcc && (
-              <p className=" bg-gray-100 rounded-md justify-center px-2">
+              <div className=" bg-gray-100 rounded-md justify-center px-2">
                 {senderData?.accountVerificationStage?.toLowerCase() !==
                   "completed" && (
-                  <div className="flex items-center text-orange-600 py-1">
+                  <p className="flex items-center text-orange-600 py-1">
                     <MdOutlinePending className="w-4 h-4" />
                     <span className="text-sm ml-1">KYC Pending</span>
-                  </div>
+                  </p>
                 )}
-              </p>
+              </div>
             )}
           </div>
         </div>
@@ -60,7 +60,7 @@ const SenderDetails = ({ senderData, showBankAcc = true, selectedOption }) => {
 
           <div className="flex items-start space-x-2">
             <p className="font-semibold">Mobile No:</p>
-            <p>{senderData?.mobile_no || senderData?.mobileNumber || "N/A"}</p>
+            <p>{senderData?.mobile_no || senderData?.mobile_no || "N/A"}</p>
           </div>
           <div className="flex items-start space-x-2">
             <p className="font-semibold">Pan:</p>

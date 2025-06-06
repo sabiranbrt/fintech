@@ -18,10 +18,12 @@
     "firstName": "Finkeda",
     "name": "FINKEDA DEFAULT",
     "middleName": "",
+    "accountNumber": "055501001994",
     "businessName": null,
     "email": null,
     "state": null,
-    "pinCode": null
+    "pinCode": null,
+    "accountVerificationStage": "COMPLETED"
   },
   "accounts": [
     {

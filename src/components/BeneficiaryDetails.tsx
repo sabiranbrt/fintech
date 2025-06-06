@@ -104,21 +104,29 @@ const BeneficiaryDetails = () => {
                             </div>
                             {/* Arrow to expand/collapse the accordion */}
                             <div className="flex items-center space-x-4">
-                              <svg
-                                className="w-4 h-4 transform transition-transform duration-200 "
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
+                              <div
+                                className="flex justify-between items-center bg-gray-100 p-4 transition-colors "
+                                onClick={() => {
+                                  toggleAccountAccordion(account.accountNumber);
+                                }}
                               >
-                                <path
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M19 9l-7 7-7-7"
-                                ></path>
-                              </svg>
-
+                                <svg
+                                  className={`w-4 h-4 transform transition-transform duration-200 cursor-pointer ${
+                                    isExpanded ? "rotate-180" : ""
+                                  }`}
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M19 9l-7 7-7-7"
+                                  />
+                                </svg>
+                              </div>
                               {selectedService?.label ===
                               QuickLinksType.FW ? null : (
                                 <button
