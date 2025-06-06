@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import BeneficiaryDetails from "@/components/BeneficiaryDetails";
 import EmptyMessage from "@/components/EmptyMessage";
 import NoticeComponent from "@/components/NoticeComponent";
-import SenderDetails from "@/pages/fundWithdrawl/components/SenderDetails";
+import CreditCardBill from "@/pages/creaditCardBillPayment";
+import FundWithdrawal from "@/pages/fundWithdrawl/FundWithdrawl";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
 import { Controller, useForm } from "react-hook-form";
@@ -22,83 +22,84 @@ const QuickLinksFormComponent = () => {
   return (
     <div className="flex flex-row overflow-hidden min-w-full">
       <div>
-        <div className=" max-h-[calc(100vh)] mb-4">
-          <div className={`flex gap-4 mr-5 min-w-full`}>
-            <div className="flex flex-col gap-5 ml-0">
-              <form
-                autoComplete="off"
-                className={`flex flex-col bg-white w-60 p-3 items-start rounded-md`}
-                onSubmit={() => {}}
-              >
-                <label className=" text-start text-md">
-                  Enter Mobile Number
-                </label>
-                <div
-                  className={`relative 
-                  } rounded-lg h-9 w-full`}
+        {!isFundWithdrawal ? (
+          <div className=" max-h-[calc(100vh)] mb-4">
+            <div className={`flex gap-4 mr-5 min-w-full`}>
+              <div className="flex flex-col gap-5 ml-0">
+                <form
+                  autoComplete="off"
+                  className={`flex flex-col bg-white w-60 p-3 items-start rounded-md`}
+                  onSubmit={() => {}}
                 >
-                  <Controller
-                    control={control}
-                    name="UserMobileNumber"
-                    rules={{
-                      required: "Mobile number is required",
-                      pattern: {
-                        value: /^[6-9]\d{0,9}$/,
-                        message:
-                          "Enter a valid 10-digit mobile number starting with 6-9.Mobile number must be exactly 10 digits",
-                      },
-                    }}
-                    render={({ field }) => {
-                      return (
-                        <div>
-                          <input
-                            {...field}
-                            name="UserMobileNumber"
-                            type="numeric"
-                            placeholder="Mobile Number"
-                            className={`my-1 inner-content px-3 py-1 focus:outline-none text-sm w-full border-2 rounded-md `}
-                            // readOnly={field.value.length === 10}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/\D/g, "");
-                              if (value.length <= 10) {
-                                field.onChange(value);
-                              }
-                            }}
-                            value={field.value || ""}
-                          />
-                          {errors?.UserMobileNumber?.message && (
-                            <div className="!mt-0.5 text-[10px] text-[#f94d44]">
-                              <p>{String(errors.UserMobileNumber.message)}</p>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }}
-                  />
-                  {/* Refresh Icon */}
-                  <button
-                    type="button"
-                    onClick={() => window.location.reload()}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                    // disabled={userMobileNumber.length !== 10} // Disable if mobile number is less than 10 digits
+                  <label className=" text-start text-md">
+                    Enter Mobile Number
+                  </label>
+                  <div
+                    className={`relative 
+                  } rounded-lg h-9 w-full`}
                   >
-                    <FaSyncAlt
-                      size={16}
-                      className="text-secondary-extra-dark"
+                    <Controller
+                      control={control}
+                      name="UserMobileNumber"
+                      rules={{
+                        required: "Mobile number is required",
+                        pattern: {
+                          value: /^[6-9]\d{0,9}$/,
+                          message:
+                            "Enter a valid 10-digit mobile number starting with 6-9.Mobile number must be exactly 10 digits",
+                        },
+                      }}
+                      render={({ field }) => {
+                        return (
+                          <div>
+                            <input
+                              {...field}
+                              name="UserMobileNumber"
+                              type="numeric"
+                              placeholder="Mobile Number"
+                              className={`my-1 inner-content px-3 py-1 focus:outline-none text-sm w-full border-2 rounded-md `}
+                              // readOnly={field.value.length === 10}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, "");
+                                if (value.length <= 10) {
+                                  field.onChange(value);
+                                }
+                              }}
+                              value={field.value || ""}
+                            />
+                            {errors?.UserMobileNumber?.message && (
+                              <div className="!mt-0.5 text-[10px] text-[#f94d44]">
+                                <p>{String(errors.UserMobileNumber.message)}</p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }}
                     />
-                  </button>
-                </div>
-              </form>
+                    {/* Refresh Icon */}
+                    <button
+                      type="button"
+                      onClick={() => window.location.reload()}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      // disabled={userMobileNumber.length !== 10} // Disable if mobile number is less than 10 digits
+                    >
+                      <FaSyncAlt
+                        size={16}
+                        className="text-secondary-extra-dark"
+                      />
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
-        {isFundWithdrawal && (
-          <SenderDetails senderData={undefined} selectedOption={undefined} />
-        )}
+        ) : null}
       </div>
 
       {isFundWithdrawal ? (
-        <BeneficiaryDetails />
+        <FundWithdrawal />
+      ) : selectedService?.label === QuickLinksType.CC ? (
+        <CreditCardBill />
       ) : selectedService?.label ? (
         <EmptyMessage />
       ) : (

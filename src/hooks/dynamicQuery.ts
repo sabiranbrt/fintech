@@ -1,30 +1,28 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { fetchDynamic } from '@/libs/axios';
+import { DynamicRequest } from '@/types';
+import { useQuery, UseQueryOptions, useMutation } from '@tanstack/react-query';
 
-// Define the base API service
-export const api = createApi({
-    reducerPath: 'api', // unique key in store
-    baseQuery: fetchBaseQuery({ baseUrl: '/api' }), // base URL of your API
-    endpoints: (build) => ({
 
-        // Generic GET endpoint accepting a path and params
-        getData: build.query<any, { url: string; params?: Record<string, any> }>({
-            query: ({ url, params }) => ({
-                url,
-                params,
-            }),
-        }),
+export const useDynamicQuery = <T = unknown>(
+    req: DynamicRequest,
+    options?: UseQueryOptions<T>,
+) => {
+    return useQuery<T>({
+        queryKey: [
+            req.url,
+            req.method,
+            req.params,
+            req.headers,
+        ],
+        queryFn: () => fetchDynamic<T>(req),
+        enabled: !!req.url,
+        ...options,
+    });
+}
 
-        // Generic POST endpoint accepting a path and body
-        postData: build.mutation<any, { url: string; body: any }>({
-            query: ({ url, body }) => ({
-                url,
-                method: 'POST',
-                body,
-            }),
-        }),
-    }),
-});
 
-// Export hooks for usage in components
-export const { useGetDataQuery, usePostDataMutation } = api;
+export const useDynamicMutation = <T = unknown>() => {
+    return useMutation<T, unknown, DynamicRequest>({
+        mutationFn: fetchDynamic,
+    });
+}
