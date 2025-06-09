@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import services from "@/jsonDemo/services.json";
+import { default as service, default as services } from "@/jsonDemo/services.json";
 import { setEndpoints } from "@/redux/slices/endpointsSlice";
 import { setSelectedService, updateIsText } from "@/redux/slices/serviceSlice";
 import { useEffect } from "react";
@@ -13,7 +13,6 @@ import { MdOutlinePayments, MdOutlineSwitchAccount } from "react-icons/md";
 import { PiHandWithdrawFill } from "react-icons/pi";
 import { useDispatch } from "react-redux";
 import QuickLinksTitle from "./components/QuickLinksTitle";
-import { useServicesList } from "@/hooks/service";
 
 const serviceIcons = {
   "Credit Card Bill Payment": (
@@ -65,7 +64,7 @@ const ExtraServiceLabel = [
 type ServiceLabel = keyof typeof serviceIcons;
 
 const QuickLinksComponent = () => {
-  const { data: serviceList } = useServicesList();
+  // const { data: serviceList } = useServicesList();
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -89,12 +88,12 @@ const QuickLinksComponent = () => {
 
   return (
     <>
-      <div className=" bg-white px-8 py-5 shadow-md ml-4 rounded-md max-h-[calc(80dvh)]">
+      <div className=" bg-white px-8 py-5 shadow-md rounded-md whitespace-nowrap h-full">
         <p className="text-base text-center font-bold md:text-xl mb-5 ">
           Quick Links
         </p>
-        {serviceList && serviceList.services.length > 0 ? (
-          serviceList.services.map((service: any) => {
+        {service && service.services.length > 0 ? (
+          service.services.map((service: any) => {
             const label = service.label as ServiceLabel;
             return (
               <div key={service.label}>

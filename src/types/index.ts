@@ -14,11 +14,20 @@ export enum QuickLinksType {
     RM = "Relationship Manager"
 }
 
-
 export interface DynamicRequest {
     url: string;
     method: AxiosRequestConfig['method'];
     params?: Record<string, unknown>;
     headers?: Record<string, string>;
     data?: unknown;
+}
+
+export interface ValidationProps {
+  required?: string;
+  errorMessage?: string;
+  validations: Validations[]
+}
+export interface Validations {
+  regex: string
+  errorMessage?: string;
 }

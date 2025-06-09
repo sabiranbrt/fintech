@@ -1,9 +1,8 @@
 const NoticeComponent = () => {
   return (
-    <>
       <div
-        className={`bg-white rounded-md px-10 py-4 min-h-full 
-        overflow-y-auto max-h-[calc(100dvh-300px)] mb-10`}
+        className={`bg-white rounded-md px-5 py-4  
+        overflow-y-auto max-h-[calc(100dvh-300px)] w-full`}
         style={{
           boxShadow: "rgba(0, 0, 0, 0.09) 0px 3px 12px",
         }}
@@ -90,7 +89,6 @@ const NoticeComponent = () => {
           </ul>
         </section>
       </div>
-    </>
   );
 };
 

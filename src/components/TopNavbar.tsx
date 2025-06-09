@@ -10,9 +10,6 @@ export const TopNavbar = () => {
   const totalBalance = balance.current_balance;
   const [showBalance, setShowBalance] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const webkitFullscreenElement = (document as any).webkitFullscreenElement;
-  const mozFullScreenElement = (document as any).mozFullScreenElement;
-  const msFullscreenElement = (document as any).msFullscreenElement;
 
   const redirectHome = () => {
     const v1URL = import.meta.env.VITE_V1_URL;
@@ -27,39 +24,33 @@ export const TopNavbar = () => {
     setShowBalance(true);
   };
 
+  const isInFullscreen = () => {
+    const d: any = document;
+    return (
+      d.fullscreenElement ||
+      d.webkitFullscreenElement ||
+      d.mozFullScreenElement ||
+      d.msFullscreenElement
+    );
+  };
   const handleFullscreen = () => {
-    if (
-      document.fullscreenElement ||
-      mozFullScreenElement ||
-      webkitFullscreenElement ||
-      msFullscreenElement
-    ) {
-      setIsFullscreen(false);
-    } else {
-      setIsFullscreen(true);
-    }
+    const d: any = document;
+    const el: any = d.documentElement;
 
-    if (document.fullscreenElement) {
-      const el = document.documentElement;
-      if (el.requestFullscreen) {
-        el.requestFullscreen();
-      } else if ((el as any).mozRequestFullScreen) {
-        (el as any).mozRequestFullScreen();
-      } else if ((el as any).webkitRequestFullscreen) {
-        (el as any).webkitRequestFullscreen();
-      } else if ((el as any).msRequestFullscreen) {
-        (el as any).msRequestFullscreen();
-      }
+    if (!isInFullscreen()) {
+      /* ENTER fullscreen */
+      setIsFullscreen(true);
+      if (el.requestFullscreen) el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+      else if (el.msRequestFullscreen) el.msRequestFullscreen();
     } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if ((document as any).mozCancelFullScreen) {
-        (document as any).mozCancelFullScreen();
-      } else if ((document as any).webkitExitFullscreen) {
-        (document as any).webkitExitFullscreen();
-      } else if ((document as any).msExitFullscreen) {
-        (document as any).msExitFullscreen();
-      }
+      /* EXIT fullscreen */
+      setIsFullscreen(false);
+      if (d.exitFullscreen) d.exitFullscreen();
+      else if (d.webkitExitFullscreen) d.webkitExitFullscreen();
+      else if (d.mozCancelFullScreen) d.mozCancelFullScreen();
+      else if (d.msExitFullscreen) d.msExitFullscreen();
     }
   };
 

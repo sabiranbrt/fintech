@@ -14,13 +14,15 @@ const Dashboard = () => {
   return (
     <div className=" bg-secondary-background h-dvh overflow-hidden">
       <TopNavbar />
-      <div className=" flex gap-1 p-3">
-        <div className=" w-[80%]">
+      <div className=" flex gap-4 p-3 h-[85%]">
+        <div className=" w-full">
           <Header />
           {selectedService || isText ? <BackButton /> : null}
-          <QuickLinksFormComponent />
+          <div className=" overflow-hidden">
+            <QuickLinksFormComponent />
+          </div>
         </div>
-        <div className=" w-[20%]">
+        <div className=" flex justify-end w-72">
           <QuickLinksComponent />
         </div>
       </div>
