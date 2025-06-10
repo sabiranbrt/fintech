@@ -1,5 +1,19 @@
 import { AxiosRequestConfig } from "axios";
 
+export enum FieldTypes {
+  TEXTFIELD = "text",
+  SELECTFIELD = "dropdown",
+  TEXTAREA = "area",
+  CHECKBOX = 'checkbox',
+  RADIOBUTTON = "radio",
+  PASSFIELD = 'password',
+  FILE = "file",
+  CUSTOMPASS = "custompass",
+  MULTISELECT = "multiSelect",
+  PREVIEW = "preview"
+};
+
+
 export enum QuickLinksType {
     CC = "Credit Card Bill Payment",
     FW = "Fund Withdrawal",

@@ -1,19 +1,33 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import agents from "@/jsonDemo/agent.json";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 import { GrUserSettings } from "react-icons/gr";
 import { MdOutlineVerified } from "react-icons/md";
 import { VscUnverified } from "react-icons/vsc";
 import { useSelector } from "react-redux";
+import AddBankAccount from "./AddBankAccount";
 import ModalBtn from "./buttons/ModalBtn";
+import RegisterModal from "./registerModal";
 
-interface IProps{
-  onClick?:()=>void
+interface IProps {
+  onClick?: () => void;
+  tableName: string;
 }
 
-const BeneficiaryDetails = ({onClick}: IProps) => {
+const BeneficiaryDetails = ({ onClick, tableName }: IProps) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState("");
+
+  const methods = useForm<any>();
+
+  const handleCancel = () => {
+    setIsModalOpen("");
+  };
+
   const { selectedService } = useSelector((state: RootState) => state.service);
   const [expandedAccount, setExpandedAccount] = useState(null);
 
@@ -23,18 +37,57 @@ const BeneficiaryDetails = ({onClick}: IProps) => {
     );
   };
 
+  const filteredAccounts = useMemo(() => {
+    if (!agents?.accounts) return [];
+    return agents.accounts.filter((account) =>
+      account.bankName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [agents?.accounts, searchTerm]);
+
   return (
     <>
       <div className=" w-full p-4 shadow-md bg-white">
-        <div className=" flex flex-row justify-between items-center mb-3">
-          <p className="block font-medium">Select Account</p>
-          <div>
-            <ModalBtn title="Add Account +" modalOnClick={() => {}} />
+        <div className=" flex flex-row gap-2 justify-between items-center mb-3">
+          <div className=" w-full">
+            {selectedService?.label === QuickLinksType.FS || selectedService?.label === QuickLinksType.RP && (
+              <input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by bank name"
+                className="border-2 rounded-lg w-full p-2 focus:outline-none"
+              />
+            )}
+          </div>
+          <div className=" flex gap-4 whitespace-nowrap">
+            {selectedService?.label !== QuickLinksType.RP && <ModalBtn
+              title="Add Account +"
+              modalOnClick={() => {
+                setIsModalOpen("addAccount");
+              }}
+            />}
+          
+            {selectedService?.label === QuickLinksType.FS && (
+              <ModalBtn
+                title="Add Beneficiary +"
+                modalOnClick={() => {
+                  setIsModalOpen("beneficiaryAcc");
+                }}
+              />
+            )}
+            {selectedService?.label === QuickLinksType.RP && (
+              <ModalBtn
+                title="Add Beneficiary +"
+                modalOnClick={() => {
+                  setIsModalOpen("");
+                }}
+              />
+            )}
           </div>
         </div>
         <div className="max-h-[48.5vh] overflow-y-auto">
-          {agents && agents.accounts.length > 0 ? (
-            agents.accounts.map((account, index) => {
+          <p className="block font-medium my-2">{tableName}</p>
+          {filteredAccounts && filteredAccounts.length > 0 ? (
+            filteredAccounts.map((account, index) => {
               const isExpanded = expandedAccount === account.accountNumber;
               return (
                 <div key={index} className="mb-2 border rounded ">
@@ -192,6 +245,19 @@ const BeneficiaryDetails = ({onClick}: IProps) => {
             <p>No accounts available.</p>
           )}
         </div>
+        {isModalOpen === "addAccount" && (
+          <AddBankAccount handleCancel={handleCancel} />
+        )}
+        {isModalOpen === "beneficiaryAcc" && (
+          <RegisterModal
+            control={methods.control}
+            names="beneficiary"
+            placeHolder={"Enter Mobile Number"}
+            title={"Register Beneficiary"}
+            subTitle={"Enter Mobile Number To Initiate KYC"}
+            onClose={handleCancel}
+          />
+        )}
       </div>
     </>
   );

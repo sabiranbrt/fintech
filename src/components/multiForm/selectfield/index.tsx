@@ -1,24 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { ValidationProps } from "@/types";
+import { ValidationRules } from "@/utils/ValidationRegister";
 import clsx from "clsx";
-import { useState } from "react";
-import { Control, Controller, FieldErrors } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import Select from "react-select";
-import type { ValidationProps } from "../../types";
-import { ValidationRules } from "../../utils/ValidationRegister";
 
 interface Options {
   label: string;
   value: string;
-  default?: boolean;
+  default: boolean;
 }
 
 interface IProps {
-  control: Control<any>;
-  errors?: FieldErrors<any>;
-  InputFocus?: () => void;
-  InputBlur?: () => void;
+  handleFocus: () => void;
+  handleBlur: () => void;
+  isFocused: boolean;
   names: string;
-  label: string;
   value?: string;
   ValidClassName?: string;
   isSearchable?: boolean;
@@ -45,13 +42,10 @@ interface IProps {
 }
 
 const SelectField = ({
-  control,
-  errors = {},
   ValidClassName,
   inputHeight,
   inputWidth,
   focusShadowColor,
-  label,
   OptionSelectColor,
   focusErrorBgColor,
   focusErrorShadowColor,
@@ -66,13 +60,18 @@ const SelectField = ({
   focusErrorBorderColor,
   names,
   options,
+  isFocused,
   placeHolder,
-  InputFocus,
-  InputBlur,
+  handleFocus,
+  handleBlur,
   validation,
   readOnly,
 }: IProps) => {
-  const [isFocused, setIsFocused] = useState(false);
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext();
+
   const customStyles = {
     control: (provided: any, state: any) => {
       const hasError = errors && errors[names];
@@ -94,7 +93,7 @@ const SelectField = ({
           : state.isFocused
           ? `0 1px 2px 0 ${focusShadowColor}`
           : undefined,
-        paddingBlock: `${inputHeight ?? "1"}px`,
+        paddingBlock: `${inputHeight}px`,
         paddingInline: `${inputWidth}px`,
         borderRadius: 4,
         whiteSpace: "nowrap",
@@ -105,6 +104,7 @@ const SelectField = ({
     placeholder: (provided: any, state: any) => {
       const hasError = errors && errors[names];
       const isFocused = state.isFocused;
+
       return {
         ...provided,
         color: hasError
@@ -134,15 +134,6 @@ const SelectField = ({
     },
   };
 
-  const handleFocus = () => {
-    setIsFocused(true);
-    InputFocus?.();
-  };
-  const handleBlur = () => {
-    setTimeout(() => setIsFocused(false), 100);
-    InputBlur?.();
-  };
-
   return (
     <Controller
       control={control}
@@ -154,10 +145,6 @@ const SelectField = ({
             data-tooltip-id={`tooltip-${placeHolder}`}
             data-tooltip-content={`${placeHolder}`}
           >
-            <label className="block text-sm mb-1">
-              {label}
-              <span className="text-red-500">*</span>
-            </label>
             <Select
               isDisabled={field.value ? readOnly : false}
               isSearchable={isSearchable}

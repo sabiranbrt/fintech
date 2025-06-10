@@ -1,120 +1,171 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useState } from "react";
 import { ValidationProps } from "@/types";
 import { ValidationRules } from "@/utils/ValidationRegister";
-import { Controller, useFormContext } from "react-hook-form";
+import { Control, Controller, FieldErrors } from "react-hook-form";
 import { ImSpinner8 } from "react-icons/im";
+import clsx from "clsx";
 
 interface IProps {
-  currentIndex: number;
-  label:string;
-  optionsData:any
+  inputClassName?: string;
+  control: Control<any>;
+  errors?: FieldErrors<any>;
+  currentIndex?: number;
+  label: string;
+  Nolabel?: boolean;
+  optionsData: any[];
   names: string;
+  focusShadowColor?: string;
+  focusErrorBgColor?: string;
+  focusErrorShadowColor?: string;
   isLoading?: boolean;
-  isDropdownOpen?: boolean;
   validation?: ValidationProps;
   disabled: boolean;
-  fetchData: any;
-  search: string;
-  handleSearch: () => void;
-  handleFocus: () => void;
-  handleBlur: () => void;
-  handleKeyDown: () => void;
-  onChange: (value: string) => void;
-  handleSelect: (value: string) => void;
+  handleFocus?: () => void;
+  handleBlur?: () => void;
+  onChange?: (value: string) => void;
+  fetchData?: any;
+  focusErrorBorderColor?: string;
+  focusBorderColor?: string;
 }
 
 const SelectCusOpt = ({
+  control,
+  errors = {},
   names,
   label,
+  Nolabel,
   isLoading,
   validation,
-  isDropdownOpen,
   disabled,
-  search,
   optionsData,
+  focusErrorBorderColor,
+  focusBorderColor,
+  focusErrorBgColor,
+  focusErrorShadowColor,
+  focusShadowColor,
   currentIndex,
-  handleSearch,
+  fetchData,
   handleFocus,
   handleBlur,
-  handleSelect,
-  handleKeyDown,
+  inputClassName,
   onChange,
-  fetchData,
 }: IProps) => {
-  const {
-    control,
-    formState: { errors },
-  } = useFormContext();
+  const [search, setSearch] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
+  const [filteredOptions, setFilteredOptions] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (search?.trim()) {
+      const filtered = optionsData.filter((opt) =>
+        JSON.stringify(opt).toLowerCase().includes(search.toLowerCase())
+      );
+      setFilteredOptions(filtered);
+    } else {
+      setFilteredOptions(optionsData);
+    }
+  }, [search, optionsData]);
+
+  const onInputFocus = () => {
+    setIsFocused(true);
+    setFilteredOptions(optionsData);
+    handleFocus?.();
+    fetchData?.();
+  };
+  const onInputBlur = () => {
+    setTimeout(() => setIsFocused(false), 100);
+    handleBlur?.();
+  };
+
   return (
     <Controller
       control={control}
       name={names}
       rules={ValidationRules(validation)}
-      render={({ field }) => {
-        return (
-          <div className="relative">
-            <label className="block text-sm">
-              {label}<span className="text-red-500">*</span>
+      render={({ field }) => (
+        <div>
+          {!Nolabel ? (
+            <label className="block text-sm mb-1">
+              {label}
+              <span className="text-red-500">*</span>
             </label>
-            <div className="relative w-full">
-              <input
-                {...field}
-                type="text"
-                name={names}
-                disabled={disabled}
-                value={search}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  field.onChange(value);
-                  handleSearch();
-                  if (onChange) {
-                    onChange(value);
-                  }
-                }}
-                placeholder="Search and select bank"
-                onFocus={handleFocus}
-                onClick={fetchData}
-                onBlur={handleBlur}
-                onKeyDown={handleKeyDown}
-                className={`text-sm border rounded-md p-2 w-full focus:outline-none bg-white ${
-                  errors.bankName ? "border-red-500" : "border-gray-300"
-                }`}
-              />
-              {isLoading && (
-                <ImSpinner8  className="absolute right-4 top-2 animate-spin text-gray-500 w-5 h-5" />
+          ) : null}
+
+          <div className="relative">
+            <input
+              {...field}
+              type="text"
+              name={names}
+              disabled={disabled}
+              style={{
+                borderColor: errors[names]
+                  ? focusErrorBorderColor
+                  : isFocused
+                  ? focusBorderColor ?? "#5081B9"
+                  : "#F2F2F2",
+                backgroundColor: errors[names]
+                  ? focusErrorBgColor ?? "#FFF2F2"
+                  : !isFocused
+                  ? "#F7F7F7"
+                  : undefined,
+                boxShadow: errors[names]
+                  ? `0 1px 2px 0 ${focusErrorShadowColor}`
+                  : isFocused
+                  ? `0 1px 2px 0 ${focusShadowColor}`
+                  : undefined,
+              }}
+              value={search}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSearch(value);
+                field.onChange(value);
+                onChange?.(value);
+              }}
+              placeholder="Search and select bank"
+              onFocus={onInputFocus}
+              onBlur={onInputBlur}
+              className={clsx(
+                "text-sm border rounded-lg p-2 w-full focus:outline-none",
+                inputClassName ? inputClassName : "bg-slate-50",
+                errors[names] ? "border-red-500" : "border-gray-300"
               )}
-            </div>
-
-            {isDropdownOpen && optionsData.length > 0 && (
-              <ul
-                role="listbox"
-                className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg"
-              >
-                {optionsData.map((bank:string, index:number) => (
-                  <li
-                    key={index}
-                    role="option"
-                    onMouseDown={() => handleSelect(bank)}
-                    className={`p-2 cursor-pointer ${
-                      currentIndex === index
-                        ? "bg-gray-100"
-                        : "hover:bg-gray-100"
-                    }`}
-                  >
-                    {bank}
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {errors[names] && (
-              <p className="absolute top-[60px] text-red-500 text-xs mt-2">
-                {errors[names]?.message as string}
-              </p>
+            />
+            {isLoading && (
+              <ImSpinner8 className="absolute right-4 top-2 animate-spin text-gray-500 w-5 h-5" />
             )}
           </div>
-        );
-      }}
+
+          {isFocused && filteredOptions.length > 0 && (
+            <ul
+              role="listbox"
+              className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg"
+            >
+              {filteredOptions.map((bank, index) => (
+                <li
+                  key={index}
+                  role="option"
+                  onMouseDown={() => {
+                    const label = bank?.bankName || JSON.stringify(bank);
+                    setSearch(label);
+                    field.onChange(label);
+                  }}
+                  className={`p-2 cursor-pointer ${
+                    currentIndex === index ? "bg-gray-100" : "hover:bg-gray-100"
+                  }`}
+                >
+                  {bank?.bankName || JSON.stringify(bank)}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {errors[names] && (
+            <p className="absolute top-[60px] text-red-500 text-xs mt-2">
+              {errors[names]?.message as string}
+            </p>
+          )}
+        </div>
+      )}
     />
   );
 };

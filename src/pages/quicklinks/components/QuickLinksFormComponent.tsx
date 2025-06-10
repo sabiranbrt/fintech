@@ -7,6 +7,7 @@ import FundSettlement from "@/pages/fundSettlement";
 import SenderDetails from "@/pages/fundWithdrawl/components/SenderDetails";
 import FundWithdrawal from "@/pages/fundWithdrawl/FundWithdrawl";
 import ContactCard from "@/pages/relationshipManager";
+import RentPayment from "@/pages/rentPayment";
 import TotalPayoutList from "@/pages/totalPayout";
 import TransactionsTabs from "@/pages/transaction";
 import { RootState } from "@/redux/store";
@@ -25,14 +26,14 @@ const QuickLinksFormComponent = () => {
     formState: { errors },
   } = useForm<any>();
 
-  const isFundWithdrawal = selectedService?.label === QuickLinksType.FW;
+  // const isFundWithdrawal = selectedService?.label === QuickLinksType.FW;
 
   return (
     <>
       {!isText ? (
         <div className="flex flex-row gap-4">
-          {!isFundWithdrawal ? (
-            <div>
+          <div>
+            {selectedService?.label !== QuickLinksType.FW && (
               <form
                 autoComplete="off"
                 className={`bg-white w-60 p-3 rounded-md`}
@@ -97,21 +98,27 @@ const QuickLinksFormComponent = () => {
                   </button>
                 </div>
               </form>
-              {selectedService?.label === QuickLinksType.CC || selectedService?.label === QuickLinksType.FS ? (
-                <div className="mt-4">
-                  <SenderDetails showBankAcc={false} />
-                </div>
-              ) : null}
-            </div>
-          ) : null}
+            )}
+            {selectedService?.label === QuickLinksType.CC ||
+            selectedService?.label === QuickLinksType.FS ||
+            selectedService?.label === QuickLinksType.FW ? (
+              <div className="mt-4">
+                <SenderDetails showBankAcc={false} />
+              </div>
+            ) : null}
+          </div>
 
-          {isFundWithdrawal ? (
+          {selectedService?.label === QuickLinksType.FW ? (
             <FundWithdrawal />
           ) : selectedService?.label === QuickLinksType.CC ? (
             <CreditCardBill />
-          ) : selectedService?.label  === QuickLinksType?.FS? (
+          ) : selectedService?.label === QuickLinksType?.FS ? (
             <FundSettlement />
-          ) : selectedService?.label ? <EmptyMessage/> : <NoticeComponent/>}
+          ) : selectedService?.label === QuickLinksType.RP ? (
+            <RentPayment />
+          ) : (
+            selectedService?.label ? <EmptyMessage/>: <NoticeComponent/>
+          )}
         </div>
       ) : (
         <>

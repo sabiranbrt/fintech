@@ -13,7 +13,6 @@ interface IProp {
   focusErrorBgColor?: string;
   focusErrorShadowColor?: string;
   ValidClassName?: string;
-  ActionFetch?: string;
   placeHolderSize?: string;
   textClassName?: string;
   focusBorderColor?: string;
@@ -23,35 +22,29 @@ interface IProp {
   handleFocus: () => void;
   handleBlur: () => void;
   readOnly?: boolean;
-  validation?: ValidationProps;
   type?: string;
-  onChange?: (value: string) => void;
-  onClick?: () => void;
+  validation?: ValidationProps;
 }
 
-const InputField = ({
-  isFocused,
-  handleBlur,
-  handleFocus,
-  names,
-  inputHeight,
-  ActionFetch,
-  inputWidth,
-  placeHolder,
+const TextArea = ({
   ValidClassName,
-  readOnly,
-  focusErrorBorderColor,
-  validation,
-  placeHolderSize,
-  onChange,
-  onClick,
-  placeHoldercolor,
-  focusBorderColor,
+  inputHeight,
+  inputWidth,
   focusShadowColor,
   focusErrorBgColor,
   focusErrorShadowColor,
   textClassName,
-  type,
+  placeHoldercolor,
+  focusBorderColor,
+  placeHolderSize,
+  validation,
+  focusErrorBorderColor,
+  names,
+  isFocused,
+  placeHolder,
+  handleFocus,
+  handleBlur,
+  readOnly,
 }: IProp) => {
   const {
     control,
@@ -65,19 +58,18 @@ const InputField = ({
       render={({ field }) => {
         return (
           <div className="relative">
-            <label className="block text-sm">
-              Account Number <span className="text-red-500">*</span>
-            </label>
-            <input
-              className={clsx(
-                "outline-0",
-                textClassName
-                  ? textClassName
-                  : "bg-[#F7F7F7] rounded-sm border border-[#F2F2F2]",
-                `placeholder:text-[${placeHoldercolor}] placeholder:text-[${placeHolderSize}]`
-              )}
+            <textarea
               data-tooltip-id={`tooltip-${placeHolder}`}
               data-tooltip-content={`${placeHolder}`}
+              disabled={field.value ? readOnly : false}
+              defaultValue={field.value}
+              className={clsx(
+                `outline-0 !py-${inputHeight} !px-${inputWidth} md:!p-2 sm:!p-2`,
+                textClassName
+                  ? textClassName
+                  : "bg-[#F7F7F7] !px-2 !py-3 rounded-sm border border-[#F2F2F2]",
+                `placeholder:text-[${placeHoldercolor}] placeholder:text-[${placeHolderSize}]`
+              )}
               style={{
                 borderColor: errors[names]
                   ? focusErrorBorderColor
@@ -94,36 +86,15 @@ const InputField = ({
                   : isFocused
                   ? `0 1px 2px 0 ${focusShadowColor}`
                   : undefined,
-                paddingBlock: `${inputHeight}px`,
-                paddingInline: `${inputWidth}px`,
               }}
               placeholder={!isFocused ? placeHolder : ""}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              defaultValue={field.value}
-              disabled={field.value ? readOnly : false}
-              readOnly={readOnly}
-              type={type}
               onChange={(e) => {
                 const value = e.target.value;
                 field.onChange(value);
-                onChange?.(value);
               }}
             />
-
-            {ActionFetch ? (
-              <div className=" absolute top-1.5 right-2.5">
-                <button
-                  type="submit"
-                  className="bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !px-2 !py-1 rounded cursor-pointer"
-                  title="Submit Now"
-                  onClick={onClick}
-                >
-                  {ActionFetch}
-                </button>
-              </div>
-            ) : null}
-
             {errors[names] && (
               <div
                 className={clsx(
@@ -141,4 +112,4 @@ const InputField = ({
   );
 };
 
-export default InputField;
+export default TextArea;

@@ -4,7 +4,7 @@ import { TopNavbar } from "../components/TopNavbar";
 import QuickLinksFormComponent from "./quicklinks/components/QuickLinksFormComponent";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import BackButton from "@/components/BackButton";
+import BackButton from "@/components/buttons/BackButton";
 
 const Dashboard = () => {
   const { selectedService, isText } = useSelector(

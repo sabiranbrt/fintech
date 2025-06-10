@@ -20,6 +20,7 @@ interface IProp {
   ValidClassName?: string;
   placeHolderSize?: string;
   textClassName?: string;
+  textSecurity?: string;
   focusBorderColor?: string;
   placeHoldercolor?: string;
   fieldType?: string;
@@ -31,19 +32,20 @@ interface IProp {
   validation?: ValidationProps;
 }
 
-const PassField = ({
+const CustomPassField = ({
   control,
+  label,
   errors = {},
   ValidClassName,
-  label,
   focusShadowColor,
   focusErrorBgColor,
   focusErrorShadowColor,
   textClassName,
   placeHoldercolor,
   focusBorderColor,
-  validation,
   placeHolderSize,
+  textSecurity = "X",
+  validation,
   focusErrorBorderColor,
   names,
   placeHolder,
@@ -51,7 +53,8 @@ const PassField = ({
   InputBlur,
   readOnly,
 }: IProp) => {
-  const [isFocused, setIsFocused] = useState(false);
+  const [realValue, setRealValue] = useState("");
+    const [isFocused, setIsFocused] = useState(false);
   const [isHolding, setIsHolding] = useState(false);
 
   const handleFocus = () => {
@@ -64,10 +67,13 @@ const PassField = ({
     InputBlur?.();
   };
 
-  // const inputType =
-  //   fieldType === "password" ? (isHolding ? "password" : "text") : fieldType;
-  const inputType =
-    isHolding ? "password" : "text"
+  //   const inputType =
+  //     fieldType === "password"
+  //       ? tooglePassword
+  //         ? "password"
+  //         : "text"
+  //       : fieldType;
+
 
   return (
     <Controller
@@ -81,7 +87,7 @@ const PassField = ({
               {label}
               <span className="text-red-500">*</span>
             </label>
-            <div className=" relative">
+            <div className="relative">
               <input
                 className={clsx(
                   "w-full p-2 border rounded-lg focus:outline-none",
@@ -91,7 +97,6 @@ const PassField = ({
                 )}
                 data-tooltip-id={`tooltip-${placeHolder}`}
                 data-tooltip-content={`${placeHolder}`}
-                defaultValue={field.value}
                 style={{
                   borderColor: errors[names]
                     ? focusErrorBorderColor
@@ -109,26 +114,42 @@ const PassField = ({
                     ? `0 1px 2px 0 ${focusShadowColor}`
                     : undefined,
                 }}
-                placeholder={placeHolder}
-                readOnly={readOnly}
+                placeholder={!isFocused ? placeHolder : ""}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
+                value={
+                  !isHolding
+                    ? textSecurity.repeat(realValue.length)
+                    : realValue
+                }
                 disabled={field.value ? readOnly : false}
-                type={inputType}
+                type={"text"}
                 onChange={(e) => {
-                  const value = e.target.value;
-                  field.onChange(value);
+                  const input = e.target.value;
+                  const prevLength = realValue.length;
+                  const inputLength = input.length;
+
+                  if (inputLength < prevLength) {
+                    setRealValue(realValue.slice(0, inputLength));
+                    field.onChange(realValue.slice(0, inputLength));
+                  } else {
+                    const addedChar = input[input.length - 1];
+                    const newValue = realValue + addedChar;
+                    setRealValue(newValue);
+                    field.onChange(newValue);
+                  }
                 }}
               />
               <div
                 className="absolute top-3 right-3"
-                onMouseDown={() => setIsHolding(true)}
+                 onMouseDown={() => setIsHolding(true)}
                 onMouseUp={() => setIsHolding(false)}
                 onMouseLeave={() => setIsHolding(false)}
               >
                 {isHolding ? <FaEyeSlash /> : <FaEye />}
               </div>
             </div>
+
             {errors[names] && (
               <div
                 className={clsx(
@@ -146,4 +167,4 @@ const PassField = ({
   );
 };
 
-export default PassField;
+export default CustomPassField;

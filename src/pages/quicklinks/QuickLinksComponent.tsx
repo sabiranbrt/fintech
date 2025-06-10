@@ -1,8 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { default as service, default as services } from "@/jsonDemo/services.json";
+import RegisterModal from "@/components/registerModal";
+import {
+  default as service,
+  default as services,
+} from "@/jsonDemo/services.json";
 import { setEndpoints } from "@/redux/slices/endpointsSlice";
 import { setSelectedService, updateIsText } from "@/redux/slices/serviceSlice";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { BiSolidWallet } from "react-icons/bi";
 import { FaHeadset } from "react-icons/fa";
 import { FaMoneyBillTransfer, FaRegCreditCard } from "react-icons/fa6";
@@ -64,6 +69,14 @@ const ExtraServiceLabel = [
 type ServiceLabel = keyof typeof serviceIcons;
 
 const QuickLinksComponent = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const methods = useForm<any>();
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
   // const { data: serviceList } = useServicesList();
   const dispatch = useDispatch();
 
@@ -81,6 +94,10 @@ const QuickLinksComponent = () => {
       dispatch(setSelectedService(opts.service));
       dispatch(updateIsText(""));
     } else if (opts.label) {
+      if (opts.label === "Register Sender") {
+        setIsModalOpen(true);
+        return;
+      }
       dispatch(updateIsText(opts.label));
       dispatch(setSelectedService(null));
     }
@@ -119,58 +136,16 @@ const QuickLinksComponent = () => {
         ))}
       </div>
 
-      {/* 
-      {/* {isLoading && <Loader />}
-      {showAnimatedSpinner && (
-        <Loader message="We are fetching data. Please wait . . ." />
-      )}
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center overflow-hidden justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-2xl p-6 w-96 shadow-lg relative overflow-hidden">
-            <button
-              onClick={closeModal}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
-            >
-              <IoClose className="text-2xl" />
-            </button>
-            <h2 className="text-xl font-semibold mb-1">Register Sender</h2>
-            <h2 className="text-base font-medium text-gray-600 mb-4">
-              Enter Mobile Number To Initiate KYC
-            </h2>
-            <form onSubmit={handleSubmit}>
-              <input
-                type="search"
-                onChange={handleInputChange}
-                placeholder="Mobile Number"
-                maxLength={10}
-                required
-                autoComplete="off"
-                autoFocus
-                onInput={(e) => {
-                  let value = e.target.value.replace(/\D/g, ""); // Remove non-numeric characters
-                  if (value.length > 0 && /^[0-5]/.test(value)) {
-                    value = ""; // Clear input if it starts with 0-5
-                  }
-                  e.target.value = value;
-                }}
-                className="w-full border border-gray-300 rounded-lg p-3 mb-3 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-              {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-              <button
-                type="submit"
-                disabled={error || loadingNumber}
-                className={`w-full  text-white py-3 rounded-lg ${
-                  error
-                    ? "bg-gray-400"
-                    : " bg-gradient-to-r from-[#4b5a9f] to-[#4fb5b7]"
-                } `}
-              >
-                {loadingNumber ? "Checking Number . . ." : "Submit"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )} */}
+        <RegisterModal
+          control={methods.control}
+          names="registerSender"
+          placeHolder={"Mobile Number"}
+          title={"Register Sender"}
+          subTitle={"Enter Mobile Number To Initiate KYC"}
+          onClose={handleCancel}
+        />
+      )}
     </>
   );
 };
