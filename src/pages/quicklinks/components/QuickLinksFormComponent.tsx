@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import BackButton from "@/components/buttons/BackButton";
 import EmptyMessage from "@/components/EmptyMessage";
 import NoticeComponent from "@/components/NoticeComponent";
 import AccountLedger from "@/pages/accountLedger";
@@ -6,6 +7,8 @@ import CreditCardBill from "@/pages/creditCardBillPayment";
 import FundSettlement from "@/pages/fundSettlement";
 import SenderDetails from "@/pages/fundWithdrawl/components/SenderDetails";
 import FundWithdrawal from "@/pages/fundWithdrawl/FundWithdrawl";
+import LoadWallet from "@/pages/loadWallet";
+import RegisterBeneficiary from "@/pages/registerBeneficiary";
 import ContactCard from "@/pages/relationshipManager";
 import RentPayment from "@/pages/rentPayment";
 import TotalPayoutList from "@/pages/totalPayout";
@@ -26,17 +29,16 @@ const QuickLinksFormComponent = () => {
     formState: { errors },
   } = useForm<any>();
 
-  // const isFundWithdrawal = selectedService?.label === QuickLinksType.FW;
-
   return (
-    <>
+    <div className="flex flex-col ">
+      <div>{selectedService || isText ? <BackButton /> : null}</div>
       {!isText ? (
-        <div className="flex flex-row gap-4">
-          <div>
+        <div className="flex flex-row gap-4 h-full">
+          <div className=" w-64">
             {selectedService?.label !== QuickLinksType.FW && (
               <form
                 autoComplete="off"
-                className={`bg-white w-60 p-3 rounded-md`}
+                className="bg-white p-3 rounded-md w-full"
                 onSubmit={() => {}}
               >
                 <label className=" text-start text-md">
@@ -101,24 +103,26 @@ const QuickLinksFormComponent = () => {
             )}
             {selectedService?.label === QuickLinksType.CC ||
             selectedService?.label === QuickLinksType.FS ||
-            selectedService?.label === QuickLinksType.FW ? (
-              <div className="mt-4">
-                <SenderDetails showBankAcc={false} />
-              </div>
+            selectedService?.label === QuickLinksType.FW ||
+            selectedService?.label === QuickLinksType.RP ? (
+              <SenderDetails showBankAcc={false} />
             ) : null}
           </div>
-
-          {selectedService?.label === QuickLinksType.FW ? (
-            <FundWithdrawal />
-          ) : selectedService?.label === QuickLinksType.CC ? (
-            <CreditCardBill />
-          ) : selectedService?.label === QuickLinksType?.FS ? (
-            <FundSettlement />
-          ) : selectedService?.label === QuickLinksType.RP ? (
-            <RentPayment />
-          ) : (
-            selectedService?.label ? <EmptyMessage/>: <NoticeComponent/>
-          )}
+          <div className="flex-1">
+            {selectedService?.label === QuickLinksType.FW ? (
+              <FundWithdrawal />
+            ) : selectedService?.label === QuickLinksType.CC ? (
+              <CreditCardBill />
+            ) : selectedService?.label === QuickLinksType.FS ? (
+              <FundSettlement />
+            ) : selectedService?.label === QuickLinksType.RP ? (
+              <RentPayment />
+            ) : selectedService?.label ? (
+              <EmptyMessage />
+            ) : (
+              <NoticeComponent />
+            )}
+          </div>
         </div>
       ) : (
         <>
@@ -126,14 +130,18 @@ const QuickLinksFormComponent = () => {
             <TransactionsTabs />
           ) : isText === QuickLinksType.TP ? (
             <TotalPayoutList />
-          ) : isText === QuickLinksType?.AL ? (
+          ) : isText === QuickLinksType.AL ? (
             <AccountLedger />
-          ) : isText === QuickLinksType?.RM ? (
+          ) : isText === QuickLinksType.RM ? (
             <ContactCard />
+          ) : isText === QuickLinksType.LW ? (
+            <LoadWallet />
+          ) : isText === QuickLinksType.RB ? (
+            <RegisterBeneficiary />
           ) : null}
         </>
       )}
-    </>
+    </div>
   );
 };
 

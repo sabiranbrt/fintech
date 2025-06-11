@@ -12,6 +12,7 @@ interface IProp {
   errors?: FieldErrors<any>;
   names: string;
   chargeSlab?: string;
+  value?: string;
   registeredName?: string;
   txnId?: string;
   maxLength?: number;
@@ -41,6 +42,8 @@ interface IProp {
   validation?: ValidationProps;
   type?: string;
   onChange?: (value: string) => void;
+  children?: React.ReactNode;
+  wrapBorder?: boolean;
 }
 
 const InputField = ({
@@ -49,7 +52,9 @@ const InputField = ({
   txnId,
   registeredName,
   errors = {},
+  wrapBorder,
   label,
+  value,
   message,
   chargeSlab,
   isPennyDropVerified,
@@ -62,6 +67,7 @@ const InputField = ({
   placeHolder,
   ValidClassName,
   readOnly,
+  children,
   focusShadowColor,
   focusBorderColor,
   focusErrorBorderColor,
@@ -97,60 +103,57 @@ const InputField = ({
           <div className="relative">
             <label className="block text-sm mb-1">
               {label}
-              <span className="text-red-500">*</span>
-            </label>
-            <input
-              className={clsx(
-                "w-full p-2 border rounded-lg focus:outline-none",
-                textClassName ? textClassName : " bg-slate-50",
-                `placeholder:text-[${placeHoldercolor}] placeholder:text-[${placeHolderSize}]`
+              {validation?.required && (
+                <span className="text-red-500 ml-0.5">*</span>
               )}
-              data-tooltip-id={`tooltip-${placeHolder}`}
-              data-tooltip-content={`${placeHolder}`}
-              placeholder={placeHolder}
-              onFocus={handleFocus}
-              style={{
-                borderColor: errors[names]
-                  ? focusErrorBorderColor
-                  : isFocused
-                  ? focusBorderColor ?? "#5081B9"
-                  : "#F2F2F2",
-                backgroundColor: errors[names]
-                  ? focusErrorBgColor ?? "#FFF2F2"
-                  : !isFocused
-                  ? "#F7F7F7"
-                  : undefined,
-                boxShadow: errors[names]
-                  ? `0 1px 2px 0 ${focusErrorShadowColor}`
-                  : isFocused
-                  ? `0 1px 2px 0 ${focusShadowColor}`
-                  : undefined,
-              }}
-              maxLength={maxLength}
-              onBlur={handleBlur}
-              defaultValue={field.value}
-              disabled={disabled}
-              readOnly={readOnly}
-              type={type}
-              onChange={(e) => {
-                const value = e.target.value;
-                field.onChange(value);
-                onChange?.(value);
-              }}
-            />
+            </label>
 
-            {/* {ActionFetch ? (
-              <div className=" absolute top-1.5 right-2.5">
-                <button
-                  type="submit"
-                  className="bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !px-2 !py-1 rounded cursor-pointer"
-                  title="Submit Now"
-                  onClick={handleVerifyClick}
-                >
-                  {ActionFetch}
-                </button>
-              </div>
-            ) : null} */}
+            <div className=" relative">
+              {children}
+              <input
+                className={clsx(
+                  "w-full p-2 border rounded-lg focus:outline-none",
+                  textClassName ? textClassName : " bg-slate-50",
+                  `placeholder:text-[${placeHoldercolor}] placeholder:text-[${placeHolderSize}]`,
+                  children || wrapBorder
+                    ? " pl-8 rounded-lg focus:border-[#14192E] focus:ring-2 focus:ring-[#14192E]/20 transition-all duration-200"
+                    : ""
+                )}
+                data-tooltip-id={`tooltip-${placeHolder}`}
+                data-tooltip-content={`${placeHolder}`}
+                placeholder={placeHolder}
+                onFocus={handleFocus}
+                style={{
+                  borderColor: errors[names]
+                    ? focusErrorBorderColor
+                    : isFocused
+                    ? focusBorderColor ?? "#5081B9"
+                    : "#F2F2F2",
+                  backgroundColor: errors[names]
+                    ? focusErrorBgColor ?? "#FFF2F2"
+                    : !isFocused
+                    ? "#F7F7F7"
+                    : undefined,
+                  boxShadow: errors[names]
+                    ? `0 1px 2px 0 ${focusErrorShadowColor}`
+                    : isFocused
+                    ? `0 1px 2px 0 ${focusShadowColor}`
+                    : undefined,
+                }}
+                maxLength={maxLength}
+                onBlur={handleBlur}
+                defaultValue={field.value ?? value}
+                disabled={disabled}
+                readOnly={readOnly}
+                type={type}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  field.onChange(value);
+                  onChange?.(value);
+                }}
+              />
+            </div>
+
             {ActionFetch && (
               <>
                 {isPennyDropVerified ? (
@@ -238,7 +241,6 @@ const InputField = ({
                 <p>{errors[names]?.message as string}</p>
               </div>
             )}
-        
           </div>
         );
       }}

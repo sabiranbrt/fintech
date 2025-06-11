@@ -1,0 +1,306 @@
+{
+  "dynamicMethod": "data",
+  "layout": "horizontallayout",
+  "formType": "multiple",
+  "formTitle": "center",
+  "colGrid": "3",
+  "gapCol": "40",
+  "gapRow": "20",
+  "dataFields": {
+    "1": {
+      "status": "Personal Information",
+      "displayRemarks": "Please provide personal information",
+      "displayField": [
+        {
+          "label": "Full Name",
+          "placeholder": "Enter your full name",
+          "fieldType": "text",
+          "errorColor": "#ff4d4f",
+          "focusErrorBgColor": "#DCFFDB",
+          "focusErrorBorderColor": "#008000",
+          "placeHoldercolor": "#000",
+          "readOnly": true,
+          "validation": {
+            "required": "Y",
+            "errorMessage":"Full name is required."
+          }
+        },
+        {
+          "key": "dob",
+          "label": "Date of Birth",
+          "placeholder": "YYYY-MM-DD",
+          "fieldType": "text",
+          "subType": "date",
+          "validation": {
+            "required": "Y",
+            "errorMessage": "Valid date of birth"
+          }
+        },
+        {
+          "key": "citizenshipNumber",
+          "label": "Citizenship Number",
+          "placeholder": "Enter Citizenship Number",
+          "fieldType": "text",
+          "textSecurity": "$",
+           "ActionFetch":"showData",
+          "validation": {
+            "required": "Y",
+              "errorMessage": "Citizenship number is required."
+          }
+        },
+        {
+          "key": "password",
+          "label": "Password",
+          "placeholder": "Password",
+          "fieldType": "password",
+          "validation": {
+            "required": "Y",
+            "validations": [
+              {
+                "regex": "/^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$/",
+                "errorMessage": "8+ chars, at least one letter and one number"
+              }
+            ]
+          }
+        },
+        {
+          "key": "customPassword",
+          "label": "Custom Password",
+          "placeholder": "Custom Password",
+          "fieldType": "custompass",
+          "textSecurity": "$",
+          "validation": {
+            "required": "Y",
+            "validations": [
+              {
+                "regex": "/^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$/",
+                "errorMessage": "8+ chars, at least one letter and one number"
+              }
+            ]
+          }
+        },
+        {
+          "key": "mobileNumber",
+          "label": "Mobile Number",
+          "placeholder": "Enter Mobile Number",
+          "fieldType": "text",
+          "subType": "number",
+          "validation": {
+            "required": "Y",
+            "validations": [
+              {
+                "regx": "^[6-9]\\d{9}$",
+                "errorMessage": "Enter a valid 10-digit mobile number starting with 6-9."
+              }
+            ]
+          }
+        },
+        {
+          "key": "imagePreview",
+          "label": "Image Preview",
+          "placeholder": "Enter your profession",
+          "fieldType": "preview",
+          "imageLink": "www.facebook.com",
+          "validation": {
+            "required": "N"
+          }
+        },
+        {
+          "key": "gender",
+          "label": "Gender",
+          "placeholder": "Choose Gender",
+          "fieldType": "radio",
+          "dropdownOptions": [
+            {
+              "label": "Male",
+              "value": "Male"
+            },
+            {
+              "label": "Female",
+              "value": "Female"
+            }
+          ],
+          "validation": {
+            "required": "N"
+          }
+        },
+        {
+          "key": "relations",
+          "label": "Realtion",
+          "placeholder": "Choose Relation",
+          "fieldType": "checkbox",
+          "dropdownOptions": [
+            {
+              "label": "Spouse",
+              "value": "1"
+            },
+            {
+              "label": "Sibling",
+              "value": "2"
+            },
+            {
+              "label": "Parent or Guardian",
+              "value": "3"
+            },
+            {
+              "label": "Others",
+              "value": "4"
+            }
+          ],
+          "validation": {
+            "required": "N"
+          }
+        },
+        {
+          "key": "multiCheckbox",
+          "label": "multi CheckBox",
+          "placeholder": "Choose Checkboxes",
+          "fieldType": "checkbox-group",
+          "dropdownOptions": [
+            {
+              "label": "Value 1",
+              "value": "1"
+            },
+            {
+              "label": "Value 2",
+              "value": "2"
+            },
+            {
+              "label": "Value 3",
+              "value": "3"
+            },
+            {
+              "label": "Value 4",
+              "value": "4"
+            }
+          ],
+          "validation": {
+            "required": "N"
+          }
+        },
+        {
+          "key": "designation",
+          "label": "Designation",
+          "placeholder": "Select Designation",
+          "fieldType": "dropdown",
+          "dropdownOptions": [
+            {
+              "label": "Front-End Developer",
+              "value": "1"
+            },
+            {
+              "label": "Back-End Developer",
+              "value": "2"
+            },
+            {
+              "label": "Full stack Developer",
+              "value": "3"
+            }
+          ],
+          "validation": {
+            "required": "Y",
+            "validations":[
+              {
+                "errorMessage":"Please Choose one designation"
+              }
+            ]
+          }
+        },
+        {
+          "key": "multiSelect",
+          "label": "Multi Select",
+          "placeholder": "Select Multiple",
+          "fieldType": "multiSelect",
+          "isSearchable": true,
+          "placeHoldercolor": "#000",
+          "placeHolderSize": "16",
+          "dropdownOptions": [
+            {
+              "label": "Spouse",
+              "value": "1",
+              "default": false
+            },
+            {
+              "label": "Sibling",
+              "value": "2",
+              "default": false
+            },
+            {
+              "label": "Parent or Guardian",
+              "value": "3",
+              "default": false
+            },
+            {
+              "label": "Others",
+              "value": "4",
+              "default": true
+            }
+          ],
+          "validation": {
+            "required": "N"
+          }
+        },
+        {
+          "key": "Upload Photo",
+          "label": "Photo",
+          "placeholder": "Upload Photo",
+          "fieldType": "file",
+          "nonInputLabel": "Choose Gender",
+          "validation": {
+            "required": "N",
+              "validations": [
+              {
+                "errorMessage": "Please Upload Photo"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "2": {
+      "status": "Temporary Address",
+      "displayRemarks": "Please provide temporary address details",
+      "displayField": [
+        {
+          "key": "country",
+          "label": "Country",
+          "placeholder": "Enter Country Name",
+          "errorColor": "#ff4d4f",
+          "fieldType": "text",
+          "validation": {
+            "required": "N",
+            "errorMessage": "Must Enter county name"
+          }
+        },
+        {
+          "key": "province",
+          "label": "Province",
+          "placeholder": "Select Province",
+          "fieldType": "dropdown",
+          "dropdownOptions": [
+            {
+              "label": "Province one",
+              "value": "1"
+            },
+            {
+              "label": "Province two",
+              "value": "2"
+            },
+            {
+              "label": "Bagmati",
+              "value": "3"
+            },
+            {
+              "label": "Others",
+              "value": "4"
+            }
+          ],
+          "validation": {
+            "required": "N",
+            "errorMessage": "Please select a valid relationship."
+          }
+        }
+      ]
+    }
+  }
+}

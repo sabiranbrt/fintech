@@ -8,9 +8,7 @@ interface IProps {
 const SenderDetails = ({ showBankAcc = true }: IProps) => {
   const senderData = agents?.panCardData;
   return (
-    <div
-      className={`w-[245px] rounded-xl h-[calc(100%-70px)] max-h-[calc(100%-140px)] bg-white `}
-    >
+    <div className=" mt-4 h-full rounded-xl bg-white w-full">
       <div className="bg-gradient-to-r from-[#4b5a9f] to-[#4fb5b7] p-4 rounded-t-xl text-white">
         <div className="flex items-center space-x-4">
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
@@ -41,7 +39,7 @@ const SenderDetails = ({ showBankAcc = true }: IProps) => {
           </div>
         </div>
       </div>
-      <div className="p-4 min-h-[100%] mb-2">
+      <div className="p-4 mb-2">
         <div className="grid grid-cols-1 gap-3">
           <div className="flex items-start space-x-2">
             <p className="font-semibold">Full Name:</p>

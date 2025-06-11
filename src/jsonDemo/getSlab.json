@@ -1,0 +1,48 @@
+{
+    "note": "Transfer/Wallet Load Service",
+    "slabDetails": [
+        {
+            "gst": "18%",
+            "charges": "Fixed Rs.0.00 or 1.00% Applicable PERCENTAGE",
+            "Card Type": "CREDIT VISA",
+            "maxTxnValue": 100000,
+            "minTxnValue": 1,
+            "slabSequence": 1
+        },
+        {
+            "gst": "18%",
+            "charges": "Fixed Rs.0.00 or 2.20% Applicable PERCENTAGE",
+            "Card Type": "CREDIT MASTER",
+            "maxTxnValue": 100000,
+            "minTxnValue": 1,
+            "slabSequence": 1
+        },
+        {
+            "gst": "18%",
+            "charges": "Fixed Rs.0.00 or 2.20% Applicable PERCENTAGE",
+            "Card Type": "CREDIT RUPAY",
+            "maxTxnValue": 100000,
+            "minTxnValue": 1,
+            "slabSequence": 1
+        }
+    ],
+    "limitDetails": {
+        "maxValue": "100000",
+        "minValue": "10"
+    },
+    "maxChargePercent": "4.00",
+    "gatewayPreferences": [
+        {
+            "displayName": "PREMIER",
+            "serviceName": "PREMIER"
+        },
+        {
+            "displayName": "SIGNATURE",
+            "serviceName": "SIGNATURE"
+        },
+        {
+            "displayName": "GOLD",
+            "serviceName": "GOLD"
+        }
+    ]
+}

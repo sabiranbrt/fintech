@@ -2,7 +2,7 @@ const NoticeComponent = () => {
   return (
       <div
         className={`bg-white rounded-md px-5 py-4  
-        overflow-y-auto max-h-[calc(100dvh-300px)] w-full`}
+        overflow-y-auto w-full`}
         style={{
           boxShadow: "rgba(0, 0, 0, 0.09) 0px 3px 12px",
         }}

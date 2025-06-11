@@ -1,0 +1,98 @@
+/* Hide the increment/decrement arrows in Webkit browsers */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hide the increment/decrement arrows in Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Prevent the scrolling from changing the number */
+input[type="number"] {
+  -moz-user-select: none; /* Prevent selection in Firefox */
+}
+
+.container{
+    max-width: 90%;
+    margin: 0 auto !important;
+}
+
+input,
+select,
+option,
+textarea {
+  width: 100%;
+}
+
+.custom-grid {
+  display: grid;
+}
+
+/* // .css-hlgwow {
+//   padding: 0 !important;
+// } */
+
+.css-1xc3v61-indicatorContainer {
+  padding: 0 !important;
+}
+
+.css-19bb58m {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.css-11gilgj-control {
+  padding: 0 !important;
+}
+.css-15lsz6c-indicatorContainer {
+  padding: 0 !important;
+}
+.css-1odecth-control {
+  background: none !important;
+}
+.css-lkh0o5-menu{
+  z-index: 99 !important;
+}
+
+@media (max-width: 1200px) {
+  .custom-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .custom-grid {
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
+}
+
+.loader {
+  position: relative;
+  width: 100px;
+  height: 100px;
+
+  &:before,
+  &:after {
+    content: "";
+    border-radius: 50%;
+    position: absolute;
+    inset: 0;
+    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.3) inset;
+  }
+  &:after {
+    box-shadow: 0 2px 0 #5081b9 inset;
+    animation: rotate 2s linear infinite;
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

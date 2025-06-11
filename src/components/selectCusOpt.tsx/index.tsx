@@ -87,7 +87,9 @@ const SelectCusOpt = ({
           {!Nolabel ? (
             <label className="block text-sm mb-1">
               {label}
-              <span className="text-red-500">*</span>
+              {validation?.required && (
+                <span className="text-red-500 ml-0.5">*</span>
+              )}
             </label>
           ) : null}
 

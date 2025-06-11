@@ -1,10 +1,12 @@
-import React from "react";
-import { useEffect, useState } from "react";
-import interceptor from "@/services/interceptor";
-import { toast } from "react-toastify";
-import Loader from "../LoaderComponent";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import slab from "@/jsonDemo/getSlab.json"
 
-const LeftSection = ({ merchantData, slabDetails}) => {
+interface IProps{
+    merchantData:any
+}
+
+const LeftSection = ({ merchantData}: IProps) => {
+
     return (
         <div className="p-2 space-y-2">
             {/* Merchant Details */}
@@ -69,7 +71,7 @@ const LeftSection = ({ merchantData, slabDetails}) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {slabDetails?.map((item, index) => (
+                                {slab?.slabDetails?.map((item:any, index:number) => (
                                     <tr key={index} className="border-b last:border-b-0">
                                         <td className="p-1">{item.slabSequence}</td>
                                         <td className="p-1">

@@ -105,7 +105,7 @@ const QuickLinksComponent = () => {
 
   return (
     <>
-      <div className=" bg-white px-8 py-5 shadow-md rounded-md whitespace-nowrap h-full">
+      <div className=" whitespace-nowrap">
         <p className="text-base text-center font-bold md:text-xl mb-5 ">
           Quick Links
         </p>

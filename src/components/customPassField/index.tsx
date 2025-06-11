@@ -54,7 +54,7 @@ const CustomPassField = ({
   readOnly,
 }: IProp) => {
   const [realValue, setRealValue] = useState("");
-    const [isFocused, setIsFocused] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const [isHolding, setIsHolding] = useState(false);
 
   const handleFocus = () => {
@@ -74,7 +74,6 @@ const CustomPassField = ({
   //         : "text"
   //       : fieldType;
 
-
   return (
     <Controller
       control={control}
@@ -85,7 +84,9 @@ const CustomPassField = ({
           <div className="relative">
             <label className="block text-sm mb-1">
               {label}
-              <span className="text-red-500">*</span>
+              {validation?.required && (
+                <span className="text-red-500 ml-0.5">*</span>
+              )}
             </label>
             <div className="relative">
               <input
@@ -118,9 +119,7 @@ const CustomPassField = ({
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 value={
-                  !isHolding
-                    ? textSecurity.repeat(realValue.length)
-                    : realValue
+                  !isHolding ? textSecurity.repeat(realValue.length) : realValue
                 }
                 disabled={field.value ? readOnly : false}
                 type={"text"}
@@ -142,7 +141,7 @@ const CustomPassField = ({
               />
               <div
                 className="absolute top-3 right-3"
-                 onMouseDown={() => setIsHolding(true)}
+                onMouseDown={() => setIsHolding(true)}
                 onMouseUp={() => setIsHolding(false)}
                 onMouseLeave={() => setIsHolding(false)}
               >

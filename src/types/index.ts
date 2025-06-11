@@ -23,9 +23,10 @@ export enum QuickLinksType {
     RS = "Register Sender",
     T = "Transactions",
     TP = "Total Payout",
-    LP = "Load Wallet",
+    LW = "Load Wallet",
     AL = "Account Ledger",
-    RM = "Relationship Manager"
+    RM = "Relationship Manager",
+    RB = "Register Beneficiary"
 }
 
 export interface DynamicRequest {
