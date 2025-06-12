@@ -8,13 +8,13 @@ const Dashboard = () => {
     <div className=" bg-secondary-background overflow-hidden h-screen">
       <TopNavbar />
       <div className=" flex gap-4 p-3 h-[85vh]">
-        <div className="flex-1 min-h-0">
+        <div className="flex-1">
           <Header />
           <div className="">
             <QuickLinksFormComponent />
           </div>
         </div>
-        <div className=" overflow-y-auto bg-white px-8 py-5 shadow-md rounded-md min-h-0">
+        <div className=" overflow-y-auto bg-white px-8 py-5 shadow-md rounded-md h-full min-h-0">
           <QuickLinksComponent />
         </div>
       </div>

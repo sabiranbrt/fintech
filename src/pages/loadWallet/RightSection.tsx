@@ -406,24 +406,6 @@ const RightSection = () => {
             />
           </div>
           <div className="mt-2">
-            {/* <label className="text-sm font-medium text-gray-700">
-              Gateway Preferences<span className="text-red-600">*</span>
-            </label>
-            <select
-              id="gateway"
-              className="w-full p-2 border border-gray-300 focus:outline-none field text-sm"
-            >
-              <option key="" value="">
-                Select
-              </option>
-              {getSlab?.gatewayPreferences.map((type) => {
-                return (
-                  <option key={type.serviceName} value={type.serviceName}>
-                    {type.displayName}
-                  </option>
-                );
-              })}
-            </select> */}
             <SelectField
               label="Gateway Preferences"
               control={method.control}

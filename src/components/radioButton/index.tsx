@@ -38,6 +38,7 @@ const RadioButton = ({
       defaultValue={options[0].value}
       rules={ValidationRules(validation)}
       render={({ field }) => {
+
         return (
           <div className=" flex flex-row flex-wrap gap-1.5">
             {options?.map((opt) => {

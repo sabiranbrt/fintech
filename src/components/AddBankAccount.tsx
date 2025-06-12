@@ -15,6 +15,7 @@ interface IProps {
 const AddBankAccount = ({ handleCancel }: IProps) => {
   const methods = useForm<any>({
     mode: "onChange",
+    
   });
 
   return (
@@ -29,7 +30,7 @@ const AddBankAccount = ({ handleCancel }: IProps) => {
         <h2 className="text-xl font-semibold mb-4">Add Bank Account</h2>
 
         <form autoComplete="off" className="space-y-4">
-          <div className="flex flex-wrap md:flex-nowrap gap-16  items-start">
+          <div className="flex flex-wrap md:flex-nowrap gap-16 items-start">
             <div className="flex flex-col gap-5 w-full justify-center">
               <div className="relative">
                 <SelectCusOpt
@@ -92,7 +93,7 @@ const AddBankAccount = ({ handleCancel }: IProps) => {
                   options={[
                     {
                       label: "Current",
-                      value: "current",
+                      value: "current"
                     },
                     { label: "Saving", value: "saving" },
                   ]}

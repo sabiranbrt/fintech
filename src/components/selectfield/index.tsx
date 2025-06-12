@@ -7,7 +7,7 @@ import type { ValidationProps } from "../../types";
 import { ValidationRules } from "../../utils/ValidationRegister";
 
 export interface OptionBase {
-  default?: boolean; // keep fixed (non‑removable) options if you need
+  default?: boolean;
   [key: string]: any;
 }
 
@@ -200,6 +200,9 @@ const SelectField = ({
             )
           : options.find((o) => o[valueKey] === field.value) ?? null;
 
+        console.log("selectedValue", selectedValue);
+        console.log("field.value", field.value);
+
         return (
           <div
             data-tooltip-id={`tooltip-${placeHolder}`}
@@ -219,9 +222,9 @@ const SelectField = ({
               isClearable={options?.some((o) => !o.default)}
               placeholder={!isFocused ? placeHolder : ""}
               options={options}
-              value={selectedValue}
+              defaultValue={selectedValue}
               getOptionLabel={(o) => o[labelKey]}
-              getOptionValue={(o) => String(o[valueKey])}
+              getOptionValue={(o) => o?.[valueKey]?.toString?.() ?? ""}
               styles={customStyles}
               theme={(theme) => ({
                 ...theme,
@@ -264,8 +267,13 @@ const SelectField = ({
                   field.onChange([...fixedValues, ...dynamicValues]);
                 } else {
                   const sel = selected as OptionBase | null;
-                  if (sel?.default) return;
-                  field.onChange(sel?.[valueKey] ?? null);
+
+                  if (sel) {
+                    field.onChange(sel[valueKey]);
+                  } else {
+                    const defaultOption = options.find((opt) => opt.default);
+                    field.onChange(defaultOption?.[valueKey] ?? null);
+                  }
                 }
               }}
             />
