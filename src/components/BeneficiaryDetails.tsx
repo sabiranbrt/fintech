@@ -50,7 +50,7 @@ const BeneficiaryDetails = ({ tableName }: IProps) => {
   }, [agents?.accounts, searchTerm]);
 
   return (
-    <div className=" w-full p-4 shadow-md bg-white">
+    <div className=" w-full p-4 shadow-md bg-white min-h-0 h-full">
       <div className=" flex flex-row gap-2 justify-between items-center mb-3">
         <div className=" w-full">
           {selectedService?.label === QuickLinksType.FS ||
@@ -91,151 +91,154 @@ const BeneficiaryDetails = ({ tableName }: IProps) => {
           )}
         </div>
       </div>
-      <div className="max-h-[48.5vh] overflow-y-auto">
+      <div className="max-h-[48.5vh] min-h-0 h-full">
         <p className="block font-medium my-2">{tableName}</p>
-        {filteredAccounts && filteredAccounts.length > 0 ? (
-          filteredAccounts.map((account, index) => {
-            const isExpanded = expandedAccount === account.accountNumber;
+        <div className=" overflow-y-auto min-h-0 h-[90%]">
+          {filteredAccounts && filteredAccounts.length > 0 ? (
+            filteredAccounts.map((account, index) => {
+              const isExpanded = expandedAccount === account.accountNumber;
 
-            return (
-              <div key={index} className="mb-2 border rounded ">
-                <div
-                  className="flex items-center justify-between p-2 bg-gray-100 "
-                  onClick={() => {
-                    toggleAccountAccordion(account.accountNumber);
-                  }}
-                >
-                  <div className="flex items-center flex-grow">
-                    <div className="flex items-center">
-                      <label
-                        htmlFor={`account-${index}`}
-                        className="flex items-center space-x-3"
-                      >
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                          <span className="text-lg font-medium text-gray-600 bg-slate-200 px-4 py-2 rounded-full">
-                            {account.bankName.charAt(0)}
-                          </span>
-                        </div>
+              return (
+                <div key={index} className="mb-2 border rounded ">
+                  <div
+                    className="flex items-center justify-between p-2 bg-gray-100 "
+                    onClick={() => {
+                      toggleAccountAccordion(account.accountNumber);
+                    }}
+                  >
+                    <div className="flex items-center flex-grow">
+                      <div className="flex items-center">
+                        <label
+                          htmlFor={`account-${index}`}
+                          className="flex items-center space-x-3"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                            <span className="text-lg font-medium text-gray-600 bg-slate-200 px-4 py-2 rounded-full">
+                              {account.bankName.charAt(0)}
+                            </span>
+                          </div>
 
-                        <div>
-                          <h3 className="flex items-center gap-2 text-md font-medium text-grey-900">
-                            {account.bankName}
-                            {account.defaultAccount && (
-                              <span className="flex items-center text-xs text-blue-500">
-                                <GrUserSettings className="mr-1" />
-                                (Primary Account)
-                              </span>
-                            )}
-                          </h3>
-
-                          <div className="flex gap-4 text-gray-700 text-sm">
-                            <h3 className="w-80">
-                              {" "}
-                              Account Number: {account.accountNumber}
+                          <div>
+                            <h3 className="flex items-center gap-2 text-md font-medium text-grey-900">
+                              {account.bankName}
+                              {account.defaultAccount && (
+                                <span className="flex items-center text-xs text-blue-500">
+                                  <GrUserSettings className="mr-1" />
+                                  (Primary Account)
+                                </span>
+                              )}
                             </h3>
-                            <h1>IFSC Code: {account.ifscCode}</h1>
-                          </div>
-                          <div className="flex items-center mt-1">
-                            {account.defaultAccount ? (
-                              <div className="flex items-center text-green-600">
-                                <MdOutlineVerified className="w-4 h-4" />
-                                <span className="text-sm ml-1">Verified</span>
-                              </div>
-                            ) : account.isAccountVerified ? (
-                              <div className="flex items-center text-green-600">
-                                <MdOutlineVerified className="w-4 h-4" />
-                                <span className="text-sm ml-1">Verified</span>
-                              </div>
-                            ) : (
-                              <div className="flex items-center text-red-500">
-                                <VscUnverified className="w-4 h-4" />
-                                <span className="text-sm ml-1">Unverified</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-                  {/* Arrow to expand/collapse the accordion */}
-                  {selectedService?.label === QuickLinksType.FW ? null : (
-                    <button
-                      type="button"
-                      className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
-                    >
-                      <svg
-                        stroke="currentColor"
-                        fill="none"
-                        stroke-width="2"
-                        viewBox="0 0 24 24"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        className="w-5 h-5 text-red-500 hover:text-red-600 cursor-pointer"
-                        height="1em"
-                        width="1em"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                      </svg>
-                    </button>
-                  )}
-                  <div className="flex items-center space-x-4">
-                    <div
-                      className="flex justify-between items-center bg-gray-100 p-4 transition-colors "
-                      onClick={() => {
-                        toggleAccountAccordion(account.accountNumber);
-                      }}
-                    >
-                      <svg
-                        className={`w-4 h-4 transform transition-transform duration-200 cursor-pointer ${
-                          isExpanded ? "rotate-180" : ""
-                        }`}
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                {isExpanded && (
-                  <div className="bg-gray-50 p-6 border-t  border-gray-200 overflow-hidden">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <p className="font-medium">Bank Name:</p>
-                        <p>{account.bankName}</p>
-                      </div>
-                      <div>
-                        <p className="font-medium">Account Number:</p>
-                        <p>{account.accountNumber}</p>
-                      </div>
-                      <div>
-                        <p className="font-medium">IFSC Code:</p>
-                        <p>{account.ifscCode}</p>
-                      </div>
-                    </div>
 
-                  
-                    <BtnPrimary
-                      onClick={() => setIsModalOpen("paymentModal")}
-                      title="Proceed"
-                    />
+                            <div className="flex gap-4 text-gray-700 text-sm">
+                              <h3 className="w-80">
+                                {" "}
+                                Account Number: {account.accountNumber}
+                              </h3>
+                              <h1>IFSC Code: {account.ifscCode}</h1>
+                            </div>
+                            <div className="flex items-center mt-1">
+                              {account.defaultAccount ? (
+                                <div className="flex items-center text-green-600">
+                                  <MdOutlineVerified className="w-4 h-4" />
+                                  <span className="text-sm ml-1">Verified</span>
+                                </div>
+                              ) : account.isAccountVerified ? (
+                                <div className="flex items-center text-green-600">
+                                  <MdOutlineVerified className="w-4 h-4" />
+                                  <span className="text-sm ml-1">Verified</span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center text-red-500">
+                                  <VscUnverified className="w-4 h-4" />
+                                  <span className="text-sm ml-1">
+                                    Unverified
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                    {/* Arrow to expand/collapse the accordion */}
+                    {selectedService?.label === QuickLinksType.FW ? null : (
+                      <button
+                        type="button"
+                        className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                      >
+                        <svg
+                          stroke="currentColor"
+                          fill="none"
+                          stroke-width="2"
+                          viewBox="0 0 24 24"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          className="w-5 h-5 text-red-500 hover:text-red-600 cursor-pointer"
+                          height="1em"
+                          width="1em"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                      </button>
+                    )}
+                    <div className="flex items-center space-x-4">
+                      <div
+                        className="flex justify-between items-center bg-gray-100 p-4 transition-colors "
+                        onClick={() => {
+                          toggleAccountAccordion(account.accountNumber);
+                        }}
+                      >
+                        <svg
+                          className={`w-4 h-4 transform transition-transform duration-200 cursor-pointer ${
+                            isExpanded ? "rotate-180" : ""
+                          }`}
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
-            );
-          })
-        ) : (
-          <p>No accounts available.</p>
-        )}
+                  {isExpanded && (
+                    <div className="bg-gray-50 p-6 border-t  border-gray-200 overflow-hidden">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <p className="font-medium">Bank Name:</p>
+                          <p>{account.bankName}</p>
+                        </div>
+                        <div>
+                          <p className="font-medium">Account Number:</p>
+                          <p>{account.accountNumber}</p>
+                        </div>
+                        <div>
+                          <p className="font-medium">IFSC Code:</p>
+                          <p>{account.ifscCode}</p>
+                        </div>
+                      </div>
+
+                      <BtnPrimary
+                        onClick={() => setIsModalOpen("paymentModal")}
+                        title="Proceed"
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          ) : (
+            <p>No accounts available.</p>
+          )}
+        </div>
       </div>
       {isModalOpen === "addAccount" && (
         <AddBankAccount handleCancel={handleCancel} />
@@ -250,7 +253,9 @@ const BeneficiaryDetails = ({ tableName }: IProps) => {
           onClose={handleCancel}
         />
       )}
-      {isModalOpen === "paymentModal" && <PaymentModal handleCancel={handleCancel} />}
+      {isModalOpen === "paymentModal" && (
+        <PaymentModal handleCancel={handleCancel} />
+      )}
     </div>
   );
 };

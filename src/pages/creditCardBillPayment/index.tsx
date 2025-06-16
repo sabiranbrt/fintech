@@ -6,11 +6,16 @@ import SelectCusOpt from "@/components/selectCusOpt.tsx";
 import bank from "@/jsonDemo/bank.json";
 import { useForm } from "react-hook-form";
 
-const CreditCardBillPayment = () => {
+interface IProps {
+  senderData: any; 
+}
+
+const CreditCardBillPayment = ({senderData}:IProps) => {
   const methods = useForm();
 
   return (
-    <div className=" !p-4 bg-white w-full">
+    <>
+    {senderData ? <div className=" !p-4 bg-white w-full h-full">
       <form>
         <div className="mb-1 mt-2 relative">
           <SelectCusOpt
@@ -54,7 +59,9 @@ const CreditCardBillPayment = () => {
         </div>
         <BtnPrimary title="Proceed" onClick={() => {}} />
       </form>
-    </div>
+    </div>: <p>Loading sender details...</p> }
+   
+    </>
   );
 };
 

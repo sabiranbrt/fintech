@@ -1,9 +1,16 @@
-import BeneficiaryDetails from '@/components/BeneficiaryDetails'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import BeneficiaryDetails from "@/components/BeneficiaryDetails";
 
-const RentPayment = () => {
-  return (
-    <BeneficiaryDetails tableName={"Select Beneficiary"} />
-  )
+interface IProps {
+  senderData: any;
 }
 
-export default RentPayment
+const RentPayment = ({ senderData }: IProps) => {
+  return senderData ? (
+    <BeneficiaryDetails tableName={"Select Beneficiary"} />
+  ) : (
+    <p>Loading sender details...</p>
+  );
+};
+
+export default RentPayment;
