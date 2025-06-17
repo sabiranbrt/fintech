@@ -13,6 +13,7 @@ interface IProp {
   names: string;
   chargeSlab?: string;
   value?: string;
+  rules?: any;
   registeredName?: string;
   txnId?: string;
   maxLength?: number;
@@ -48,6 +49,7 @@ interface IProp {
 
 const InputField = ({
   control,
+  rules,
   disabled,
   txnId,
   registeredName,
@@ -97,7 +99,7 @@ const InputField = ({
     <Controller
       control={control}
       name={names}
-      rules={ValidationRules(validation)}
+      rules={rules ?? ValidationRules(validation)}
       render={({ field }) => {
         return (
           <div className="relative">

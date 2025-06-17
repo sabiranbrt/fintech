@@ -1,6 +1,5 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import agents from "@/jsonDemo/agent.json";
+import { updateIsText } from "@/redux/slices/serviceSlice";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
 import { useMemo, useState } from "react";
@@ -10,18 +9,23 @@ import { MdOutlineVerified } from "react-icons/md";
 import { VscUnverified } from "react-icons/vsc";
 import { useDispatch, useSelector } from "react-redux";
 import AddBankAccount from "./AddBankAccount";
-import ModalBtn from "./buttons/ModalBtn";
-import RegisterModal from "./registerModal";
-import { updateIsText } from "@/redux/slices/serviceSlice";
 import BtnPrimary from "./buttons/BtnPrimary";
+import ModalBtn from "./buttons/ModalBtn";
 import PaymentModal from "./paymentModal";
+import RegisterModal from "./registerModal";
 
 interface IProps {
   onClick?: () => void;
   tableName: string;
+  senderData?: any;
+  senderDataFW?: any;
 }
 
-const BeneficiaryDetails = ({ tableName }: IProps) => {
+const BeneficiaryDetails = ({
+  tableName,
+  senderData,
+  senderDataFW,
+}: IProps) => {
   const dispatch = useDispatch();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,25 +47,25 @@ const BeneficiaryDetails = ({ tableName }: IProps) => {
   };
 
   const filteredAccounts = useMemo(() => {
-    if (!agents?.accounts) return [];
-    return agents.accounts.filter((account) =>
+    if (!senderData?.beneficiaries) return senderDataFW?.accounts;
+    return senderData.beneficiaries.filter((account: any) =>
       account.bankName.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [agents?.accounts, searchTerm]);
+  }, [senderData?.beneficiaries, searchTerm, senderDataFW]);
 
   return (
     <div className=" w-full p-4 shadow-md bg-white min-h-0 h-full">
       <div className=" flex flex-row gap-2 justify-between items-center mb-3">
         <div className=" w-full">
-          {selectedService?.label === QuickLinksType.FS ||
-            (selectedService?.label === QuickLinksType.RP && (
-              <input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by bank name"
-                className="border-2 rounded-lg w-full p-2 focus:outline-none"
-              />
-            ))}
+          {(selectedService?.label === QuickLinksType.FS ||
+            selectedService?.label === QuickLinksType.RP) && (
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by bank name"
+              className="border-2 rounded-lg w-full p-2 focus:outline-none"
+            />
+          )}
         </div>
         <div className=" flex gap-4 whitespace-nowrap">
           {selectedService?.label !== QuickLinksType.RP && (
@@ -95,9 +99,8 @@ const BeneficiaryDetails = ({ tableName }: IProps) => {
         <p className="block font-medium my-2">{tableName}</p>
         <div className=" overflow-y-auto min-h-0 h-[90%]">
           {filteredAccounts && filteredAccounts.length > 0 ? (
-            filteredAccounts.map((account, index) => {
+            filteredAccounts.map((account: any, index: number) => {
               const isExpanded = expandedAccount === account.accountNumber;
-
               return (
                 <div key={index} className="mb-2 border rounded ">
                   <div
@@ -127,15 +130,37 @@ const BeneficiaryDetails = ({ tableName }: IProps) => {
                                   (Primary Account)
                                 </span>
                               )}
+                              {account.selfAccount && (
+                                <span className="flex items-center text-xs text-secondary-dark">
+                                  <GrUserSettings className="mr-1" />
+                                  (Self Account)
+                                </span>
+                              )}
+                              {!account.selfAccount &&
+                                !account.defaultAccount && (
+                                  <span className="flex items-center text-xs text-primary">
+                                    <GrUserSettings className="mr-1" />
+                                    (Whitelisted Account)
+                                  </span>
+                                )}
                             </h3>
 
                             <div className="flex gap-4 text-gray-700 text-sm">
                               <h3 className="w-80">
-                                {" "}
                                 Account Number: {account.accountNumber}
                               </h3>
-                              <h1>IFSC Code: {account.ifscCode}</h1>
+                              {selectedService?.label === QuickLinksType.FW && (
+                                <h1>
+                                  IFSC Code:{" "}
+                                  {account.accountIfsc ?? account.ifscCode}
+                                </h1>
+                              )}
+
+                              {selectedService?.label !== QuickLinksType.FW ? (
+                                <h1>Mobile: {account?.beneficiaryMobile}</h1>
+                              ) : null}
                             </div>
+
                             <div className="flex items-center mt-1">
                               {account.defaultAccount ? (
                                 <div className="flex items-center text-green-600">
@@ -211,20 +236,51 @@ const BeneficiaryDetails = ({ tableName }: IProps) => {
                   </div>
                   {isExpanded && (
                     <div className="bg-gray-50 p-6 border-t  border-gray-200 overflow-hidden">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <p className="font-medium">Bank Name:</p>
-                          <p>{account.bankName}</p>
+                      {selectedService?.label === QuickLinksType.FW && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <p className="font-medium">Bank Name:</p>
+                            <p>{account.bankName}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium">Account Number:</p>
+                            <p>{account.accountNumber}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium">IFSC Code:</p>
+                            <p>{account.ifscCode}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">Account Number:</p>
-                          <p>{account.accountNumber}</p>
+                      )}
+
+                      {selectedService?.label !== QuickLinksType.FW && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-1">
+                            <p className="text-sm text-gray-500 w-10">Mobile</p>
+                            <p className="font-medium">
+                              {account.beneficiaryMobile}
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm text-gray-500">Bank Name</p>
+                            <p className="font-medium w-52">
+                              {account.bankName}
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm text-gray-500">Bank IFSC</p>
+                            <p className="font-medium">{account.accountIfsc}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm text-gray-500">
+                              Account Number
+                            </p>
+                            <p className="font-medium">
+                              {account.accountNumber}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">IFSC Code:</p>
-                          <p>{account.ifscCode}</p>
-                        </div>
-                      </div>
+                      )}
 
                       <BtnPrimary
                         onClick={() => setIsModalOpen("paymentModal")}
@@ -259,4 +315,5 @@ const BeneficiaryDetails = ({ tableName }: IProps) => {
     </div>
   );
 };
+
 export default BeneficiaryDetails;

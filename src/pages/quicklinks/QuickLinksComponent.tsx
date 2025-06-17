@@ -77,7 +77,6 @@ const QuickLinksComponent = () => {
     setIsModalOpen(false);
   };
 
-  // const { data: serviceList } = useServicesList();
   const dispatch = useDispatch();
 
   useEffect(() => {

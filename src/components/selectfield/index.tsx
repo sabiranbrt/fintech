@@ -194,6 +194,14 @@ const SelectField = ({
       name={names}
       rules={ValidationRules(validation)}
       render={({ field }) => {
+         // Initialize field.value with default option in single-select mode if undefined or null
+        if (!isMulti && (field.value === undefined || field.value === null)) {
+          const defaultOption = options.find((o) => o.default);
+          if (defaultOption) {
+            field.onChange(defaultOption[valueKey]);
+          }
+        }
+        
         const selectedValue = isMulti
           ? options.filter(
               (o) => o.default || field.value?.includes?.(o[valueKey])
@@ -201,7 +209,6 @@ const SelectField = ({
           : options.find((o) => o[valueKey] === field.value) ?? null;
 
         console.log("selectedValue", selectedValue);
-        console.log("field.value", field.value);
 
         return (
           <div
@@ -222,7 +229,7 @@ const SelectField = ({
               isClearable={options?.some((o) => !o.default)}
               placeholder={!isFocused ? placeHolder : ""}
               options={options}
-              defaultValue={selectedValue}
+              value={selectedValue}
               getOptionLabel={(o) => o[labelKey]}
               getOptionValue={(o) => o?.[valueKey]?.toString?.() ?? ""}
               styles={customStyles}

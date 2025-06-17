@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AxiosRequestConfig } from "axios";
 
 export enum FieldTypes {
@@ -33,7 +34,7 @@ export interface DynamicRequest {
     url: string;
     method: AxiosRequestConfig['method'];
     params?: Record<string, unknown>;
-    headers?: Record<string, string>;
+    headers?: any;
     data?: unknown;
 }
 

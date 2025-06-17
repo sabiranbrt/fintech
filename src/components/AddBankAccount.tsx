@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import bank from "@/jsonDemo/bank.json";
+import { useDynamicQuery } from "@/hooks/dynamicQuery";
+import { RootState } from "@/redux/store";
+import { getDynamicRequest } from "@/utils/dynamicRequest";
 import { useForm } from "react-hook-form";
 import { IoClose } from "react-icons/io5";
+import { useSelector } from "react-redux";
 import SubmitBtn from "./buttons/SubmitBtn";
 import InputField from "./inputField";
 import PassField from "./passfield";
@@ -15,8 +18,20 @@ interface IProps {
 const AddBankAccount = ({ handleCancel }: IProps) => {
   const methods = useForm<any>({
     mode: "onChange",
-    
   });
+
+ const { endpoints } = useSelector((state: RootState) => state.endPoints);
+  const { selectedService } = useSelector((state: RootState) => state.service);
+
+  const stepName = selectedService?.sequence?.[1];
+  const request = getDynamicRequest(stepName ?? "", endpoints ?? {});
+
+  const { data ,refetch} = useDynamicQuery<any>(request!, {
+    enabled: !!request,
+    queryKey: [stepName],
+  });
+
+  const bank = data?.apiResponseData?.data;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -40,7 +55,7 @@ const AddBankAccount = ({ handleCancel }: IProps) => {
                   disabled={false}
                   currentIndex={0}
                   optionsData={bank}
-                  fetchData={bank}
+                  fetchData={refetch}
                 />
               </div>
               <div className="relative mt-3">
@@ -93,7 +108,8 @@ const AddBankAccount = ({ handleCancel }: IProps) => {
                   options={[
                     {
                       label: "Current",
-                      value: "current"
+                      value: "current",
+                      default: true
                     },
                     { label: "Saving", value: "saving" },
                   ]}

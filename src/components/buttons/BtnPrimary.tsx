@@ -6,7 +6,7 @@ interface IProps {
 const BtnPrimary = ({ onClick, title }: IProps) => {
   return (
     <button
-      type="button"
+      type="submit"
       onClick={() => {
         if (title === "Back") {
           window.location.reload();

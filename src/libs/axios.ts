@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DynamicRequest } from "@/types";
+import { encryptBody, encryptKey, generateAESKey, generateIV } from "@/utils/encrypt";
 import Axios, { AxiosError, AxiosRequestConfig, type AxiosResponse } from "axios";
 
 const headers = {} as any
@@ -8,11 +9,11 @@ export const generateRandom13DigitNumber = () => {
     return Math.floor(Math.random() * 9000000000000) + 1000000000000;
 };
 
-// const url = import.meta.env.VITE_API_BASE_URL
+const url = import.meta.env.VITE_API_BASE_URL
 
 // Configure base URL
 export const axiosInstance = Axios.create({
-    baseURL: "https://a04eac9d-0a9a-4dac-9c0c-539c9d9b8ed9.mock.pstmn.io",
+    baseURL: url,
     headers: {
         ...headers,
         "Content-Type": "application/json",
@@ -20,10 +21,13 @@ export const axiosInstance = Axios.create({
 })
 
 axiosInstance.interceptors.request.use(
-    async (config: any) => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+    function (config) {
+        config.headers = config.headers || {};
+        config.headers.includeUrn = true;
+
+        const authToken = localStorage.getItem("digiToken");
+        if (authToken) {
+            config.headers.authtoken = authToken;
         }
 
         if (config.headers.includeUrn) {
@@ -31,9 +35,32 @@ axiosInstance.interceptors.request.use(
             config.headers.urn = urn;
         }
         delete config.headers.includeUrn;
+
+        if ((config.method === "post" || config.method === "put") && config.data) {
+            try {
+                const originalPayload = config.data;
+                const aesKey = generateAESKey();
+                const iv = generateIV(aesKey);
+                const reqBody = {
+                    encryptedKey: encryptKey(aesKey, import.meta.env.VITE_RSA_PUBLIC_KEY),
+                    encryptedBody: encryptBody(
+                        JSON.stringify(originalPayload),
+                        aesKey,
+                        iv
+                    ),
+                };
+                config.data = reqBody;
+            } catch (error) {
+                console.error("Error encrypting request data:", error);
+                return Promise.reject(error);
+            }
+        }
+
         return config;
     },
-    error => Promise.reject(error)
+    function (error) {
+        return Promise.reject(error);
+    }
 );
 
 export const fetchDynamic = async <T = unknown>(
@@ -46,7 +73,7 @@ export const fetchDynamic = async <T = unknown>(
         method,
         params: method === 'GET' ? params : undefined, // GET → query‑string
         data: method !== 'GET' ? data ?? params : undefined, // others → body
-        headers,
+        headers: { ...headers, ...(req.headers ?? {}) },
     });
 
     return res.data;

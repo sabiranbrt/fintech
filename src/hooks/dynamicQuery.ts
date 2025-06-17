@@ -2,7 +2,6 @@ import { fetchDynamic } from '@/libs/axios';
 import { DynamicRequest } from '@/types';
 import { useQuery, UseQueryOptions, useMutation } from '@tanstack/react-query';
 
-
 export const useDynamicQuery = <T = unknown>(
     req: DynamicRequest,
     options?: UseQueryOptions<T>,
@@ -15,7 +14,7 @@ export const useDynamicQuery = <T = unknown>(
             req.headers,
         ],
         queryFn: () => fetchDynamic<T>(req),
-        enabled: !!req.url,
+        // enabled: !!req.params,
         ...options,
     });
 }

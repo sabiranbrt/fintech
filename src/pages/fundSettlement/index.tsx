@@ -7,7 +7,7 @@ interface IProps {
 }
 
 const FundSettlement = ({senderData}:IProps) => {
-  return senderData? <BeneficiaryDetails tableName={"Select Beneficiary"} />:<p>Loading sender details...</p>
+  return senderData? <BeneficiaryDetails tableName={"Select Beneficiary"} senderData={senderData} />:<p>Loading sender details...</p>
 };
 
 export default FundSettlement;

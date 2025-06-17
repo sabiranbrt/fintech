@@ -6,10 +6,10 @@ const Header = () => {
   return (
     <div className="text-white">
       <div className="mb-3 flex flex-row flex-wrap items-center gap-2">
-        {HeaderList.headerTitle.map((item) => {
+        {HeaderList.headerTitle.map((item,index) => {
           return (
             <div
-              key={item.label}
+              key={index}
               className=" group flex-grow bg-gradient-to-r from-[#4b5a9f] to-[#4fb5b7] flex flex-col p-4 rounded-md hover:shadow-lg hover:shadow-gray-500 cursor-pointer transition-all duration-500"
               style={{
                 border: "2px solid transparent",

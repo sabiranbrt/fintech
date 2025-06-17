@@ -6,8 +6,10 @@ interface IProps {
 }
 
 const RentPayment = ({ senderData }: IProps) => {
+
+  console.log("senderData",senderData)
   return senderData ? (
-    <BeneficiaryDetails tableName={"Select Beneficiary"} />
+    <BeneficiaryDetails tableName={"Select Beneficiary"} senderData={senderData} />
   ) : (
     <p>Loading sender details...</p>
   );

@@ -10,7 +10,9 @@ interface IProp {
   control: Control<any>;
   errors?: FieldErrors<any>;
   names: string;
+  rules?: any;
   label: string;
+  onPaste?: (e: React.ClipboardEvent<HTMLInputElement>) => void;
   placeHolder?: string;
   inputHeight?: string;
   inputWidth?: string;
@@ -28,6 +30,7 @@ interface IProp {
   InputFocus?: () => void;
   InputBlur?: () => void;
   readOnly?: boolean;
+  onChange?: (value: string) => void;
   type?: string;
   validation?: ValidationProps;
 }
@@ -36,10 +39,13 @@ const CustomPassField = ({
   control,
   label,
   errors = {},
+  rules,
   ValidClassName,
   focusShadowColor,
   focusErrorBgColor,
   focusErrorShadowColor,
+  onPaste,
+  onChange,
   textClassName,
   placeHoldercolor,
   focusBorderColor,
@@ -78,7 +84,7 @@ const CustomPassField = ({
     <Controller
       control={control}
       name={names}
-      rules={ValidationRules(validation)}
+      rules={rules ?? ValidationRules(validation)}
       render={({ field }) => {
         return (
           <div className="relative">
@@ -136,6 +142,14 @@ const CustomPassField = ({
                     const newValue = realValue + addedChar;
                     setRealValue(newValue);
                     field.onChange(newValue);
+                    onChange?.(newValue);
+                  }
+                }}
+                onPaste={(e) => {
+                  if (onPaste) {
+                    onPaste(e);
+                  } else {
+                    e.preventDefault();
                   }
                 }}
               />

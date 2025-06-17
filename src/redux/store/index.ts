@@ -4,13 +4,15 @@ import appReducer from '../slices/appSlice';
 import checkboxReducer from '../slices/checkboxSlice';
 import serviceReducer from '../slices/serviceSlice';
 import endpointsReducer from '../slices/endpointsSlice';
+import formReducer from '../slices/customFormSlice';
 
 export const store = configureStore({
   reducer: {
     app: appReducer,
     checkboxes: checkboxReducer,
     service: serviceReducer,
-    endPoints: endpointsReducer
+    endPoints: endpointsReducer,
+    form: formReducer
   },
 });
 

@@ -1,10 +1,14 @@
+import Footer from "@/components/footer";
 import Header from "@/components/Header";
+import { useAuthToken } from "@/hooks/service";
 import QuickLinksComponent from "@/pages/quicklinks/QuickLinksComponent";
 import { TopNavbar } from "../components/TopNavbar";
 import QuickLinksFormComponent from "./quicklinks/components/QuickLinksFormComponent";
-import Footer from "@/components/footer";
 
 const Dashboard = () => {
+  const { data: token } = useAuthToken();
+   localStorage.setItem("digiToken", token?.apiResponseData?.responseData?.accessToken);
+
   return (
     <div className=" bg-secondary-background overflow-hidden h-screen">
       <TopNavbar />
@@ -19,7 +23,7 @@ const Dashboard = () => {
           <QuickLinksComponent />
         </div>
       </div>
-      <Footer messages={""}/>
+      <Footer />
     </div>
   );
 };

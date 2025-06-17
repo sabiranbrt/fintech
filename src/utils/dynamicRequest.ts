@@ -1,42 +1,67 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface DynamicRequest {
-    url: string;
-    method: "GET" | "POST";
-    params?: Record<string, any>;
-    headers?: Record<string, string>;
+  url: string;
+  method: "GET" | "POST";
+  params?: Record<string, any>;
+  headers?: any;
 }
 
 type EndpointConfig = {
-    url: string;
-    method: string;
-    enc?: boolean;
-    headers?: Record<string, string>;
-    queryParams?: string[];
+  url: string;
+  method: string;
+  enc?: boolean;
+  headers?: any;
+  queryParams?: string[];
 };
 
 type EndPointsMap = Record<string, EndpointConfig>;
 
 export function getDynamicRequest(
-    step: string,
-    endPoints: EndPointsMap,
-    params: Record<string, any> = {}
+  step: string,
+  endPoints: EndPointsMap,
+  params: Record<string, any> = {},
+  customHeaders: Record<string, any> = {}
 ): DynamicRequest | null {
-    const config = endPoints[step];
-    if (!config) return null;
+  const config = endPoints[step];
+  if (!config) return null;
 
-    const resolvedHeaders = config.headers
-        ? Object.fromEntries(
-            Object.entries(config.headers).map(([k, v]) => [
-                k,
-                v.replace("{{urn}}", params.urn || ""),
-            ])
-        )
-        : undefined;
+  // 1. Start with base URL
+  let finalUrl = config.url || "";
 
-    return {
-        url: config.url,
-        method: config.method.toUpperCase() as "GET" | "POST",
-        params,
-        headers: resolvedHeaders,
-    };
+  // 2. If queryParams are defined, build query string
+  if (config.queryParams?.length) {
+    const query: Record<string, string> = {};
+
+    config.queryParams.forEach((key: string) => {
+      if (params[key] !== undefined && params[key] !== null) {
+        query[key] = String(params[key]);
+      }
+    });
+
+    const queryString = new URLSearchParams(query).toString();
+
+    if (queryString) {
+      finalUrl += finalUrl.includes("?") ? `&${queryString}` : `?${queryString}`;
+    }
+  }
+
+  // 3. Resolve headers
+  const resolvedHeaders = config.headers
+    ? Object.fromEntries(
+        Object.entries(config.headers).map(([k, v]: any) => [
+          k,
+          typeof v === "string" ? v.replace("{{urn}}", params.urn || "") : v,
+        ])
+      )
+    : {};
+
+  // 4. Merge with custom headers
+  const mergedHeaders = { ...resolvedHeaders, ...customHeaders };
+
+  return {
+    url: finalUrl,
+    method: config.method.toUpperCase() as "GET" | "POST",
+    params,
+    headers: mergedHeaders,
+  };
 }

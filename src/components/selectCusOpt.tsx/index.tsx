@@ -10,6 +10,7 @@ interface IProps {
   inputClassName?: string;
   control: Control<any>;
   errors?: FieldErrors<any>;
+  rules?: any;
   currentIndex?: number;
   label: string;
   Nolabel?: boolean;
@@ -38,6 +39,7 @@ const SelectCusOpt = ({
   isLoading,
   validation,
   disabled,
+  rules,
   optionsData,
   focusErrorBorderColor,
   focusBorderColor,
@@ -72,6 +74,7 @@ const SelectCusOpt = ({
     handleFocus?.();
     fetchData?.();
   };
+
   const onInputBlur = () => {
     setTimeout(() => setIsFocused(false), 100);
     handleBlur?.();
@@ -81,93 +84,97 @@ const SelectCusOpt = ({
     <Controller
       control={control}
       name={names}
-      rules={ValidationRules(validation)}
-      render={({ field }) => (
-        <div>
-          {!Nolabel ? (
-            <label className="block text-sm mb-1">
-              {label}
-              {validation?.required && (
-                <span className="text-red-500 ml-0.5">*</span>
-              )}
-            </label>
-          ) : null}
+      rules={rules ?? ValidationRules(validation)}
+      render={({ field }) => {
+        return (
+          <div>
+            {!Nolabel ? (
+              <label className="block text-sm mb-1">
+                {label}
+                {validation?.required && (
+                  <span className="text-red-500 ml-0.5">*</span>
+                )}
+              </label>
+            ) : null}
 
-          <div className="relative">
-            <input
-              {...field}
-              type="text"
-              name={names}
-              disabled={disabled}
-              style={{
-                borderColor: errors[names]
-                  ? focusErrorBorderColor
-                  : isFocused
-                  ? focusBorderColor ?? "#5081B9"
-                  : "#F2F2F2",
-                backgroundColor: errors[names]
-                  ? focusErrorBgColor ?? "#FFF2F2"
-                  : !isFocused
-                  ? "#F7F7F7"
-                  : undefined,
-                boxShadow: errors[names]
-                  ? `0 1px 2px 0 ${focusErrorShadowColor}`
-                  : isFocused
-                  ? `0 1px 2px 0 ${focusShadowColor}`
-                  : undefined,
-              }}
-              value={search}
-              onChange={(e) => {
-                const value = e.target.value;
-                setSearch(value);
-                field.onChange(value);
-                onChange?.(value);
-              }}
-              placeholder="Search and select bank"
-              onFocus={onInputFocus}
-              onBlur={onInputBlur}
-              className={clsx(
-                "text-sm border rounded-lg p-2 w-full focus:outline-none",
-                inputClassName ? inputClassName : "bg-slate-50",
-                errors[names] ? "border-red-500" : "border-gray-300"
+            <div className="relative">
+              <input
+                {...field}
+                type="text"
+                name={names}
+                disabled={disabled}
+                style={{
+                  borderColor: errors[names]
+                    ? focusErrorBorderColor
+                    : isFocused
+                    ? focusBorderColor ?? "#5081B9"
+                    : "#F2F2F2",
+                  backgroundColor: errors[names]
+                    ? focusErrorBgColor ?? "#FFF2F2"
+                    : !isFocused
+                    ? "#F7F7F7"
+                    : undefined,
+                  boxShadow: errors[names]
+                    ? `0 1px 2px 0 ${focusErrorShadowColor}`
+                    : isFocused
+                    ? `0 1px 2px 0 ${focusShadowColor}`
+                    : undefined,
+                }}
+                value={search}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSearch(value);
+                  field.onChange(value);
+                  onChange?.(value);
+                }}
+                placeholder="Search and select bank"
+                onFocus={onInputFocus}
+                onBlur={onInputBlur}
+                className={clsx(
+                  "text-sm border rounded-lg p-2 w-full focus:outline-none",
+                  inputClassName ? inputClassName : "bg-slate-50",
+                  errors[names] ? "border-red-500" : "border-gray-300"
+                )}
+              />
+              {isLoading && (
+                <ImSpinner8 className="absolute right-4 top-2 animate-spin text-gray-500 w-5 h-5" />
               )}
-            />
-            {isLoading && (
-              <ImSpinner8 className="absolute right-4 top-2 animate-spin text-gray-500 w-5 h-5" />
+            </div>
+
+            {isFocused && filteredOptions.length > 0 && (
+              <ul
+                role="listbox"
+                className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg"
+              >
+                {filteredOptions.map((bank, index) => (
+                  <li
+                    key={index}
+                    role="option"
+                    onMouseDown={() => {
+                      const label = bank
+                      setSearch(label);
+                      field.onChange(label);
+                    }}
+                    className={`p-2 cursor-pointer ${
+                      currentIndex === index
+                        ? "bg-gray-100"
+                        : "hover:bg-gray-100"
+                    }`}
+                  >
+                    {bank?.bankName}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {errors[names] && (
+              <p className=" text-red-500 text-xs mt-2">
+                {errors[names]?.message as string}
+              </p>
             )}
           </div>
-
-          {isFocused && filteredOptions.length > 0 && (
-            <ul
-              role="listbox"
-              className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg"
-            >
-              {filteredOptions.map((bank, index) => (
-                <li
-                  key={index}
-                  role="option"
-                  onMouseDown={() => {
-                    const label = bank?.bankName || JSON.stringify(bank);
-                    setSearch(label);
-                    field.onChange(label);
-                  }}
-                  className={`p-2 cursor-pointer ${
-                    currentIndex === index ? "bg-gray-100" : "hover:bg-gray-100"
-                  }`}
-                >
-                  {bank?.bankName || JSON.stringify(bank)}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {errors[names] && (
-            <p className="absolute top-[60px] text-red-500 text-xs mt-2">
-              {errors[names]?.message as string}
-            </p>
-          )}
-        </div>
-      )}
+        );
+      }}
     />
   );
 };

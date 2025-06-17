@@ -8,6 +8,7 @@
       "uploadSlip": true,
       "sequence": [
         "getSender",
+        "getbankList",
         "getSlabDetails",
         "getChargeDetails",
         "uploadSlip",
@@ -21,6 +22,8 @@
       "type": "payout",
       "uploadSlip": true,
       "sequence": [
+        "getAgent",
+        "getbankList",
         "getSlabDetails",
         "getChargeDetails",
         "uploadSlip",
@@ -35,6 +38,7 @@
       "uploadSlip": true,
       "sequence": [
         "getSender",
+        "getbankList",
         "getSlabDetails",
         "getChargeDetails",
         "uploadSlip",
@@ -64,6 +68,7 @@
       "uploadSlip": false,
       "sequence": [
         "getSender",
+        "getbankList",
         "getSlabDetails",
         "getChargeDetails",
         "initPayout"
@@ -95,9 +100,17 @@
       "method": "GET",
       "url": "/api/v1/charges"
     },
+    "getAgent": {
+      "method": "GET",
+      "url": "/api/v1/agent"
+    },
     "getSlabDetails": {
       "method": "GET",
-      "queryParams": ["type", "cardType", "transferType"],
+      "queryParams": [
+        "type",
+        "cardType",
+        "transferType"
+      ],
       "enc": false,
       "url": "/api/v1/slab",
       "headers": {
@@ -107,12 +120,17 @@
     "getSender": {
       "method": "POST",
       "enc": true,
-      "queryParams": ["mobileNumber"],
+      "queryParams": [
+        "mobileNumber"
+      ],
       "url": "/api/v1/sender/get"
+    },
+    "getCount": {
+      "method": "GET",
+      "url": "/api/v1/transaction/count"
     },
     "getbankList": {
       "method": "GET",
-      "queryParams": ["type"],
       "url": "/api/v1/bank"
     }
   }

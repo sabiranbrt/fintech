@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 interface IProps{
-    messages:any
+    messages?:any
 }
 
 const Footer = ({ messages }:IProps) => {

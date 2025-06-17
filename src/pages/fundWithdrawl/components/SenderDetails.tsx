@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { MdOutlinePending } from "react-icons/md";
-import agents from "@/jsonDemo/agent.json";
 
 interface IProps {
-  showBankAcc: boolean;
+  showBankAcc?: boolean;
   senderData: any;
 }
 
 const SenderDetails = ({ showBankAcc = true, senderData }: IProps) => {
-  const senderDatas = agents?.panCardData;
+
   return (
     <>
       {senderData ? (
@@ -17,21 +16,21 @@ const SenderDetails = ({ showBankAcc = true, senderData }: IProps) => {
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
                 <span className="text-blue-600 text-lg font-bold uppercase">
-                  {senderDatas?.firstName?.charAt(0) || "N"}
-                  {senderDatas?.lastName?.charAt(0) || "A"}
+                  {senderData?.firstName?.charAt(0) || "N"}
+                  {senderData?.lastName?.charAt(0) || "A"}
                 </span>
               </div>
               <div>
                 <h3 className="text-lg font-semibold capitalize">
-                  {senderDatas?.firstName || senderDatas?.name || ""}{" "}
-                  {senderDatas?.lastName || ""}
+                  {senderData?.firstName || senderData?.name || ""}{" "}
+                  {senderData?.lastName || ""}
                 </h3>
                 <p className="text-sm font-light capitalize">
-                  {senderDatas?.mobile_no || ""}
+                  {senderData?.mobile_no || ""}
                 </p>
                 {showBankAcc && (
                   <div className=" bg-gray-100 rounded-md justify-center px-2">
-                    {senderDatas?.accountVerificationStage?.toLowerCase() !==
+                    {senderData?.accountVerificationStage?.toLowerCase() !==
                       "completed" && (
                       <p className="flex items-center text-orange-600 py-1">
                         <MdOutlinePending className="w-4 h-4" />
@@ -48,27 +47,27 @@ const SenderDetails = ({ showBankAcc = true, senderData }: IProps) => {
               <div className="flex items-start space-x-2">
                 <p className="font-semibold">Full Name:</p>
                 <p className="capitalize">
-                  {senderDatas?.firstName || senderDatas?.name || "N/A"}{" "}
-                  {senderDatas?.middleName} {senderDatas?.lastName}
+                  {senderData?.firstName || senderData?.name || "N/A"}{" "}
+                  {senderData?.middleName} {senderData?.lastName}
                 </p>
               </div>
 
               {showBankAcc && (
                 <div className="flex items-start space-x-2">
                   <p className="font-semibold">Bank Acct:</p>
-                  <p>{senderDatas?.accountNumber || "N/A"}</p>
+                  <p>{senderData?.accountNumber || "N/A"}</p>
                 </div>
               )}
 
               <div className="flex items-start space-x-2">
                 <p className="font-semibold">Mobile No:</p>
                 <p>
-                  {senderDatas?.mobile_no || senderDatas?.mobile_no || "N/A"}
+                  {senderData?.mobileNumber || senderData?.mobileNumber || "N/A"}
                 </p>
               </div>
               <div className="flex items-start space-x-2">
                 <p className="font-semibold">Pan:</p>
-                <p>{senderDatas?.pan || "N/A"}</p>
+                <p>{senderData?.pan || "N/A"}</p>
               </div>
             </div>
           </div>
