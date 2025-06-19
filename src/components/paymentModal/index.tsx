@@ -1,23 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useDynamicQuery } from "@/hooks/dynamicQuery";
+import { useDynamicMutation, useDynamicQuery } from "@/hooks/dynamicQuery";
 import agent from "@/jsonDemo/agent.json";
 import getMobileNumber from "@/jsonDemo/getMobileNumberData.json";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
 import { getDynamicRequest } from "@/utils/dynamicRequest";
 import { wordCapitalize } from "@/utils/wordCapitalize";
+import clsx from "clsx";
+import { toWords } from "number-to-words";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { MdOutlineVerified } from "react-icons/md";
 import { VscUnverified } from "react-icons/vsc";
 import { useSelector } from "react-redux";
 import SwitchGroup from "../buttons/switchBtn";
 import FeeBox from "../feeBox";
-import { toWords } from 'number-to-words';
 import InputField from "../inputField";
 import RadioButton from "../radioButton";
 import SlipButtons from "../slipbuttons/SlipButtons";
 import TransferNotice from "../transferNotice";
-import { useState } from "react";
 
 interface IProp {
   handleCancel: () => void;
@@ -34,10 +35,18 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
   const [requestAmount, setRequestAmount] = useState<string>("");
 
   const isVerified = true;
-  const method = useForm();
+  const {
+    control,
+    formState: { errors },
+  } = useForm<any>({
+    mode: "onChange",
+  });
 
   const stepName = selectedService?.sequence?.[2];
   const chargeDetails = selectedService?.sequence?.[3];
+  const initPayout = selectedService?.sequence?.[4];
+
+  const { mutate } = useDynamicMutation<any>();
 
   const request = getDynamicRequest(stepName ?? "", endpoints ?? {}, {
     type: selectedService?.alias,
@@ -71,6 +80,64 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
   const slab = slabs?.apiResponseData?.data;
   const chargeDetail = Charge?.apiResponseData?.data;
 
+  const params = {
+    acquirerInfo: {
+      ip: "180.151.31.10",
+      reqLat: "27.67561482423071",
+      reqLong: "85.31395684387198",
+      commDeviceId: "commDeviceId_f4c6e43c16d1",
+      requestSource: "requestSource_bf89dd79647e",
+      id: "9241980104198913",
+    },
+    paymentInfo: {
+      amount: parseFloat(requestAmount) || 12,
+      transType: selectedService?.alias || "CC",
+      cardType: "credit",
+    },
+    dynamicValues: {
+      cardLastSixDigits: cusVal?.cardAccount?.slice(-6) || "",
+      amount: requestAmount || "12",
+      senderMobile: senderData?.mobileNumber || "9878978978",
+      beneMobile:
+        checkedBeneficiary?.beneficiaries[0]?.beneficiaryMobile || "9484944844",
+      charge: chargeDetail?.totalCharge || "29.50",
+      markup: "",
+      transType: selectedService?.alias || "CC",
+      transferType: bankDetails || "IMPS",
+      finalAmount: chargeDetail?.finalAmount || 12,
+      loadAmount: chargeDetail?.requestAmount || 41.5,
+      selectedChargeType: "amount",
+      accountInfo: {
+        bankName:
+          checkedBeneficiary?.bankName ||
+          cusVal?.bankName?.bankName ||
+          "ABN AMRO BANK CREDIT CARD",
+        bankIfsc: checkedBeneficiary?.accountIfsc || "ABNA0200001",
+        accountNumber:
+          checkedBeneficiary?.accountNumber ||
+          cusVal?.cardAccount ||
+          "3893893892389348",
+      },
+    },
+  };
+
+  const requestPayout = getDynamicRequest(
+    initPayout ?? "",
+    endpoints ?? {},
+    params
+  );
+
+  const onSubmit = () => {
+    mutate(requestPayout ?? { url: "", method: "POST" }, {
+      onSuccess: (data: any) => {
+        console.log("Mutation success:", data);
+      },
+      onError: (err: any) => {
+        console.error("Mutation error:", err);
+      },
+    });
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-[2]">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl animate-fadeIn max-h-[76vh] overflow-y-auto">
@@ -81,33 +148,34 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
             <div className="text-base text-primary flex justify-center text-left flex-nowrap">
               {slab?.note ?? ""}
             </div>
-            {selectedService?.label !== QuickLinksType?.CC && (
-              <div className="flex flex-nowrap items-center justify-end mt-2 w-full space-x-4 relative group">
-                <div className="text-base text-primary w-full">
-                  {slab?.note ?? ""}
-                </div>
+            {selectedService?.label !== QuickLinksType?.CC &&
+              selectedService?.label !== QuickLinksType?.FW && (
                 <div className="flex flex-nowrap items-center justify-end mt-2 w-full space-x-4 relative group">
-                  <RadioButton
-                    names="cardType"
-                    control={method.control}
-                    labelClassName=" text-[14px]"
-                    options={[
-                      {
-                        value: "creditCard",
-                        label: "Credit Card",
-                        default: true,
-                      },
-                      { value: "masterCard", label: "Master Card" },
-                      {
-                        value: "corporateCard",
-                        label: "Corporate Card",
-                        disable: true,
-                      },
-                    ]}
-                  />
+                  <div className="text-base text-primary w-full">
+                    {slab?.note ?? ""}
+                  </div>
+                  <div className="flex flex-nowrap items-center justify-end mt-2 w-full space-x-4 relative group">
+                    <RadioButton
+                      names="cardType"
+                      control={control}
+                      labelClassName=" text-[14px]"
+                      options={[
+                        {
+                          value: "creditCard",
+                          label: "Credit Card",
+                          default: true,
+                        },
+                        { value: "masterCard", label: "Master Card" },
+                        {
+                          value: "corporateCard",
+                          label: "Corporate Card",
+                          disable: true,
+                        },
+                      ]}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </h1>
         </div>
 
@@ -250,39 +318,40 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
             )}
 
             {/* Beneficiary Details Card */}
-            {selectedService?.label !== QuickLinksType?.CC && (
-              <div>
-                <div className="bg-gray-50 rounded-xl p-2 border-2">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-sm font-medium text-gray-600">
-                      Beneficiary Details
-                    </h2>
-                    {/* <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
+            {selectedService?.label !== QuickLinksType?.CC &&
+              selectedService?.label !== QuickLinksType?.FW && (
+                <div>
+                  <div className="bg-gray-50 rounded-xl p-2 border-2">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-sm font-medium text-gray-600">
+                        Beneficiary Details
+                      </h2>
+                      {/* <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
                          Verified
                        </span> */}{" "}
-                    {!isVerified ? (
-                      <>
-                        {checkedBeneficiary.isAccountVerified ? (
+                      {!isVerified ? (
+                        <>
+                          {checkedBeneficiary.isAccountVerified ? (
+                            <div className="flex items-center text-green-600">
+                              <MdOutlineVerified className="w-4 h-4" />
+                              <span className="text-sm ml-1">Verified</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center text-red-500">
+                              <VscUnverified className="w-4 h-4" />
+                              <span className="text-sm ml-1">Unverified</span>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
                           <div className="flex items-center text-green-600">
                             <MdOutlineVerified className="w-4 h-4" />
                             <span className="text-sm ml-1">Verified</span>
                           </div>
-                        ) : (
-                          <div className="flex items-center text-red-500">
-                            <VscUnverified className="w-4 h-4" />
-                            <span className="text-sm ml-1">Unverified</span>
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center text-green-600">
-                          <MdOutlineVerified className="w-4 h-4" />
-                          <span className="text-sm ml-1">Verified</span>
-                        </div>
-                      </>
-                    )}
-                    {/*  {checkedBeneficiary.isAccountVerified ? (
+                        </>
+                      )}
+                      {/*  {checkedBeneficiary.isAccountVerified ? (
                                    <div className="flex items-center text-green-600">
                                      <MdOutlineVerified className="w-4 h-4" />
                                      <span className="text-sm ml-1">Verified</span>
@@ -293,37 +362,37 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                                      <span className="text-sm ml-1">Unverified</span>
                                    </div>
                                  )} */}
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-8">
-                      <div>
-                        <p className="text-sm text-gray-500">
-                          Beneficiary Name
-                        </p>
-                        <p className="text-sm font-medium text-gray-800">
-                          {wordCapitalize(
-                            [
-                              checkedBeneficiary?.beneficiaries[0]
-                                .beneficiaryFirstName,
-                              checkedBeneficiary?.beneficiaries[0]
-                                .beneficiaryMiddleName,
-                              checkedBeneficiary?.beneficiaries[0]
-                                .beneficiaryLastName,
-                            ]
-                              ?.filter(Boolean)
-                              ?.join(" ")
-                          ) ?? ""}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Mobile Number</p>
-                        <p className="text-sm font-medium text-gray-800">
-                          {checkedBeneficiary?.beneficiaries[0]
-                            .beneficiaryMobile || "N/A"}
-                        </p>
-                      </div>
                     </div>
-                    {/* <div>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-8">
+                        <div>
+                          <p className="text-sm text-gray-500">
+                            Beneficiary Name
+                          </p>
+                          <p className="text-sm font-medium text-gray-800">
+                            {wordCapitalize(
+                              [
+                                checkedBeneficiary?.beneficiaries[0]
+                                  .beneficiaryFirstName,
+                                checkedBeneficiary?.beneficiaries[0]
+                                  .beneficiaryMiddleName,
+                                checkedBeneficiary?.beneficiaries[0]
+                                  .beneficiaryLastName,
+                              ]
+                                ?.filter(Boolean)
+                                ?.join(" ")
+                            ) ?? ""}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Mobile Number</p>
+                          <p className="text-sm font-medium text-gray-800">
+                            {checkedBeneficiary?.beneficiaries[0]
+                              .beneficiaryMobile || "N/A"}
+                          </p>
+                        </div>
+                      </div>
+                      {/* <div>
                                    <p className="text-sm text-gray-500">
                                      Account Number
                                    </p>
@@ -335,26 +404,26 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                                        : "N/A"}
                                    </p>
                                  </div> */}
-                    <div>
-                      <p className="text-sm text-gray-500">
-                        Bank Name & Account Number
-                      </p>
-                      <p className="text-sm font-medium text-gray-800">
-                        {checkedBeneficiary?.bankName} •{" "}
-                        {checkedBeneficiary?.accountNumber || "N/A"}
-                      </p>
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          Bank Name & Account Number
+                        </p>
+                        <p className="text-sm font-medium text-gray-800">
+                          {checkedBeneficiary?.bankName} •{" "}
+                          {checkedBeneficiary?.accountNumber || "N/A"}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-                {/* {transType !== "FW" &&
+                  {/* {transType !== "FW" &&
                   !(transType === "CC" && senderData.isAccountVerified) &&
                   !checkedBeneficiary.isAccountVerified && (
                     <> */}
-                {!isVerified && <TransferNotice />}
-                {/* </>
+                  {!isVerified && <TransferNotice />}
+                  {/* </>
                   )} */}
-              </div>
-            )}
+                </div>
+              )}
 
             <div className="space-y-2 mt-3 border-2 rounded-xl">
               <div className="max-h-[200px] overflow-y-auto">
@@ -368,7 +437,7 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {slab?.slabDetails.map((item: any, index: number) => (
+                    {slab?.slabDetails?.map((item: any, index: number) => (
                       <tr key={index} className="border-b last:border-b-0">
                         <td className="p-1">{item.slabSequence ?? "-"}</td>
                         <td className="p-1">
@@ -400,8 +469,13 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
               <SwitchGroup
                 options={[
                   {
-                    label: "Tab 1",
-                    value: "tab1",
+                    value: "IMPS",
+                    label: "IMPS",
+                    onClick: () => {},
+                  },
+                  {
+                    value: "NEFT",
+                    label: "NEFT",
                     onClick: () => {},
                   },
                 ]}
@@ -419,12 +493,30 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                 <div className="flex-1">
                   <div className="w-full flex justify-center flex-col gap-y-0">
                     <InputField
-                      control={method.control}
+                      control={control}
+                      errors={errors}
+                      rules={{
+                        required: "Request Amount is required",
+                        min: {
+                          value: slab?.limitDetails?.minValue || 0,
+                          message: `Request Amount must be at least ₹${
+                            slab?.limitDetails?.minValue || 0
+                          }`,
+                        },
+                        max: {
+                          value: slab?.limitDetails?.maxValue || Infinity,
+                          message: `Request Amount cannot exceed ₹${
+                            slab?.limitDetails?.maxValue || "unknown"
+                          }`,
+                        },
+                      }}
                       names="requestAmt"
                       type="number"
                       label="Request Amount"
                       placeHolder="0.00"
-                      onChange={(value) => setRequestAmount(value)}
+                      onChange={(value) => {
+                        setRequestAmount(value || "");
+                      }}
                     >
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                         ₹
@@ -436,7 +528,7 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                 <div className="flex-1">
                   <div className="w-full flex flex-col gap-y-0">
                     <InputField
-                      control={method.control}
+                      control={control}
                       names="charges"
                       type="number"
                       label="Charges"
@@ -465,17 +557,18 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                 )}
               </div>
 
-              {selectedService?.label !== QuickLinksType?.CC && (
-                <InputField
-                  wrapBorder
-                  type="number"
-                  control={method.control}
-                  names="cardDigit"
-                  label="First 6 Digits of Your Card"
-                  maxLength={6}
-                  placeHolder="XXXX XX"
-                />
-              )}
+              {selectedService?.label !== QuickLinksType?.CC &&
+                selectedService?.label !== QuickLinksType?.FW && (
+                  <InputField
+                    wrapBorder
+                    type="number"
+                    control={control}
+                    names="cardDigit"
+                    label="First 6 Digits of Your Card"
+                    maxLength={6}
+                    placeHolder="XXXX XX"
+                  />
+                )}
             </div>
 
             <div className=" grid grid-cols-2 gap-2 mt-4">
@@ -495,7 +588,10 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
               )}
             </div>
 
-            {selectedService?.label !== QuickLinksType?.CC && <SlipButtons />}
+            {selectedService?.label !== QuickLinksType?.CC &&
+            selectedService?.label !== QuickLinksType?.FW ? (
+              <SlipButtons />
+            ) : null}
 
             <div className="mt-8 flex items-center justify-end space-x-4">
               <button
@@ -507,8 +603,22 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
               </button>
               <button
                 type="button"
-                className="px-6 py-2.5 bg-[#4b5a9f] text-white text-sm font-medium rounded-lg hover:bg-opacity-90 transition-all duration-200 shadow-lg shadow-indigo-200"
-                onClick={() => {}}
+                disabled={
+                  Number(requestAmount) <= 0 ||
+                  Number(requestAmount) <
+                    Number(slab?.limitDetails?.minValue) ||
+                  Number(requestAmount) > Number(slab?.limitDetails?.maxValue)
+                }
+                className={clsx(
+                  "!px-6 !py-2.5 text-sm font-medium rounded-lg transition-all duration-200 shadow-lg",
+                  Number(requestAmount) <= 0 ||
+                    Number(requestAmount) <
+                      Number(slab?.limitDetails?.minValue) ||
+                    Number(requestAmount) > Number(slab?.limitDetails?.maxValue)
+                    ? "bg-gray-400 text-gray-800 cursor-not-allowed shadow-none"
+                    : "bg-[#4b5a9f] text-white hover:bg-opacity-90 shadow-indigo-200"
+                )}
+                onClick={onSubmit}
               >
                 Proceed to Transfer
               </button>

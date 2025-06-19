@@ -1,10 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { AgentAccountProps, PennyDropIProps } from "@/types"
 import { request } from "./axios"
 
 export const getService = () => {
     return request<any>({
         url: "data",
         method: "GET",
+    })
+}
+
+export const getPennyDrop = (body: PennyDropIProps) => {
+    return request<any>({
+        url: "/api/v1/penny-drop",
+        method: "POST",
+        data: body
+    })
+}
+
+export const getAgentAccount = (body: AgentAccountProps) => {
+    return request<any>({
+        url: "/api/v1/agent/account",
+        method: "POST",
+        data: body
     })
 }
 

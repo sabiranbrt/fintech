@@ -167,7 +167,7 @@ const SelectCusOpt = ({
                           : "hover:bg-gray-100"
                       }`}
                     >
-                      {`${bank?.bankName} (${bank?.ifsc}) ${bank.mode}`}
+                      {`${bank?.bankName} (${bank?.ifsc}) ${bank.mode ?? ""}`}
                     </li>
                   );
                 })}

@@ -1,9 +1,12 @@
+import { encryptRequestBody } from "@/libs/encryptBody";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface DynamicRequest {
   url: string;
   method: "GET" | "POST";
   params?: Record<string, any>;
   headers?: any;
+  body?: Record<string, unknown> | { encryptedKey: string | false; encryptedBody: string } | null;
 }
 
 type EndpointConfig = {
@@ -12,6 +15,7 @@ type EndpointConfig = {
   enc?: boolean;
   headers?: any;
   queryParams?: string[];
+  body?: any;
 };
 
 type EndPointsMap = Record<string, EndpointConfig>;
@@ -48,20 +52,43 @@ export function getDynamicRequest(
   // 3. Resolve headers
   const resolvedHeaders = config.headers
     ? Object.fromEntries(
-        Object.entries(config.headers).map(([k, v]: any) => [
-          k,
-          typeof v === "string" ? v.replace("{{urn}}", params.urn || "") : v,
-        ])
-      )
+      Object.entries(config.headers).map(([k, v]: any) => [
+        k,
+        typeof v === "string" ? v.replace("{{urn}}", params.urn || "") : v,
+      ])
+    )
     : {};
 
   // 4. Merge with custom headers
   const mergedHeaders = { ...resolvedHeaders, ...customHeaders };
+
+  // 5. Build request body for POST requests
+  let requestBody: any = null;
+  if (config.method === "POST" && config.body?.length) {
+    requestBody = {};
+    config.body.forEach((key: any) => {
+      if (params[key] !== undefined && params[key] !== null) {
+        requestBody![key] = params[key];
+      }
+    });
+    // Apply encryption if enc is true
+    if (config.enc) {
+      const encrypted = encryptRequestBody(requestBody);
+      requestBody = {
+        encryptedKey: encrypted.encryptedKey,
+        encryptedBody: encrypted.encryptedBody,
+      };
+    }
+    if (!mergedHeaders["Content-Type"]) {
+      mergedHeaders["Content-Type"] = "application/json";
+    }
+  }
 
   return {
     url: finalUrl,
     method: config.method.toUpperCase() as "GET" | "POST",
     params,
     headers: mergedHeaders,
+    body: requestBody,
   };
 }

@@ -36,7 +36,6 @@ const BeneficiaryDetails = ({
   };
   const methods = useForm<any>();
 
-
   const { selectedService } = useSelector((state: RootState) => state.service);
   const [expandedAccount, setExpandedAccount] = useState(null);
 
@@ -99,7 +98,7 @@ const BeneficiaryDetails = ({
         <p className="block font-medium my-2">{tableName}</p>
         <div className=" overflow-y-auto min-h-0 h-[90%]">
           {filteredAccounts && filteredAccounts.length > 0 ? (
-            filteredAccounts.map((account: any, index: number) => {
+            filteredAccounts?.map((account: any, index: number) => {
               const isExpanded = expandedAccount === account.accountNumber;
               return (
                 <div key={index} className="mb-2 border rounded ">
@@ -297,7 +296,7 @@ const BeneficiaryDetails = ({
         </div>
       </div>
       {isModalOpen === "addAccount" && (
-        <AddBankAccount handleCancel={handleCancel} />
+        <AddBankAccount handleCancel={handleCancel} senderMobileNumber={senderDataFW?.panCardData?.mobile_no} />
       )}
       {isModalOpen === "beneficiaryAcc" && (
         <RegisterModal

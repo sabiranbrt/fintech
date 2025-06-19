@@ -208,8 +208,6 @@ const SelectField = ({
             )
           : options.find((o) => o[valueKey] === field.value) ?? null;
 
-        console.log("selectedValue", selectedValue);
-
         return (
           <div
             data-tooltip-id={`tooltip-${placeHolder}`}

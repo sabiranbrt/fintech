@@ -32,6 +32,7 @@ interface IProp {
   ActionFetch?: string;
   placeHolderSize?: string;
   textClassName?: string;
+  disablePaste?: boolean;
   focusBorderColor?: string;
   placeHoldercolor?: string;
   focusErrorBorderColor?: string;
@@ -54,6 +55,7 @@ const InputField = ({
   disabled,
   txnId,
   registeredName,
+  disablePaste = true,
   errors = {},
   wrapBorder,
   label,
@@ -152,6 +154,11 @@ const InputField = ({
                   const value = e.target.value;
                   field.onChange(value);
                   onChange?.(value);
+                }}
+                onPaste={(e) => {
+                  if (disablePaste) {
+                    e.preventDefault();
+                  }
                 }}
                 onInput={
                   fieldType === "number"

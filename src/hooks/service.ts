@@ -1,6 +1,6 @@
-import { getService } from "@/libs"
+import { getAgentAccount, getPennyDrop, getService } from "@/libs"
 import { axiosInstance } from "@/libs/axios"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 
 export const useServicesList = () => {
     const serviceList = useQuery({
@@ -10,6 +10,35 @@ export const useServicesList = () => {
     return serviceList
 }
 
+export const usePennyDrop = () => {
+    const query = useMutation({
+        mutationFn: getPennyDrop,
+        onError: (error) => {
+            console.log("error", error)
+        },
+
+        onSuccess: (response) => {
+            const data = response
+            console.log("data", data)
+        },
+    })
+    return query
+}
+
+export const useAgentAccount = () => {
+    const query = useMutation({
+        mutationFn: getAgentAccount,
+        onError: (error) => {
+            console.log("error", error)
+        },
+
+        onSuccess: (response) => {
+            const data = response
+            console.log("data", data)
+        },
+    })
+    return query
+}
 
 export const useAuthToken = () => {
     const token = useQuery({
@@ -19,13 +48,13 @@ export const useAuthToken = () => {
                 "https://edgeuat.finkeda.com/apigateway/fnkdBillPayments/paymentToken",
                 {
                     headers: {
-                        Authorization:"Basic Zmlua0JpbGxQYXk6RiFpbmskI0JpbGxQYXk=",
+                        Authorization: "Basic Zmlua0JpbGxQYXk6RiFpbmskI0JpbGxQYXk=",
                         scope: 'dmt',
                         agentId: "9241980104198913",
                     },
                 }
             );
-            return response.data; 
+            return response.data;
         },
     });
 

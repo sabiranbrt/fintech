@@ -10,28 +10,106 @@ import InputField from "./inputField";
 import PassField from "./passfield";
 import SelectCusOpt from "./selectCusOpt.tsx";
 import SelectField from "./selectfield";
+import { useEffect, useState } from "react";
+import { useAgentAccount, usePennyDrop } from "@/hooks/service";
 
 interface IProps {
   handleCancel: () => void;
+  senderMobileNumber: string;
+}
+interface PennyDropResult {
+  registeredName?: string;
+  transID?: string;
+  accountNo?: string;
+  ifsc?: string;
+  status?: string;
+  isVerified?: boolean;
 }
 
-const AddBankAccount = ({ handleCancel }: IProps) => {
-  const methods = useForm<any>({
+const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
+  const [pennyDropResult, setPennyDropResult] =
+    useState<PennyDropResult | null>(null);
+
+  const {
+    control,
+    setValue,
+    getValues,
+    watch,
+    formState: { errors },
+  } = useForm<any>({
     mode: "onChange",
   });
 
- const { endpoints } = useSelector((state: RootState) => state.endPoints);
+  const bankDetails = watch("bankName");
+  const accountNumber = watch("accountNumber1");
+
+  useEffect(() => {
+    if (bankDetails?.ifsc) {
+      setValue("ifsc", bankDetails.ifsc);
+    }
+  }, [bankDetails?.ifsc, setValue]);
+
+  const { endpoints } = useSelector((state: RootState) => state.endPoints);
   const { selectedService } = useSelector((state: RootState) => state.service);
 
   const stepName = selectedService?.sequence?.[1];
   const request = getDynamicRequest(stepName ?? "", endpoints ?? {});
 
-  const { data ,refetch} = useDynamicQuery<any>(request!, {
+  const { data, refetch } = useDynamicQuery<any>(request!, {
     enabled: !!request,
     queryKey: [stepName],
   });
 
   const bank = data?.apiResponseData?.data;
+
+  const { mutateAsync: pennyMutant } = usePennyDrop();
+  const { mutateAsync: agentAccountMutant } = useAgentAccount();
+
+  const handlePennyVerified = async () => {
+    try {
+      const response = await pennyMutant({
+        bankIfsc: bankDetails?.ifsc,
+        bankAccountNumber: getValues("accountNumber1"),
+        mobileNumber: senderMobileNumber,
+        senderMobileNumber: senderMobileNumber,
+        type: "SENDER",
+      });
+      
+      const result = response?.apiResponseData?.data;
+      setPennyDropResult({
+        registeredName: result.registeredName,
+        transID: result.transID,
+        accountNo: result.accountNo,
+        ifsc: result.ifsc,
+        status: result.status,
+        isVerified: result.status === "COMPLETED",
+      });
+      // Set the registeredName in accountNameAsPerBank field
+      if (result.status === "COMPLETED" && result.registeredName) {
+        setValue("accountNameAsPerBank", result.registeredName);
+      }
+    } catch (err) {
+      console.log("error", err);
+    }
+  };
+
+  const handleAddBank = async () => {
+    try {
+      const response = await agentAccountMutant({
+        accountName: pennyDropResult?.registeredName ?? "",
+        accountNumber: getValues("accountNumber1"),
+        accountIfsc: bankDetails.ifsc,
+        bankName: getValues("bankName")?.bankName,
+        accountType: getValues("accountType"),
+        accountRegisterFor: "",
+        accountSupportingImage: "string",
+      });
+      const result = response?.apiResponseData?.data;
+      console.log("result",result)
+    } catch (err) {
+      console.log("error", err);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -49,9 +127,10 @@ const AddBankAccount = ({ handleCancel }: IProps) => {
             <div className="flex flex-col gap-5 w-full justify-center">
               <div className="relative">
                 <SelectCusOpt
-                  control={methods.control}
+                  control={control}
+                  errors={errors}
                   names="bankName"
-                  label={"Bank Number"}
+                  label={"Bank Name"}
                   disabled={false}
                   currentIndex={0}
                   optionsData={bank}
@@ -60,16 +139,27 @@ const AddBankAccount = ({ handleCancel }: IProps) => {
               </div>
               <div className="relative mt-3">
                 <PassField
-                  control={methods.control}
+                  control={control}
+                  errors={errors}
                   names="accountNumber1"
                   label=" Account Number"
+                  disablePaste
+                  fieldType="number"
                   placeHolder="Account Number"
+                  rules={{
+                    required: "Account Number is required",
+                    pattern: {
+                      value: /^\d{8,18}$/,
+                      message: "Account Number must be between 8 and 18 digits",
+                    },
+                  }}
                 />
               </div>
 
               <div className="relative mt-3">
                 <InputField
-                  control={methods.control}
+                  control={control}
+                  errors={errors}
                   names={"accountNameAsPerBank"}
                   label="Name as per Bank"
                   placeHolder="Enter Name as per Bank"
@@ -80,8 +170,9 @@ const AddBankAccount = ({ handleCancel }: IProps) => {
             <div className="flex flex-col gap-5 w-full justify-center">
               <div className="relative">
                 <InputField
-                  control={methods.control}
-                  names="accountIfsc"
+                  control={control}
+                  errors={errors}
+                  names="ifsc"
                   label="Bank IFSC"
                   placeHolder="Bank IFSC"
                   disabled={false}
@@ -91,17 +182,29 @@ const AddBankAccount = ({ handleCancel }: IProps) => {
 
               <div className="relative -mt-2">
                 <InputField
-                  control={methods.control}
+                  control={control}
+                  errors={errors}
                   names="accountNumber"
+                  disablePaste
                   label="Confirm Account Number"
                   placeHolder="Confirm Account Number"
                   ActionFetch="true"
+                  rules={{
+                    validate: (value: string) =>
+                      value === accountNumber || "Account numbers do not match",
+                  }}
+                  handleVerifyClick={handlePennyVerified}
+                  isPennyDropVerified={pennyDropResult?.isVerified}
+                  disabled={pennyDropResult?.isVerified}
+                  txnId={pennyDropResult?.transID}
+                  registeredName={pennyDropResult?.registeredName}
                 />
               </div>
 
               <div>
                 <SelectField
-                  control={methods.control}
+                  control={control}
+                  errors={errors}
                   placeHolder="Select Account Type"
                   names="accountType"
                   label="Account Type"
@@ -109,7 +212,7 @@ const AddBankAccount = ({ handleCancel }: IProps) => {
                     {
                       label: "Current",
                       value: "current",
-                      default: true
+                      default: true,
                     },
                     { label: "Saving", value: "saving" },
                   ]}
@@ -120,9 +223,9 @@ const AddBankAccount = ({ handleCancel }: IProps) => {
 
           <div className="text-center">
             <SubmitBtn
-              onClick={() => {}}
+              onClick={handleAddBank}
               isLoading={false}
-              isPennyDropVerified={false}
+              isPennyDropVerified={pennyDropResult?.isVerified ?? false}
             />
           </div>
         </form>

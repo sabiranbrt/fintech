@@ -11,6 +11,7 @@ interface IProp {
   errors?: FieldErrors<any>;
   names: string;
   label: string;
+  rules: any;
   placeHolder?: string;
   inputHeight?: string;
   inputWidth?: string;
@@ -27,6 +28,7 @@ interface IProp {
   InputFocus?: () => void;
   InputBlur?: () => void;
   readOnly?: boolean;
+  disablePaste?: boolean;
   type?: string;
   validation?: ValidationProps;
 }
@@ -36,6 +38,7 @@ const PassField = ({
   errors = {},
   ValidClassName,
   label,
+  rules,
   focusShadowColor,
   focusErrorBgColor,
   focusErrorShadowColor,
@@ -43,10 +46,12 @@ const PassField = ({
   placeHoldercolor,
   focusBorderColor,
   validation,
+  disablePaste = true,
   placeHolderSize,
   focusErrorBorderColor,
   names,
   placeHolder,
+  fieldType,
   InputFocus,
   InputBlur,
   readOnly,
@@ -66,14 +71,13 @@ const PassField = ({
 
   // const inputType =
   //   fieldType === "password" ? (isHolding ? "password" : "text") : fieldType;
-  const inputType =
-    isHolding ? "password" : "text"
+  const inputType = isHolding ? "password" : "text";
 
   return (
     <Controller
       control={control}
       name={names}
-      rules={ValidationRules(validation)}
+      rules={rules ?? ValidationRules(validation)}
       render={({ field }) => {
         return (
           <div className="relative">
@@ -115,12 +119,27 @@ const PassField = ({
                 readOnly={readOnly}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
+                onPaste={(e) => {
+                  if (disablePaste) {
+                    e.preventDefault();
+                  }
+                }}
                 disabled={field.value ? readOnly : false}
                 type={inputType}
                 onChange={(e) => {
                   const value = e.target.value;
                   field.onChange(value);
                 }}
+                onInput={
+                  fieldType === "number"
+                    ? (e) => {
+                        let value = e.currentTarget.value;
+                        // Allow only digits
+                        value = value.replace(/[^0-9]/g, "");
+                        e.currentTarget.value = value; // Update visible input
+                      }
+                    : undefined
+                }
               />
               <div
                 className="absolute top-3 right-3"

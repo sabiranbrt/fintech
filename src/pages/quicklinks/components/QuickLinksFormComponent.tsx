@@ -107,7 +107,7 @@ const QuickLinksFormComponent = () => {
 
   const agentsDataForBeneficiary = data?.apiResponseData?.data;
   const agentsData = data?.apiResponseData?.data?.panCardData;
-
+  
   return (
     <div className="flex flex-col h-full min-h-0">
       <div>{selectedService || isText ? <BackButton /> : null}</div>
@@ -193,6 +193,7 @@ const QuickLinksFormComponent = () => {
             {selectedService?.label === QuickLinksType.FW && (
               <SenderDetails showBankAcc={false} senderData={agentsData} />
             )}
+            
           </div>
           <div className="flex-1 h-full min-h-0">
             {selectedService?.label === QuickLinksType.FW ? (

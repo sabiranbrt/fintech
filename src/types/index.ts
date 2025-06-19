@@ -16,26 +16,26 @@ export enum FieldTypes {
 
 
 export enum QuickLinksType {
-    CC = "Credit Card Bill Payment",
-    FW = "Fund Withdrawal",
-    RP = "Rent Payment",
-    EF = "Education Fees",
-    FS = "Fund Settlement",
-    RS = "Register Sender",
-    T = "Transactions",
-    TP = "Total Payout",
-    LW = "Load Wallet",
-    AL = "Account Ledger",
-    RM = "Relationship Manager",
-    RB = "Register Beneficiary"
+  CC = "Credit Card Bill Payment",
+  FW = "Fund Withdrawal",
+  RP = "Rent Payment",
+  EF = "Education Fees",
+  FS = "Fund Settlement",
+  RS = "Register Sender",
+  T = "Transactions",
+  TP = "Total Payout",
+  LW = "Load Wallet",
+  AL = "Account Ledger",
+  RM = "Relationship Manager",
+  RB = "Register Beneficiary"
 }
 
 export interface DynamicRequest {
-    url: string;
-    method: AxiosRequestConfig['method'];
-    params?: Record<string, unknown>;
-    headers?: any;
-    data?: unknown;
+  url: string;
+  method: AxiosRequestConfig['method'];
+  params?: Record<string, unknown>;
+  headers?: any;
+  data?: unknown;
 }
 
 export interface ValidationProps {
@@ -46,4 +46,22 @@ export interface ValidationProps {
 export interface Validations {
   regex: string
   errorMessage?: string;
+}
+
+
+export interface PennyDropIProps {
+  bankIfsc: string,
+  bankAccountNumber: string,
+  mobileNumber: string,
+  senderMobileNumber: string,
+  type: string,
+}
+export interface AgentAccountProps {
+  accountName: string,
+  accountNumber: string
+  accountIfsc: string,
+  bankName: string,
+  accountType: string,
+  accountRegisterFor: string,
+  accountSupportingImage: string
 }
