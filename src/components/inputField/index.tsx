@@ -44,6 +44,7 @@ interface IProp {
   type?: string;
   onChange?: (value: string) => void;
   children?: React.ReactNode;
+  fieldType?: string;
   wrapBorder?: boolean;
 }
 
@@ -68,6 +69,7 @@ const InputField = ({
   ActionFetch,
   placeHolder,
   ValidClassName,
+  fieldType,
   readOnly,
   children,
   focusShadowColor,
@@ -81,7 +83,6 @@ const InputField = ({
   onChange,
   placeHoldercolor,
   textClassName,
-  type,
 }: IProp) => {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -147,12 +148,33 @@ const InputField = ({
                 defaultValue={field.value ?? value}
                 disabled={disabled}
                 readOnly={readOnly}
-                type={type}
                 onChange={(e) => {
                   const value = e.target.value;
                   field.onChange(value);
                   onChange?.(value);
                 }}
+                onInput={
+                  fieldType === "number"
+                    ? (e) => {
+                        let value = e.currentTarget.value;
+
+                        // Allow only digits
+                        value = value.replace(/[^0-9]/g, "");
+
+                        // Ensure the first digit is not 0–5
+                        if (value.length > 0 && /^[0-5]/.test(value)) {
+                          value = value.slice(1);
+                        }
+
+                        // Clear the input if any digit repeats consecutively 6 times
+                        if (/(.)\1{5}/.test(value)) {
+                          value = "";
+                        }
+
+                        e.currentTarget.value = value; // Update visible input
+                      }
+                    : undefined
+                }
               />
             </div>
 

@@ -31,11 +31,11 @@ const BeneficiaryDetails = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState("");
 
-  const methods = useForm<any>();
-
   const handleCancel = () => {
     setIsModalOpen("");
   };
+  const methods = useForm<any>();
+
 
   const { selectedService } = useSelector((state: RootState) => state.service);
   const [expandedAccount, setExpandedAccount] = useState(null);

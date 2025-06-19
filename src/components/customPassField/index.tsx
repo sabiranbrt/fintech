@@ -44,16 +44,17 @@ const CustomPassField = ({
   focusShadowColor,
   focusErrorBgColor,
   focusErrorShadowColor,
-  onPaste,
   onChange,
   textClassName,
   placeHoldercolor,
   focusBorderColor,
+  fieldType = "text",
   placeHolderSize,
   textSecurity = "X",
   validation,
   focusErrorBorderColor,
   names,
+  onPaste,
   placeHolder,
   InputFocus,
   InputBlur,
@@ -73,12 +74,33 @@ const CustomPassField = ({
     InputBlur?.();
   };
 
-  //   const inputType =
-  //     fieldType === "password"
-  //       ? tooglePassword
-  //         ? "password"
-  //         : "text"
-  //       : fieldType;
+  const formatAccountNumber = (value: string, show: boolean) => {
+    if (!value) return "";
+    const cleaned = value.replace(/\D/g, "");
+    const match = cleaned.match(/^(\d{0,4})(\d{0,4})(\d{0,4})(\d{0,4})$/);
+    if (!match) return "";
+    const groups = [match[1], match[2], match[3], match[4]].filter(Boolean);
+    let formatted = groups.join(" ");
+    if (!show) {
+      const last4 = groups[groups.length - 1] || "";
+      formatted = formatted.replace(/\d/g, (match, index) =>
+        index >= formatted.length - last4.length ? match : "X"
+      );
+    }
+    return formatted;
+  };
+
+  const getDisplayValue = () => {
+    if (fieldType === "card") return formatAccountNumber(realValue, isHolding);
+    return !isHolding ? textSecurity.repeat(realValue.length) : realValue;
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    if (onPaste) return onPaste(e);
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "");
+    setRealValue(pasted.slice(0, 16));
+    e.preventDefault();
+  };
 
   return (
     <Controller
@@ -124,11 +146,10 @@ const CustomPassField = ({
                 placeholder={!isFocused ? placeHolder : ""}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                value={
-                  !isHolding ? textSecurity.repeat(realValue.length) : realValue
-                }
+                value={getDisplayValue()}
+                maxLength={fieldType === "card" ? 19 : undefined}
                 disabled={field.value ? readOnly : false}
-                type={"text"}
+                type={fieldType}
                 onChange={(e) => {
                   const input = e.target.value;
                   const prevLength = realValue.length;
@@ -145,11 +166,18 @@ const CustomPassField = ({
                     onChange?.(newValue);
                   }
                 }}
-                onPaste={(e) => {
-                  if (onPaste) {
-                    onPaste(e);
-                  } else {
-                    e.preventDefault();
+                onPaste={handlePaste}
+                onKeyDown={(e) => {
+                  if (fieldType === "card") {
+                    if (e.key === "Backspace" || e.key === "Delete") {
+                      e.preventDefault(); // Prevent default behavior
+
+                      // Remove last digit from realValue on backspace or delete
+                      const newVal = realValue.slice(0, -1);
+                      setRealValue(newVal);
+                      field.onChange(newVal);
+                      onChange?.(newVal);
+                    }
                   }
                 }}
               />

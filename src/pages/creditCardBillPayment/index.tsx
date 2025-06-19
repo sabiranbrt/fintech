@@ -1,12 +1,15 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BtnPrimary from "@/components/buttons/BtnPrimary";
 import CustomPassField from "@/components/customPassField";
 import InputField from "@/components/inputField";
+import PaymentModal from "@/components/paymentModal";
 import SelectCusOpt from "@/components/selectCusOpt.tsx";
 import { useDynamicQuery } from "@/hooks/dynamicQuery";
 import { setFormSubmission } from "@/redux/slices/customFormSlice";
 import { RootState } from "@/redux/store";
 import { getDynamicRequest } from "@/utils/dynamicRequest";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -15,34 +18,33 @@ interface IProps {
 }
 
 const CreditCardBillPayment = ({ senderData }: IProps) => {
+  const [isModalOpen, setIsModalOpen] = useState("");
+
+  const handleCancel = () => {
+    setIsModalOpen("");
+  };
+
   const dispatch = useDispatch();
   // Handle paste events
 
   const { endpoints } = useSelector((state: RootState) => state.endPoints);
   const { selectedService } = useSelector((state: RootState) => state.service);
-  const { value } = useSelector((state: RootState) => state.form);
+  // const { value } = useSelector((state: RootState) => state.form);
 
   const stepName = selectedService?.sequence?.[1];
-  const request = getDynamicRequest(stepName ?? "", endpoints ?? {});
-
-  const { data, refetch } = useDynamicQuery<any>(request!, {
-    enabled: !!request,
-    queryKey: [stepName],
-  });
-
-  const bank = data?.apiResponseData?.data;
 
   const {
     control,
     handleSubmit,
-    setValue,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<any>({
     mode: "onChange",
   });
 
   const onSubmit = (data: any) => {
+    setIsModalOpen("creditCard");
     dispatch(
       setFormSubmission({
         value: data,
@@ -50,22 +52,26 @@ const CreditCardBillPayment = ({ senderData }: IProps) => {
     );
   };
 
-  const formatAccountNumber = (value: string) => {
-    if (!value) return "";
+  const bankDetails = watch("bankName");
 
-    // Remove all non-digit characters
-    const cleaned = value.replace(/\D/g, "");
+  useEffect(() => {
+    if (bankDetails?.ifsc) {
+      setValue("IFSC", bankDetails.ifsc);
+    }
+  }, [bankDetails?.ifsc]);
 
-    // Split into chunks of max 4 digits
-    const groups = cleaned.match(/.{1,4}/g);
+  const request = getDynamicRequest(stepName ?? "", endpoints ?? {}, {
+    type: selectedService?.alias,
+    cardType: "credit",
+    transferType: bankDetails?.mode,
+  });
 
-    // Join with space
-    return groups ? groups.join(" ") : "";
-  };
+  const { data, refetch } = useDynamicQuery<any>(request!, {
+    enabled: !!request,
+    queryKey: [stepName],
+  });
 
-  
-  const iFSCvalue = watch("bankName")
-  console.log("iFSCvalue", iFSCvalue); 
+  const bank = data?.apiResponseData?.data;
 
   return (
     <>
@@ -103,15 +109,16 @@ const CreditCardBillPayment = ({ senderData }: IProps) => {
                 names="cardAccount"
                 control={control}
                 errors={errors}
+                fieldType="card"
                 rules={{
                   required: "Card number is required",
+                  pattern: {
+                    value: /^\d{16}$/,
+                    message: "Card number must be 16 digits",
+                  },
                 }}
                 label="Card Account Number"
                 placeHolder="XXXX XXXX XXXX XXXX"
-                onChange={(rawValue: string) => {
-                  const formattedValue = formatAccountNumber(rawValue);
-                  setValue("cardAccount", formattedValue);
-                }}
               />
             </div>
 
@@ -119,15 +126,29 @@ const CreditCardBillPayment = ({ senderData }: IProps) => {
               <InputField
                 control={control}
                 errors={errors}
-                rules={{ required: "Mobile number is required" }}
-                type="number"
+                rules={{
+                  required: "Mobile number is required",
+                  pattern: {
+                    value: /^[6-9]\d{9}$/,
+                    message: "Enter a valid 10-digit mobile number",
+                  },
+                }}
                 names="mobileNumber"
+                fieldType="number"
+                maxLength={10}
                 label="Mobile Number"
                 placeHolder="Enter Mobile Number"
               />
             </div>
             <BtnPrimary title="Proceed" />
           </form>
+          {isModalOpen === "creditCard" && (
+            <PaymentModal
+              handleCancel={handleCancel}
+              bankDetails={bankDetails?.mode}
+              senderData={senderData}
+            />
+          )}
         </div>
       ) : (
         <p>Loading sender details...</p>

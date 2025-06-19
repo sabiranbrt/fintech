@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import React, { useState } from "react";
+import { useState } from "react";
 
 interface SwitchOption {
   label: string;
@@ -27,6 +27,7 @@ const SwitchGroup = ({ options, defaultValue }: SwitchGroupProps) => {
             type="button"
             className={clsx(
               "px-3 py-2 rounded-md",
+              options.length > 1 ? "": "w-full" ,
               active
                 ? "bg-[#4b5a9f] text-white shadow-lg shadow-indigo-200"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200 flex-1 "

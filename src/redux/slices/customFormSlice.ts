@@ -1,26 +1,34 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+interface BankDetails {
+  bankName: {
+    bankName: string;
+    ifsc: string;
+    mode: string;
+  };
+  IFSC: string;
+  cardAccount: string;
+  mobileNumber: string;
+}
+
 interface FormState {
-  value: string | number | null;
+  cusVal: BankDetails | null;
 }
 
 const initialState: FormState = {
-  value: null,
+  cusVal: null,
 };
 
 const formSlice = createSlice({
   name: 'form',
   initialState,
   reducers: {
-    setFormSubmission: (
-      state,
-      action: PayloadAction<{ value: string | number }>
-    ) => {
-      state.value = action.payload.value;
+    setFormSubmission: (state, action: PayloadAction<{ value: BankDetails | null }>) => {
+      state.cusVal = action.payload.value;
     },
     resetForm: (state) => {
-      state.value = null;
+      state.cusVal = null;
     },
   },
 });

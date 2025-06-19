@@ -98,7 +98,7 @@
     },
     "getChargeDetails": {
       "method": "GET",
-      "url": "/api/v1/charges"
+      "url": "/api/v1/transaction/charge-detail"
     },
     "getAgent": {
       "method": "GET",
@@ -106,11 +106,6 @@
     },
     "getSlabDetails": {
       "method": "GET",
-      "queryParams": [
-        "type",
-        "cardType",
-        "transferType"
-      ],
       "enc": false,
       "url": "/api/v1/slab",
       "headers": {

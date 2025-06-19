@@ -146,24 +146,31 @@ const SelectCusOpt = ({
                 role="listbox"
                 className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg"
               >
-                {filteredOptions.map((bank, index) => (
-                  <li
-                    key={index}
-                    role="option"
-                    onMouseDown={() => {
-                      const label = bank
-                      setSearch(label);
-                      field.onChange(label);
-                    }}
-                    className={`p-2 cursor-pointer ${
-                      currentIndex === index
-                        ? "bg-gray-100"
-                        : "hover:bg-gray-100"
-                    }`}
-                  >
-                    {bank?.bankName}
-                  </li>
-                ))}
+                {filteredOptions.map((bank, index) => {
+                  return (
+                    <li
+                      key={index}
+                      role="option"
+                      onMouseDown={() => {
+                        const label = bank?.bankName;
+                        setSearch(label);
+                        field.onChange({
+                          bankName: bank.bankName,
+                          ifsc: bank.ifsc,
+                          mode: bank.mode
+                        });
+                        onChange?.(bank?.bankName);
+                      }}
+                      className={`p-2 cursor-pointer ${
+                        currentIndex === index
+                          ? "bg-gray-100"
+                          : "hover:bg-gray-100"
+                      }`}
+                    >
+                      {`${bank?.bankName} (${bank?.ifsc}) ${bank.mode}`}
+                    </li>
+                  );
+                })}
               </ul>
             )}
 
