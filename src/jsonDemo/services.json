@@ -19,6 +19,16 @@
       "key": "fundWithdrawal",
       "alias": "FW",
       "type": "payout",
+      "paymentMethods": [
+        {
+          "value": "IMPS",
+          "label": "IMPS"
+        },
+        {
+          "value": "NEFT",
+          "label": "NEFT"
+        }
+      ],
       "uploadSlip": true,
       "sequence": [
         "getAgent",
@@ -35,6 +45,12 @@
       "alias": "RP",
       "type": "payout",
       "uploadSlip": true,
+      "paymentMethods": [
+        {
+          "value": "Ik Credit Pay",
+          "label": "Rent Payment"
+        }
+      ],
       "sequence": [
         "getSender",
         "getbankList",

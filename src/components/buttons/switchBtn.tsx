@@ -4,7 +4,6 @@ import { useState } from "react";
 interface SwitchOption {
   label?: string; // Optional label, falls back to value if not provided
   value: string | undefined;
-  onClick?: () => void; // Optional onClick, defaults to no-op if not provided
 }
 
 interface SwitchGroupProps {
@@ -22,6 +21,7 @@ const SwitchGroup = ({
     defaultValue ?? options.find((opt) => opt.value !== undefined)?.value ?? ""
   );
 
+ 
   return (
     <div className="flex gap-2">
       {options
@@ -45,7 +45,6 @@ const SwitchGroup = ({
               onClick={() => {
                 setSelected(option.value);
                 onOptionClick?.(option.value);
-                option.onClick?.();
               }}
             >
               {option.label ?? String(option.value)}

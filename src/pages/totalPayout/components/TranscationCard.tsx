@@ -1,4 +1,5 @@
 import { PiCurrencyInr } from "react-icons/pi";
+import { BsCashStack } from "react-icons/bs";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface IProps {
@@ -17,7 +18,11 @@ const TransactionCard = ({ title, data }: IProps) => {
             {title.replace(/_/g, " ")}
           </h3>
           <div className="p-2 rounded-full bg-slate-100">
-            {Icon && <Icon className="w-6 h-6 text-slate-600" />}
+            {Icon ? (
+              <Icon className="w-6 h-6 text-slate-600" />
+            ) : (
+              <BsCashStack />
+            )}
           </div>
         </div>
       </div>

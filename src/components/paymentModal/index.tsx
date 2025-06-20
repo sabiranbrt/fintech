@@ -8,7 +8,7 @@ import { getDynamicRequest } from "@/utils/dynamicRequest";
 import { wordCapitalize } from "@/utils/wordCapitalize";
 import clsx from "clsx";
 import { toWords } from "number-to-words";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { MdOutlineVerified } from "react-icons/md";
 import { VscUnverified } from "react-icons/vsc";
@@ -34,6 +34,22 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
   const { cusVal } = useSelector((state: RootState) => state.form);
   const [requestAmount, setRequestAmount] = useState<string>("");
 
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
+    Array.isArray(selectedService?.paymentMethods) &&
+      selectedService.paymentMethods.length > 0
+      ? selectedService.paymentMethods[0].value
+      : "IMPS"
+  );
+  const switchOptions = (selectedService?.paymentMethods || []).map(
+    (method) => ({
+      value: method.value,
+      label: method.label,
+    })
+  );
+  const handlePaymentOption = (value: string) => {
+    setSelectedPaymentMethod(value);
+  };
+
   const isVerified = true;
   const {
     control,
@@ -48,33 +64,62 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
 
   const { mutate } = useDynamicMutation<any>();
 
-  const request = getDynamicRequest(stepName ?? "", endpoints ?? {}, {
-    type: selectedService?.alias,
-    cardType: "credit",
-    transferType: bankDetails,
-  });
+  const request = useMemo(() => {
+    return getDynamicRequest(stepName ?? "", endpoints ?? {}, {
+      type: selectedService?.alias,
+      cardType: "credit",
+      transferType:
+        selectedService?.label === QuickLinksType?.CC
+          ? bankDetails
+          : selectedService?.label === QuickLinksType?.FW ? selectedPaymentMethod : "IMPS",
+    });
+  }, [
+    stepName,
+    endpoints,
+    selectedService?.alias,
+    selectedService?.label,
+    selectedPaymentMethod,
+    bankDetails,
+  ]);
 
-  const requestCharge = getDynamicRequest(
-    chargeDetails ?? "",
-    endpoints ?? {},
-    {
+  const requestCharge = useMemo(() => {
+    return getDynamicRequest(chargeDetails ?? "", endpoints ?? {}, {
       charge: "0",
       amount: requestAmount,
       type: selectedService?.alias,
       ccType: "credit",
       selectedChargeType: "amount",
-      transferType: bankDetails,
-    }
-  );
+      transferType:
+        selectedService?.label === QuickLinksType?.CC
+          ? bankDetails
+          : selectedPaymentMethod,
+    });
+  }, [
+    chargeDetails,
+    endpoints,
+    selectedService?.alias,
+    selectedService?.label,
+    selectedPaymentMethod,
+    requestAmount,
+    bankDetails,
+  ]);
 
   const { data: slabs } = useDynamicQuery<any>(request!, {
-    enabled: !!request,
-    queryKey: [stepName],
+    enabled: !!request && (!!selectedPaymentMethod || !!bankDetails),
+    queryKey: [stepName, selectedPaymentMethod, bankDetails],
   });
 
   const { data: Charge } = useDynamicQuery<any>(requestCharge!, {
-    enabled: !!request && !!requestAmount,
-    queryKey: [chargeDetails, requestAmount],
+    enabled:
+      !!requestCharge &&
+      !!requestAmount &&
+      (!!selectedPaymentMethod || !!bankDetails),
+    queryKey: [
+      chargeDetails,
+      requestAmount,
+      selectedPaymentMethod,
+      bankDetails,
+    ],
   });
 
   const slab = slabs?.apiResponseData?.data;
@@ -466,20 +511,22 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
           {/* Right Section - Transfer Form */}
           <div className=" mt-2 px-6 pb-6 bg-gray-50 lg:bg-white lg:border-l border-gray-100">
             <div className="space-y-4 ">
-              <SwitchGroup
-                options={[
-                  {
-                    value: "IMPS",
-                    label: "IMPS",
-                    onClick: () => {},
-                  },
-                  {
-                    value: "NEFT",
-                    label: "NEFT",
-                    onClick: () => {},
-                  },
-                ]}
-              />
+              {selectedService?.label !== QuickLinksType?.CC && (
+                <SwitchGroup
+                  options={switchOptions}
+                  defaultValue={selectedPaymentMethod}
+                  onOptionClick={(value: any) => handlePaymentOption(value)}
+                />
+              )}
+              {selectedService?.label === QuickLinksType?.CC && (
+                <SwitchGroup
+                  options={[
+                    {
+                      value: bankDetails,
+                    },
+                  ]}
+                />
+              )}
 
               {/* Amount Input */}
 

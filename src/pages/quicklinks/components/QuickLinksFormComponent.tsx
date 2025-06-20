@@ -19,6 +19,7 @@ import TransactionsTabs from "@/pages/transaction";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
 import { getDynamicRequest } from "@/utils/dynamicRequest";
+import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { FaSyncAlt } from "react-icons/fa";
@@ -30,7 +31,6 @@ interface FormData {
 
 const QuickLinksFormComponent = () => {
   const [senderData, setSenderData] = useState<any | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const sendData = senderData?.apiResponseData?.data[0];
 
@@ -45,30 +45,29 @@ const QuickLinksFormComponent = () => {
     formState: { errors },
     watch,
     handleSubmit,
+    setError,
     setValue,
-  } = useForm<FormData>();
+  } = useForm<FormData>({
+    mode: "onChange",
+  });
 
   const mobileNumber = watch("mobileNumber");
   const { mutate } = useDynamicMutation<any>();
-  
+
   const stepName = selectedService?.sequence[0];
-  const request = getDynamicRequest(
-    stepName ?? "",
-    endpoints ?? {},{mobileNumber: mobileNumber }
-  );
+  const request = getDynamicRequest(stepName ?? "", endpoints ?? {}, {
+    mobileNumber: mobileNumber,
+  });
 
   const fetchSender = () => {
-    setIsLoading(true);
     mutate(request ?? { url: "", method: "GET" }, {
       onSuccess: (data: any) => {
         console.log("Mutation success:", data);
         setSenderData(data);
-        setIsLoading(false);
       },
       onError: (err: any) => {
         console.error("Mutation error:", err);
         setSenderData(null);
-        setIsLoading(false);
       },
     });
   };
@@ -107,7 +106,7 @@ const QuickLinksFormComponent = () => {
 
   const agentsDataForBeneficiary = data?.apiResponseData?.data;
   const agentsData = data?.apiResponseData?.data?.panCardData;
-  
+
   return (
     <div className="flex flex-col h-full min-h-0">
       <div>{selectedService || isText ? <BackButton /> : null}</div>
@@ -129,10 +128,19 @@ const QuickLinksFormComponent = () => {
                     name="mobileNumber"
                     rules={{
                       required: "Mobile number is required",
-                      pattern: {
-                        value: /^[6-9]\d{9}$/,
-                        message:
+                      validate: {
+                        validFormat: (value) =>
+                          /^[6-9]\d{0,9}$/.test(value) ||
                           "Enter a valid 10-digit mobile number starting with 6-9.",
+                        noSixIdenticalDigits: (value) =>
+                          !/(.)\1{5}/.test(value) ||
+                          "Mobile number cannot have a sequence of the same 6 digits.",
+                        notSixDigits: (value) =>
+                          value.length !== 6 ||
+                          "6-digit mobile numbers are not acceptable.",
+                        exactTenDigits: (value) =>
+                          value.length === 10 ||
+                          "Mobile number must be exactly 10 digits.",
                       },
                     }}
                     render={({ field }) => (
@@ -140,51 +148,62 @@ const QuickLinksFormComponent = () => {
                         <input
                           {...field}
                           type="tel"
+                          readOnly={(field.value?.length ?? 0) === 10}
                           placeholder="Mobile Number"
-                          className="my-1 inner-content px-3 py-1 focus:outline-none text-sm w-full border-2 rounded-md"
+                          className={clsx(
+                            "my-1 inner-content px-3 py-1 focus:outline-none text-sm w-full border-2 rounded-md",
+                            (field.value?.length ?? 0) === 10
+                              ? "border border-gray-400 bg-gray-200"
+                              : "border-gradient"
+                          )}
                           onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, "");
-                            console.log("Input value:", value);
-                            if (value.length <= 10) {
-                              field.onChange(value);
+                            const rawValue = e.target.value;
+                            const cleanedValue = rawValue.replace(/\D/g, "");
+
+                            if (
+                              cleanedValue.length === 1 &&
+                              !/^[6-9]$/.test(cleanedValue)
+                            ) {
+                              setError("mobileNumber", {
+                                type: "manual",
+                                message: "Mobile number must start with 6-9.",
+                              });
+                              return;
+                            }
+
+                            if (/(\d)\1{5}/.test(cleanedValue))
+                              return field.onChange("");
+
+                            if (cleanedValue.length <= 10) {
+                              field.onChange(cleanedValue);
                             }
                           }}
-                          value={field.value || ""}
                         />
                         {errors?.mobileNumber?.message && (
                           <div className="!mt-0.5 text-[10px] text-[#f94d44]">
                             <p>{String(errors.mobileNumber.message)}</p>
                           </div>
                         )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setValue("mobileNumber", "");
+                            setSenderData(null);
+                          }}
+                          className="absolute right-3 top-5 transform -translate-y-1/2"
+                          disabled={(field.value?.length ?? 0) !== 10}
+                        >
+                          <FaSyncAlt
+                            size={16}
+                            className="text-secondary-extra-dark"
+                          />
+                        </button>
                       </div>
                     )}
                   />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setValue("mobileNumber", "");
-                      setSenderData(null);
-                    }}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  >
-                    <FaSyncAlt
-                      size={16}
-                      className="text-secondary-extra-dark"
-                    />
-                  </button>
                 </div>
               </form>
             )}
-            {isLoading && <p>Loading sender data...</p>}
-            {senderData === null &&
-              mobileNumber?.length === 10 &&
-              !errors.mobileNumber &&
-              !isLoading && (
-                <p className="text-red-500">
-                  Failed to fetch sender data. Please try again.
-                </p>
-              )}
-
             {selectedService?.label === QuickLinksType.CC ||
             selectedService?.label === QuickLinksType.FS ||
             selectedService?.label === QuickLinksType.RP ? (
@@ -193,29 +212,49 @@ const QuickLinksFormComponent = () => {
             {selectedService?.label === QuickLinksType.FW && (
               <SenderDetails showBankAcc={false} senderData={agentsData} />
             )}
-            
           </div>
-          <div className="flex-1 h-full min-h-0">
-            {selectedService?.label === QuickLinksType.FW ? (
-              <FundWithdrawal  senderDataFW={agentsDataForBeneficiary}/>
-            ) : selectedService?.label === QuickLinksType.CC ? (
-              <CreditCardBill senderData={sendData} />
-            ) : selectedService?.label === QuickLinksType.FS ? (
-              <FundSettlement senderData={sendData} />
-            ) : selectedService?.label === QuickLinksType.RP ? (
-              <RentPayment senderData={sendData} />
-            ) : selectedService?.label === QuickLinksType.EF ? (
-              senderData ? (
+          {senderData?.apiResponseData?.data === "" ? (
+            <div className="flex-1 h-full min-h-0">
+              <div className="text-red-500 text-md font-semibold my-10 text-center bg-background ">
+                <div>Mobile number not found, kindly register yourself !</div>
+              </div>
+              <div className={`flex gap-12 justify-center`}>
+                <button
+                  onClick={() => {}}
+                  className="bg-primary text-white py-2 px-4 rounded-md"
+                  style={{
+                    border: "3px solid transparent",
+                    borderRadius: "8px", // Ensure border-radius is maintained
+                    borderImage: "linear-gradient(45deg, #4b5a9f, #4fb5b7) 3",
+                    backgroundClip: "border-box", // Keep the background clipped to the border
+                    WebkitMaskImage: "linear-gradient(white, white)", // Fix for some browsers
+                    boxShadow:
+                      "rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px",
+                  }}
+                >
+                  Initiate KYC
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 h-full min-h-0">
+              {selectedService?.label === QuickLinksType.FW ? (
+                <FundWithdrawal senderDataFW={agentsDataForBeneficiary} />
+              ) : selectedService?.label === QuickLinksType.CC ? (
+                <CreditCardBill senderData={sendData} />
+              ) : selectedService?.label === QuickLinksType.FS ? (
+                <FundSettlement senderData={sendData} />
+              ) : selectedService?.label === QuickLinksType.RP ? (
+                <RentPayment senderData={sendData} />
+              ) : selectedService?.label === QuickLinksType.EF ? (
                 <EducationFees senderData={sendData} />
-              ) : (
+              ) : selectedService?.label ? (
                 <EmptyMessage />
-              )
-            ) : selectedService?.label ? (
-              <EmptyMessage />
-            ) : (
-              <NoticeComponent />
-            )}
-          </div>
+              ) : (
+                <NoticeComponent />
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <>

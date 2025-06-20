@@ -46,11 +46,23 @@ const BeneficiaryDetails = ({
   };
 
   const filteredAccounts = useMemo(() => {
-    if (!senderData?.beneficiaries) return senderDataFW?.accounts;
-    return senderData.beneficiaries.filter((account: any) =>
-      account.bankName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [senderData?.beneficiaries, searchTerm, senderDataFW]);
+    const search = searchTerm.toLowerCase();
+
+    const accounts = senderData?.beneficiaries || senderDataFW?.accounts || [];
+
+    return accounts.filter((account: any) => {
+      const bankName = account.bankName?.toLowerCase() || "";
+      const accountNumber = account.accountNumber?.toLowerCase() || "";
+      const mobile = account.beneficiaryMobile?.toLowerCase() || "";
+      const ifsc = account.ifsc?.toLowerCase() || "";
+      return (
+        bankName.includes(search) ||
+        accountNumber.includes(search) ||
+        ifsc.includes(search) ||
+        mobile.includes(search)
+      );
+    });
+  }, [senderData?.beneficiaries, senderDataFW?.accounts, searchTerm]);
 
   return (
     <div className=" w-full p-4 shadow-md bg-white min-h-0 h-full">
@@ -122,7 +134,9 @@ const BeneficiaryDetails = ({
 
                           <div>
                             <h3 className="flex items-center gap-2 text-md font-medium text-grey-900">
-                              {account.bankName}
+                              {selectedService?.label === QuickLinksType?.FW
+                                ? account.bankName
+                                : `${account?.beneficiaryFirstName} ${account?.beneficiaryMiddleName} ${account?.beneficiaryLastName}`}
                               {account.defaultAccount && (
                                 <span className="flex items-center text-xs text-blue-500">
                                   <GrUserSettings className="mr-1" />
@@ -296,7 +310,10 @@ const BeneficiaryDetails = ({
         </div>
       </div>
       {isModalOpen === "addAccount" && (
-        <AddBankAccount handleCancel={handleCancel} senderMobileNumber={senderDataFW?.panCardData?.mobile_no} />
+        <AddBankAccount
+          handleCancel={handleCancel}
+          senderMobileNumber={senderDataFW?.panCardData?.mobile_no}
+        />
       )}
       {isModalOpen === "beneficiaryAcc" && (
         <RegisterModal
@@ -309,7 +326,7 @@ const BeneficiaryDetails = ({
         />
       )}
       {isModalOpen === "paymentModal" && (
-        <PaymentModal handleCancel={handleCancel} />
+        <PaymentModal handleCancel={handleCancel} senderData={senderData} />
       )}
     </div>
   );

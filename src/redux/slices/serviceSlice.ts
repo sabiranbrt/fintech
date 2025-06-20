@@ -1,5 +1,10 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
+interface Options{
+    label?: string
+    value: string
+}
+
 interface Service {
     label: string;
     key: string;
@@ -7,6 +12,7 @@ interface Service {
     type: string;
     uploadSlip: boolean;
     sequence: string[];
+    paymentMethods: Options[]
 }
 
 const serviceSlice = createSlice({

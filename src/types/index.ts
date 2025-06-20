@@ -65,3 +65,10 @@ export interface AgentAccountProps {
   accountRegisterFor: string,
   accountSupportingImage: string
 }
+
+export interface TransactionsProps{
+  fromDate: string
+  toDate: string
+  pageIndex: number
+  pageSize: number
+}

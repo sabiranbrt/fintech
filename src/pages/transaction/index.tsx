@@ -3,18 +3,7 @@ import RecentTransactionComponent from "./components/RecentTransactionComponent"
 import DetailedTransactionComponent from "./components/DetailedTransactionComponent";
 
 const TransactionsTabs = () => {
-  const [activeTab, setActiveTab] = useState("recent"); // 'recent' is set by default
-
-  // useEffect(() => {
-  //   if (activeForm === "sender") {
-  //     setSelectedOption("Register Sender");
-  //   } else if (activeForm === "transactions") {
-  //     setSelectedOption("Transactions");
-  //   }
-  // }, [activeForm]);
-  // useEffect(() => {
-  //   console.log("activeTab:", activeTab); // Log activeTab state changes
-  // }, [activeTab]);
+  const [activeTab, setActiveTab] = useState("recent"); 
 
   return (
     <>

@@ -1,38 +1,7 @@
-import { useState } from "react";
-import { BsCashStack } from "react-icons/bs";
-import { FaMoneyBillTransfer, FaRegCreditCard } from "react-icons/fa6";
-import { HiBanknotes } from "react-icons/hi2";
-import { PiHandWithdrawFill } from "react-icons/pi";
+import { useCount } from "@/hooks/service";
 import TransactionCard from "./components/TranscationCard";
 
 const TotalPayoutList = () => {
-  const [data, setData] = useState({
-     education_fees: {
-      icon: BsCashStack,
-      success: 0,
-      failure: 0,
-      totalAmount: 0,
-    },
-    credit_card_bill_payment: {
-      icon: FaRegCreditCard,
-      success: 0,
-      failure: 0,
-      totalAmount: 0,
-    },
-    fund_withdrawal: {
-      icon: PiHandWithdrawFill,
-      success: 0,
-      failure: 0,
-      totalAmount: 0,
-    },
-    rent_payment: { icon: HiBanknotes, success: 0, failure: 0, totalAmount: 0 },
-    fund_settlement: { icon: FaMoneyBillTransfer, success: 0, failure: 0, totalAmount: 0 },
-  });
-
-  console.log("setData",setData)
-
-  // const [isLoading, setIsLoading] = useState(false);
-
   // useEffect(() => {
   //   const fetchData = async () => {
   //     try {
@@ -42,7 +11,7 @@ const TotalPayoutList = () => {
   //         toast.error("Auth token is missing");
   //         return;
   //       }
-  
+
   //       setIsLoading(true);
   //       const response = await axiosInstance.get("/transaction/count", {
   //         headers: {
@@ -50,12 +19,12 @@ const TotalPayoutList = () => {
   //           authToken: authToken,
   //         },
   //       });
-  
+
   //       const responseData = response?.data?.apiResponseData?.data;
-  
+
   //       // Start by copying existing data
   //       const updatedData = { ...data };
-  
+
   //       if (responseData) {
   //         Object.entries(updatedData).forEach(([key, value]) => {
   //           if (responseData[key]) {
@@ -96,7 +65,7 @@ const TotalPayoutList = () => {
   //         });
   //         toast.error("No data available");
   //       }
-  
+
   //       setData(updatedData);
   //     } catch (error) {
   //       console.error("Error fetching data:", error);
@@ -104,27 +73,24 @@ const TotalPayoutList = () => {
   //       setIsLoading(false);
   //     }
   //   };
-  
+
   //   fetchData();
   // }, []);
-  
-  
 
   // if (isLoading) {
   //   return <Loader message="please wait" />;
   // }
 
+  const { data: count } = useCount();
+  const countList = count?.apiResponseData?.data;
+
   return (
-    <div className="p-6 bg-white shadow-md rounded-md">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pl-10">
-        {Object.entries(data)
+    <div className="p-6 bg-white shadow-md rounded-md overflow-y-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pl-10 ">
+        {Object.entries(countList ?? "")
           .filter(([key]) => key !== "total_payout")
           .map(([key, value]) => (
-            <TransactionCard
-              key={key}
-              title={key}
-              data={value}
-            />
+            <TransactionCard key={key} title={key} data={value} />
           ))}
       </div>
     </div>

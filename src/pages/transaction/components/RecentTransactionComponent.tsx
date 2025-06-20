@@ -1,8 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { formatDateTime } from "@/utils/formatDateDDMMYYYY";
-import recentTranscation from "@/jsonDemo/transcationRecent.json"
+import { useRecentTransaction } from "@/hooks/service";
 // import Loader from "./LoaderComponent";
+
 const RecentTransactionComponent = () => {
-  const transactions = recentTranscation
+  const { data: recentTransaction } = useRecentTransaction();
+  const recentTraList = recentTransaction?.apiResponseData?.data;
+  console.log("recent tra", recentTraList);
+
   // const [transactions, setTransactions] = useState([]);
   // const [isLoading, setIsLoading] = useState(false);
   // const transactionTypes = {
@@ -66,7 +71,7 @@ const RecentTransactionComponent = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -75,13 +80,13 @@ const RecentTransactionComponent = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Transaction ID
               </th>
-             {/*  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {/*  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Payout Transaction ID
               </th> */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Transaction Type
               </th>
-             {/*  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {/*  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Order ID
               </th> */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -108,7 +113,6 @@ const RecentTransactionComponent = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Bank Remarks
               </th>
-            
 
               {/*  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant Mobile</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sender Full Name</th>
@@ -118,10 +122,10 @@ const RecentTransactionComponent = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {transactions.length > 0 ? (
-              transactions.map((transaction, index) => (
+            {recentTraList?.length > 0 ? (
+              recentTraList?.map((transaction: any, index: number) => (
                 <tr key={index}>
-                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {transaction.status === "SUCCESS" ? (
                       <span className="text-green-500 font-semibold">
                         Success
@@ -140,13 +144,13 @@ const RecentTransactionComponent = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {transaction.transactionID}
                   </td>
-                 {/*  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {/*  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {transaction?.payoutTranscationId || "-"}
                   </td> */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {/* {transactionTypes[transaction.transType] ||
                       transaction.transType} */}
-                      {transaction.transType}
+                    {transaction.transType}
                   </td>
                   {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {transaction.orderId}
@@ -158,41 +162,39 @@ const RecentTransactionComponent = () => {
                     {transaction.beneficiaryAccount}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {transaction?.transType == "CC" ||
+                    {transaction?.transType == "CC" ||
                     transaction?.transType == "EP" ||
-                    transaction?.transType == "FW" ?
-                  <>
-                  -
-                  </>:
-                  <> 
-                  {transaction.amount}
-                  </>
-                 
-                  }
-                 
+                    transaction?.transType == "FW" ? (
+                      <>-</>
+                    ) : (
+                      <>{transaction.amount}</>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                   {/*  {transaction?.transType == "CC" ||
+                    {/*  {transaction?.transType == "CC" ||
                     transaction?.transType == "RP" ||
                     transaction?.transType == "FW" ||
                     transaction?.transType == "EP"
                       ? transaction.amountToBene
                       : transaction.netAmount} */}
-                        {transaction.payoutAmount}
+                    {transaction.payoutAmount}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {transaction.charge != null ? Number(transaction.charge).toFixed(2) : "0.00"}
+                    {transaction.charge != null
+                      ? Number(transaction.charge).toFixed(2)
+                      : "0.00"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {transaction.markup != null ? Number(transaction.markup).toFixed(2) : "0.00"}
+                    {transaction.markup != null
+                      ? Number(transaction.markup).toFixed(2)
+                      : "0.00"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {transaction.utrRRN}
+                    {transaction.utrRRN}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {transaction.bankRemarks || "-"}
                   </td>
-                 
                 </tr>
               ))
             ) : (
