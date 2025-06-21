@@ -1,21 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import BeneficiaryDetails from "@/components/BeneficiaryDetails";
+import NoticeComponent from "@/components/NoticeComponent";
+
 interface EducationFeesProps {
-  senderData: any; 
+  senderData: any;
 }
 
-const EducationFees = ({ senderData }:EducationFeesProps) => {
+const EducationFees = ({ senderData }: EducationFeesProps) => {
   return (
-    <div>
-      <h2>Education Fees Payment</h2>
+    <>
       {senderData ? (
-        <div>
-          <p>Sender: {senderData.name || "Unknown"}</p>
-        </div>
+        <BeneficiaryDetails
+          tableName={"Select Beneficiary"}
+          senderData={senderData}
+        />
       ) : (
-        <p>Loading sender details...</p>
+        <NoticeComponent />
       )}
-    </div>
+    </>
   );
 };
 

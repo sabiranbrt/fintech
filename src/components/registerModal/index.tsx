@@ -9,8 +9,9 @@ import { IoClose } from "react-icons/io5";
 export interface RegisterModalProps {
   names: string;
   textClassName?: string;
-  control: Control<any>;
   placeHolder: string;
+  control: Control<any>;
+  rules?: any;
   focusErrorBorderColor?: string;
   focusErrorShadowColor?: string;
   ValidClassName?: string;
@@ -39,6 +40,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
   focusErrorBgColor,
   control,
   maxLength,
+  rules,
   placeHolder,
   focusShadowColor,
   focusBorderColor,
@@ -50,18 +52,20 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
   ValidClassName,
   readOnly,
   textClassName,
-  errors ={},
+  errors = {},
   subTitle,
   onClose,
   validation,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
-  const handleFocus = ()=>{
-    setIsFocused(true)
-  }
-  const handleBlur = ()=>{
-    setIsFocused(false)
-  }
+
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -80,11 +84,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
             {subTitle}
           </h3>
         )}
-        
+
         <Controller
           control={control}
           name={names}
-          rules={ValidationRules(validation)}
+          rules={rules ?? ValidationRules(validation)}
           render={({ field }) => {
             return (
               <div className="relative">
@@ -139,22 +143,21 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
                     <p>{errors[names]?.message as string}</p>
                   </div>
                 )}
+                <button
+                  type="submit"
+                  disabled={!errors[names] || !field.value}
+                  className={`w-full rounded-lg py-3 text-white mt-3 cursor-pointer ${
+                    errors[names] || !field.value
+                      ? "bg-gray-400"
+                      : "bg-gradient-to-r from-[#4b5a9f] to-[#4fb5b7]"
+                  }`}
+                >
+                  Submit
+                </button>
               </div>
             );
           }}
         />
-
-        <button
-          type="submit"
-          disabled={!errors[names]}
-          className={`w-full rounded-lg py-3 text-white mt-3 cursor-pointer ${
-           errors[names]
-              ? "bg-gray-400"
-              : "bg-gradient-to-r from-[#4b5a9f] to-[#4fb5b7]"
-          }`}
-        >
-          Submit
-        </button>
       </div>
     </div>
   );

@@ -69,7 +69,8 @@ const BeneficiaryDetails = ({
       <div className=" flex flex-row gap-2 justify-between items-center mb-3">
         <div className=" w-full">
           {(selectedService?.label === QuickLinksType.FS ||
-            selectedService?.label === QuickLinksType.RP) && (
+            selectedService?.label === QuickLinksType.RP ||
+            selectedService?.type === "pgPayout") && (
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -79,14 +80,15 @@ const BeneficiaryDetails = ({
           )}
         </div>
         <div className=" flex gap-4 whitespace-nowrap">
-          {selectedService?.label !== QuickLinksType.RP && (
-            <ModalBtn
-              title="Add Account +"
-              modalOnClick={() => {
-                setIsModalOpen("addAccount");
-              }}
-            />
-          )}
+          {selectedService?.label !== QuickLinksType.RP ||
+            (selectedService?.type === "pgPayout" && (
+              <ModalBtn
+                title="Add Account +"
+                modalOnClick={() => {
+                  setIsModalOpen("addAccount");
+                }}
+              />
+            ))}
 
           {selectedService?.label === QuickLinksType.FS && (
             <ModalBtn
@@ -96,7 +98,8 @@ const BeneficiaryDetails = ({
               }}
             />
           )}
-          {selectedService?.label === QuickLinksType.RP && (
+          {(selectedService?.label === QuickLinksType.RP ||
+            selectedService?.type === "pgPayout") && (
             <ModalBtn
               title="Add Beneficiary +"
               modalOnClick={() => {

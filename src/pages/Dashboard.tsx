@@ -13,7 +13,7 @@ const Dashboard = () => {
     "digiToken",
     token?.apiResponseData?.responseData?.accessToken
   );
-  
+
   useEffect(() => {
     // Function to capture and store location data
     const storeLocationData = (position:any) => {

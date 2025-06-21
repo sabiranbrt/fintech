@@ -95,3 +95,24 @@ export const useAuthToken = () => {
 
     return token;
 };
+
+export const useDigiToken = ({ enabled = true } = {}) => {
+    const digiToken = useQuery({
+        queryKey: ['DIGI_TOKEN'],
+        queryFn: async () => {
+            const response = await axiosInstance.get(
+                "https://edge.finkeda.com/apigateway/authToken",
+                {
+                    headers: {
+                        Authorization: "Basic ZmtLeWNVc2VyOkt5Y0Bmbmsh",
+                        agentId: "66d22350c0761adeb1334193",
+                    },
+                }
+            );
+            return response.data;
+        },
+        enabled
+    });
+
+    return digiToken;
+};

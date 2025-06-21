@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import RegisterModal from "@/components/registerModal";
 import {
@@ -16,8 +17,12 @@ import { HiBanknotes } from "react-icons/hi2";
 import { IoPersonOutline } from "react-icons/io5";
 import { MdOutlinePayments, MdOutlineSwitchAccount } from "react-icons/md";
 import { PiHandWithdrawFill } from "react-icons/pi";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import QuickLinksTitle from "./components/QuickLinksTitle";
+import { getDynamicRequest } from "@/utils/dynamicRequest";
+import { RootState } from "@/redux/store";
+import { useDynamicMutation } from "@/hooks/dynamicQuery";
+import { useDigiToken } from "@/hooks/service";
 
 const serviceIcons = {
   "Credit Card Bill Payment": (
@@ -70,14 +75,24 @@ type ServiceLabel = keyof typeof serviceIcons;
 
 const QuickLinksComponent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userRegisterNumber, setUserRegisterNumber] = useState(false);
 
-  const methods = useForm<any>();
-
+  const {
+    control,
+    formState: { errors },
+    setError,
+    setValue,
+    watch,
+  } = useForm<any>({
+    mode: "onChange",
+  });
   const handleCancel = () => {
     setIsModalOpen(false);
   };
 
   const dispatch = useDispatch();
+  const mobileNumber = watch("mobileNumber");
+  const { endpoints } = useSelector((state: RootState) => state.endPoints);
 
   useEffect(() => {
     if (services?.endPoints) {
@@ -90,7 +105,7 @@ const QuickLinksComponent = () => {
     label?: string;
   }) => {
     if (opts.service) {
-      dispatch(setSelectedService(opts.service));
+      dispatch(setSelectedService(opts.service as any));
       dispatch(updateIsText(""));
     } else if (opts.label) {
       if (opts.label === "Register Sender") {
@@ -102,12 +117,56 @@ const QuickLinksComponent = () => {
     }
   };
 
+  const stepName = "getSender";
+
+  const request = getDynamicRequest(stepName ?? "", endpoints ?? {}, {
+    mobileNumber: mobileNumber,
+  });
+
+  const { mutate } = useDynamicMutation<any>();
+
+  const fetchSender = () => {
+    if (!request?.url) return;
+
+    mutate(request, {
+      onSuccess: (data) => {
+        if (data?.apiResponseData?.data[0]?.mobileNumber === mobileNumber) {
+          setUserRegisterNumber(true);
+        } else {
+          setUserRegisterNumber(false);
+        }
+      },
+      onError: () => {
+        console.log("error");
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (mobileNumber?.length === 10 && !errors.mobileNumber) {
+      fetchSender();
+    }
+  }, [mobileNumber, errors.mobileNumber]);
+
+  useEffect(() => {
+    if (userRegisterNumber === true) {
+      setError("mobileNumber", {
+        type: "manual",
+        message: "Already registered",
+      });
+    }
+  }, [userRegisterNumber]);
+
+  const { data: digiToken } = useDigiToken();
+  console.log("digi", digiToken);
+
   return (
     <>
       <div className=" whitespace-nowrap">
-        <p className="text-base text-center font-bold md:text-xl mb-5 ">
+        <p className="text-base text-center font-bold md:text-xl mb-5">
           Quick Links
         </p>
+
         {service && service.services.length > 0 ? (
           service.services.map((service: any) => {
             const label = service.label as ServiceLabel;
@@ -137,12 +196,48 @@ const QuickLinksComponent = () => {
 
       {isModalOpen && (
         <RegisterModal
-          control={methods.control}
-          names="registerSender"
+          control={control}
+          errors={errors}
+          names="mobileNumber"
           placeHolder={"Mobile Number"}
           title={"Register Sender"}
           subTitle={"Enter Mobile Number To Initiate KYC"}
           onClose={handleCancel}
+          rules={{
+            required: "Mobile number is required",
+            validate: {
+              validFormat: (value: any) =>
+                /^[6-9]\d{0,9}$/.test(value) ||
+                "Enter a valid 10-digit mobile number starting with 6-9.",
+              noSixIdenticalDigits: (value: any) =>
+                !/(.)\1{5}/.test(value ?? "") ||
+                "Mobile number cannot have a sequence of the same 6 digits.",
+              notSixDigits: (value: any) =>
+                value.length !== 6 ||
+                "6-digit mobile numbers are not acceptable.",
+              exactTenDigits: (value: any) =>
+                value.length === 10 ||
+                "Mobile number must be exactly 10 digits.",
+            },
+          }}
+          onChange={(value) => {
+            const cleanedValue = value.replace(/\D/g, "");
+
+            if (cleanedValue.length === 1 && !/^[6-9]$/.test(cleanedValue)) {
+              setError("mobileNumber", {
+                type: "manual",
+                message: "Mobile number must start with 6-9.",
+              });
+              return;
+            }
+
+            // if (/(\d)\1{5}/.test(cleanedValue ??""))
+            //   return setValue("mobileNumber", "");
+
+            if (cleanedValue.length <= 10) {
+              setValue("mobileNumber", cleanedValue);
+            }
+          }}
         />
       )}
     </>

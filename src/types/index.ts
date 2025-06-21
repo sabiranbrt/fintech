@@ -44,7 +44,7 @@ export interface ValidationProps {
   validations: Validations[]
 }
 export interface Validations {
-  regex: string
+  regex: any
   errorMessage?: string;
 }
 

@@ -40,17 +40,20 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
       ? selectedService.paymentMethods[0].value
       : "IMPS"
   );
+
   const switchOptions = (selectedService?.paymentMethods || []).map(
     (method) => ({
       value: method.value,
       label: method.label,
     })
   );
+
   const handlePaymentOption = (value: string) => {
     setSelectedPaymentMethod(value);
   };
 
   const isVerified = true;
+
   const {
     control,
     formState: { errors },
@@ -71,7 +74,9 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
       transferType:
         selectedService?.label === QuickLinksType?.CC
           ? bankDetails
-          : selectedService?.label === QuickLinksType?.FW ? selectedPaymentMethod : "IMPS",
+          : selectedService?.label === QuickLinksType?.FW
+          ? selectedPaymentMethod
+          : "IMPS",
     });
   }, [
     stepName,
@@ -619,8 +624,13 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
             </div>
 
             <div className=" grid grid-cols-2 gap-2 mt-4">
-              {/* <FeeBox title="Service" value="" />
-              <FeeBox title="Markup" value="" /> */}
+              {selectedService?.type === "pgPayout" && requestAmount && (
+                <>
+                  <FeeBox title="service Fee" value={chargeDetail?.feeAmount} />
+                  <FeeBox title="Markup" value={chargeDetail?.markUp} />
+                </>
+              )}
+
               {requestAmount && (
                 <>
                   <FeeBox

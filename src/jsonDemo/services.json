@@ -66,8 +66,15 @@
       "type": "pgPayout",
       "alias": "EF",
       "uploadSlip": true,
+      "paymentMethods": [
+        {
+          "value": "Ik Credit Pay",
+          "label": "Education Fees"
+        }
+      ],
       "sequence": [
         "getSender",
+        "getbankList",
         "getSlabDetails",
         "getChargeDetails",
         "uploadSlip",

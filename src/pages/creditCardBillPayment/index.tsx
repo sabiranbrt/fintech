@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BtnPrimary from "@/components/buttons/BtnPrimary";
 import CustomPassField from "@/components/customPassField";
+import EmptyMessage from "@/components/EmptyMessage";
 import InputField from "@/components/inputField";
 import PaymentModal from "@/components/paymentModal";
 import SelectCusOpt from "@/components/selectCusOpt.tsx";
@@ -151,7 +152,7 @@ const CreditCardBillPayment = ({ senderData }: IProps) => {
           )}
         </div>
       ) : (
-        <p>Loading sender details...</p>
+        <EmptyMessage />
       )}
     </>
   );

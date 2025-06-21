@@ -23,7 +23,9 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { FaSyncAlt } from "react-icons/fa";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import service from "@/jsonDemo/services.json";
+import { setSelectedService } from "@/redux/slices/serviceSlice";
 
 interface FormData {
   mobileNumber: string;
@@ -32,13 +34,24 @@ interface FormData {
 const QuickLinksFormComponent = () => {
   const [senderData, setSenderData] = useState<any | null>(null);
 
-  const sendData = senderData?.apiResponseData?.data[0];
-
   const { selectedService, isText } = useSelector(
     (state: RootState) => state.service
   );
 
   const { endpoints } = useSelector((state: RootState) => state.endPoints);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!selectedService) {
+      const educationService = service.services.find(
+        (service) =>
+          service.type === "pgPayout" && service.label === "Education Fees"
+      ) as any;
+      if (educationService) {
+        dispatch(setSelectedService(educationService));
+      }
+    }
+  }, [selectedService]);
 
   const {
     control,
@@ -55,18 +68,19 @@ const QuickLinksFormComponent = () => {
   const { mutate } = useDynamicMutation<any>();
 
   const stepName = selectedService?.sequence[0];
+
   const request = getDynamicRequest(stepName ?? "", endpoints ?? {}, {
     mobileNumber: mobileNumber,
   });
 
   const fetchSender = () => {
-    mutate(request ?? { url: "", method: "GET" }, {
-      onSuccess: (data: any) => {
-        console.log("Mutation success:", data);
+    if (!request?.url) return;
+
+    mutate(request, {
+      onSuccess: (data) => {
         setSenderData(data);
       },
-      onError: (err: any) => {
-        console.error("Mutation error:", err);
+      onError: () => {
         setSenderData(null);
       },
     });
@@ -74,30 +88,18 @@ const QuickLinksFormComponent = () => {
 
   // Handle form submission
   const onSubmit = (data: FormData) => {
-    if (data.mobileNumber?.length === 10 && !errors.mobileNumber) {
-      if (selectedService?.type === "pgPayout") {
-        setSenderData({ mobileNumber: data.mobileNumber });
-        fetchSender();
-      } else {
-        setSenderData({ mobileNumber: data.mobileNumber });
-        fetchSender();
-      }
+    if (data.mobileNumber.length === 10 && !errors.mobileNumber) {
+      fetchSender();
     }
   };
 
   useEffect(() => {
     if (mobileNumber?.length === 10 && !errors.mobileNumber) {
-      if (selectedService?.type === "pgPayout") {
-        setSenderData({ mobileNumber });
-        fetchSender();
-      } else {
-        setSenderData({ mobileNumber });
-        fetchSender();
-      }
+      fetchSender();
     } else {
       setSenderData(null);
     }
-  }, [mobileNumber, errors.mobileNumber, selectedService]);
+  }, [mobileNumber, errors.mobileNumber]);
 
   const { data } = useDynamicQuery<any>(request ?? { url: "", method: "GET" }, {
     queryKey: [stepName],
@@ -106,10 +108,15 @@ const QuickLinksFormComponent = () => {
 
   const agentsDataForBeneficiary = data?.apiResponseData?.data;
   const agentsData = data?.apiResponseData?.data?.panCardData;
+  const sendData = senderData?.apiResponseData?.data[0];
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div>{selectedService || isText ? <BackButton /> : null}</div>
+      <div>
+        {selectedService?.type !== "pgPayout" && (selectedService || isText) ? (
+          <BackButton />
+        ) : null}
+      </div>
       {!isText ? (
         <div className="flex flex-row gap-4 h-full min-h-0">
           <div className="w-64 bg-white">
@@ -206,7 +213,8 @@ const QuickLinksFormComponent = () => {
             )}
             {selectedService?.label === QuickLinksType.CC ||
             selectedService?.label === QuickLinksType.FS ||
-            selectedService?.label === QuickLinksType.RP ? (
+            selectedService?.label === QuickLinksType.RP ||
+            selectedService?.type === "pgPayout" ? (
               <SenderDetails senderData={sendData} />
             ) : null}
             {selectedService?.label === QuickLinksType.FW && (
@@ -238,21 +246,23 @@ const QuickLinksFormComponent = () => {
             </div>
           ) : (
             <div className="flex-1 h-full min-h-0">
-              {selectedService?.label === QuickLinksType.FW ? (
-                <FundWithdrawal senderDataFW={agentsDataForBeneficiary} />
-              ) : selectedService?.label === QuickLinksType.CC ? (
-                <CreditCardBill senderData={sendData} />
-              ) : selectedService?.label === QuickLinksType.FS ? (
-                <FundSettlement senderData={sendData} />
-              ) : selectedService?.label === QuickLinksType.RP ? (
-                <RentPayment senderData={sendData} />
-              ) : selectedService?.label === QuickLinksType.EF ? (
-                <EducationFees senderData={sendData} />
-              ) : selectedService?.label ? (
-                <EmptyMessage />
-              ) : (
-                <NoticeComponent />
-              )}
+              {selectedService ? (
+                selectedService.type === "pgPayout" ? (
+                  <EducationFees senderData={sendData} />
+                ) : selectedService.label === QuickLinksType.FW ? (
+                  <FundWithdrawal senderDataFW={agentsDataForBeneficiary} />
+                ) : selectedService.label === QuickLinksType.CC ? (
+                  <CreditCardBill senderData={sendData} />
+                ) : selectedService.label === QuickLinksType.FS ? (
+                  <FundSettlement senderData={sendData} />
+                ) : selectedService.label === QuickLinksType.RP ? (
+                  <RentPayment senderData={sendData} />
+                ) : selectedService.label ? (
+                  <NoticeComponent />
+                ) : (
+                  <EmptyMessage />
+                )
+              ) : null}
             </div>
           )}
         </div>
