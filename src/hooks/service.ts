@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getAgent, getAgentAccount, getContact, getCount, getPennyDrop, getRecentTransaction, getService, getTransaction } from "@/libs"
 import { axiosInstance, generateRandom13DigitNumber } from "@/libs/axios"
-import { ChargeInfoProps, TransactionsProps } from "@/types"
+import { ChargeInfoProps, RequestBody, TransactionsProps } from "@/types"
 import interceptor from "@/utils/services/interceptor"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import axios from "axios"
+import { toast } from "react-toastify"
 
 export const useServicesList = () => {
     const serviceList = useQuery({
@@ -30,7 +31,6 @@ export const useContact = () => {
     return contact
 }
 
-
 export const useRecentTransaction = () => {
     const recentTransaction = useQuery({
         queryKey: ['RECENT_TRANSACTION'],
@@ -52,7 +52,7 @@ export const usePennyDrop = () => {
     const query = useMutation({
         mutationFn: getPennyDrop,
         onError: (error) => {
-            console.log("error", error)
+            toast.error(error?.message)
         },
 
         onSuccess: (response) => {
@@ -197,7 +197,7 @@ export const useSlabViaPG = (cardType: string) => {
     const slab = useQuery({
         queryKey: ['SLAB_LIST', cardType],
         queryFn: async () => {
-            const response = await axios.get(
+            const response = await interceptor().get(
                 "https://edgeuat.finkeda.com/apigateway/lwdmw/lwmw/api/v1/loadViaPg/getSlab",
                 {
                     headers: {
@@ -222,4 +222,21 @@ export const useAgent = () => {
         queryFn: getAgent
     })
     return agent
+}
+
+export const useCreateOrder = () => {
+    const query = useMutation({
+        mutationFn: (body: RequestBody) => {
+            return interceptor().post("loadViaPg/createOrder",
+                body,)
+        },
+        onError: (error) => {
+            console.log("error", error)
+        },
+
+        onSuccess: (response) => {
+            console.log("data", response)
+        },
+    })
+    return query
 }

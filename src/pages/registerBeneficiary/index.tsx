@@ -117,11 +117,11 @@ const RegisterBeneficiary = () => {
   //   if (isLoading) return <Spinner />;
 
   return (
-      <div className="">
+      <div className=" min-h-0 h-full">
         <FormProvider {...methods}>
           <div
             className={clsx(
-              " h-full flex-row gap-8",
+              " h-full flex-row gap-8 min-h-0",
               formList?.layout === "horizontallayout" ? "bg-[#F2F2F2]" : "flex"
             )}
           >
@@ -142,7 +142,7 @@ const RegisterBeneficiary = () => {
 
             <div
               className={clsx(
-                " relative flex flex-col gap-5 !px-8 !py-10",
+                " relative flex flex-col gap-5 !px-8 !py-10 h-[400px] overflow-y-auto",
                 formList?.layout === "horizontallayout"
                   ? "!mx-10 shadow-xl rounded-md bg-white"
                   : "w-[80%]"
@@ -151,7 +151,7 @@ const RegisterBeneficiary = () => {
               <div className=" text-start">
                 {/* {statusName()} */}
                 <div
-                  className="custom-grid"
+                  className="custom-grid overflow-y-auto min-h-0 h-full"
                   style={{
                     gridTemplateColumns: `repeat(${
                       formList?.colGrid ?? 3

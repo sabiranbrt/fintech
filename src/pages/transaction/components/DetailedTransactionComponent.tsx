@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import Loader from "@/components/LoaderComponent";
 import { useTransaction } from "@/hooks/service";
 import { generateRandom13DigitNumber } from "@/libs/axios";
 import { formatDateTime } from "@/utils/formatDateDDMMYYYY";
@@ -194,7 +195,7 @@ const DetailedTransactionComponent = () => {
     } catch (error: any) {
       toast.error(error);
       console.error("Error fetching HTML receipt:", error);
-    } 
+    }
   };
 
   const closeModal = () => {
@@ -222,7 +223,7 @@ const DetailedTransactionComponent = () => {
     };
   }, [isModalOpen]);
 
-  const { data: detailTransaction } = useTransaction({
+  const { data: detailTransaction, isLoading } = useTransaction({
     fromDate: startDate,
     toDate: endDate,
     pageIndex: currentPage,
@@ -230,7 +231,8 @@ const DetailedTransactionComponent = () => {
   });
 
   const transactions = detailTransaction?.apiResponseData?.data?.data;
-  console.log("transaction",transactions)
+
+  if (isLoading) return <Loader />;
 
   return (
     <>
@@ -445,8 +447,13 @@ const DetailedTransactionComponent = () => {
         </button>
         {currentPage}
         <button
-          onClick={() => {setCurrentPage(p => p + 1)}}
-          disabled={currentPage === detailTransaction?.apiResponseData?.data?.totalPages - 1}
+          onClick={() => {
+            setCurrentPage((p) => p + 1);
+          }}
+          disabled={
+            currentPage ===
+            detailTransaction?.apiResponseData?.data?.totalPages - 1
+          }
           className="px-10 py-1 mx-1 bg-gray-300 text-gray-700 rounded disabled:opacity-50 text-sm"
           style={{
             borderRadius: "8px", // Ensure border-radius is maintained

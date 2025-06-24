@@ -30,7 +30,6 @@ const CreditCardBillPayment = ({ senderData }: IProps) => {
 
   const { endpoints } = useSelector((state: RootState) => state.endPoints);
   const { selectedService } = useSelector((state: RootState) => state.service);
-  // const { value } = useSelector((state: RootState) => state.form);
 
   const stepName = selectedService?.sequence?.[1];
 

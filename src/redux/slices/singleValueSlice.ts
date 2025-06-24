@@ -13,7 +13,7 @@ export const stringValueSlice = createSlice({
   name: 'stringValue',
   initialState,
   reducers: {
-    setValue: (state, action: PayloadAction<string>) => {
+    setValues: (state, action: PayloadAction<string>) => {
       state.value = action.payload;
     },
     clearValue: (state) => {
@@ -22,5 +22,5 @@ export const stringValueSlice = createSlice({
   }
 });
 
-export const { setValue, clearValue } = stringValueSlice.actions;
+export const { setValues, clearValue } = stringValueSlice.actions;
 export default stringValueSlice.reducer;

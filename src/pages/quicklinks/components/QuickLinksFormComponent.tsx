@@ -26,6 +26,7 @@ import { FaSyncAlt } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import service from "@/jsonDemo/services.json";
 import { setSelectedService } from "@/redux/slices/serviceSlice";
+import Loader from "@/components/LoaderComponent";
 
 interface FormData {
   mobileNumber: string;
@@ -101,14 +102,19 @@ const QuickLinksFormComponent = () => {
     }
   }, [mobileNumber, errors.mobileNumber]);
 
-  const { data } = useDynamicQuery<any>(request ?? { url: "", method: "GET" }, {
-    queryKey: [stepName],
-    enabled: !!request,
-  });
+  const { data, isLoading } = useDynamicQuery<any>(
+    request ?? { url: "", method: "GET" },
+    {
+      queryKey: [stepName],
+      enabled: !!request,
+    }
+  );
 
   const agentsDataForBeneficiary = data?.apiResponseData?.data;
   const agentsData = data?.apiResponseData?.data?.panCardData;
   const sendData = senderData?.apiResponseData?.data[0];
+
+  if (isLoading) return <Loader />;
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -155,6 +161,7 @@ const QuickLinksFormComponent = () => {
                         <input
                           {...field}
                           type="tel"
+                          value={field.value ?? ""}
                           readOnly={(field.value?.length ?? 0) === 10}
                           placeholder="Mobile Number"
                           className={clsx(

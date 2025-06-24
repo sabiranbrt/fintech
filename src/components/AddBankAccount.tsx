@@ -12,6 +12,7 @@ import SelectCusOpt from "./selectCusOpt.tsx";
 import SelectField from "./selectfield";
 import { useEffect, useState } from "react";
 import { useAgentAccount, usePennyDrop } from "@/hooks/service";
+import { toast } from "react-toastify";
 
 interface IProps {
   handleCancel: () => void;
@@ -74,7 +75,7 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
         senderMobileNumber: senderMobileNumber,
         type: "SENDER",
       });
-      
+
       const result = response?.apiResponseData?.data;
       setPennyDropResult({
         registeredName: result.registeredName,
@@ -84,9 +85,13 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
         status: result.status,
         isVerified: result.status === "COMPLETED",
       });
+     
       // Set the registeredName in accountNameAsPerBank field
       if (result.status === "COMPLETED" && result.registeredName) {
         setValue("accountNameAsPerBank", result.registeredName);
+      }
+      if (response?.apiResponseData?.responseCode === "401") {
+        toast.error(response?.apiResponseData?.responseMessage);
       }
     } catch (err) {
       console.log("error", err);
@@ -105,7 +110,7 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
         accountSupportingImage: "string",
       });
       const result = response?.apiResponseData?.data;
-      console.log("result",result)
+      console.log("result", result);
     } catch (err) {
       console.log("error", err);
     }

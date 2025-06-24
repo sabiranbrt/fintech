@@ -12,7 +12,7 @@ interface IProp {
   errors?: FieldErrors<any>;
   names: string;
   chargeSlab?: string;
-  value?: string;
+  // value?: string;
   rules?: any;
   registeredName?: string;
   txnId?: string;
@@ -59,7 +59,6 @@ const InputField = ({
   errors = {},
   wrapBorder,
   label,
-  value,
   message,
   chargeSlab,
   isPennyDropVerified,
@@ -116,6 +115,7 @@ const InputField = ({
             <div className=" relative">
               {children}
               <input
+                {...field}
                 className={clsx(
                   "w-full p-2 border rounded-lg focus:outline-none",
                   textClassName ? textClassName : " bg-slate-50",
@@ -147,7 +147,6 @@ const InputField = ({
                 }}
                 maxLength={maxLength}
                 onBlur={handleBlur}
-                defaultValue={field.value ?? value}
                 disabled={disabled}
                 readOnly={readOnly}
                 onChange={(e) => {

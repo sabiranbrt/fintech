@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { formatDateTime } from "@/utils/formatDateDDMMYYYY";
 import { useRecentTransaction } from "@/hooks/service";
+import Loader from "@/components/LoaderComponent";
 // import Loader from "./LoaderComponent";
 
 const RecentTransactionComponent = () => {
-  const { data: recentTransaction } = useRecentTransaction();
+  const { data: recentTransaction, isLoading } = useRecentTransaction();
   const recentTraList = recentTransaction?.apiResponseData?.data;
-  console.log("recent tra", recentTraList);
 
   // const [transactions, setTransactions] = useState([]);
   // const [isLoading, setIsLoading] = useState(false);
@@ -59,6 +59,8 @@ const RecentTransactionComponent = () => {
   //   const year = date.getFullYear();
   //   return `${day}-${month}-${year}`;
   // };
+
+  if (isLoading) return <Loader />;
   return (
     <>
       {/* {isLoading && (

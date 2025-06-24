@@ -6,10 +6,10 @@ import { RootState } from "@/redux/store";
 
 const LoadWallet = () => {
   const value = useSelector((state: RootState) => state.stringValue.value);
-  console.log("value",value)
-
+ 
   const { data: agent } = useAgent();
   const { data: slab } = useSlabViaPG(value);
+  
   const slablist = slab?.apiResponseData?.data;
   const agentList = agent?.apiResponseData?.data?.userPersonalDetails;
 

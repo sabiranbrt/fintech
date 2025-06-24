@@ -1,4 +1,4 @@
-import { MiniLoader } from "./MiniLoader";
+import { MiniLoader } from "./loader/MiniLoader";
 
 const Loader = ({
   message = "Loading...",

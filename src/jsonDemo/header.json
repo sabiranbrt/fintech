@@ -28,16 +28,7 @@
       }
     },
     {
-      "label": "Total Load",
-      "icon": null,
-      "transactionSummary": {
-        "success": 0,
-        "failure": 0,
-        "totalAmount": 0
-      }
-    },
-    {
-      "label": "Total Load",
+      "label": "Total Payout",
       "icon": null,
       "transactionSummary": {
         "success": 0,

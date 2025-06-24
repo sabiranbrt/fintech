@@ -80,15 +80,15 @@ const BeneficiaryDetails = ({
           )}
         </div>
         <div className=" flex gap-4 whitespace-nowrap">
-          {selectedService?.label !== QuickLinksType.RP ||
-            (selectedService?.type === "pgPayout" && (
+          {(selectedService?.label !== QuickLinksType.RP ||
+            selectedService?.type === "pgPayout") && (
               <ModalBtn
                 title="Add Account +"
                 modalOnClick={() => {
                   setIsModalOpen("addAccount");
                 }}
               />
-            ))}
+            )}
 
           {selectedService?.label === QuickLinksType.FS && (
             <ModalBtn
@@ -98,6 +98,7 @@ const BeneficiaryDetails = ({
               }}
             />
           )}
+          
           {(selectedService?.label === QuickLinksType.RP ||
             selectedService?.type === "pgPayout") && (
             <ModalBtn
@@ -111,7 +112,7 @@ const BeneficiaryDetails = ({
       </div>
       <div className="max-h-[48.5vh] min-h-0 h-full">
         <p className="block font-medium my-2">{tableName}</p>
-        <div className=" overflow-y-auto min-h-0 h-[90%]">
+        <div className=" overflow-y-auto min-h-0 h-[80%]">
           {filteredAccounts && filteredAccounts.length > 0 ? (
             filteredAccounts?.map((account: any, index: number) => {
               const isExpanded = expandedAccount === account.accountNumber;

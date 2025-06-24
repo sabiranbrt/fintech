@@ -1,88 +1,12 @@
 import { useCount } from "@/hooks/service";
 import TransactionCard from "./components/TranscationCard";
+import Loader from "@/components/LoaderComponent";
 
 const TotalPayoutList = () => {
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const authToken = localStorage.getItem("authToken");
-  //       if (!authToken) {
-  //         console.error("Auth token is missing");
-  //         toast.error("Auth token is missing");
-  //         return;
-  //       }
-
-  //       setIsLoading(true);
-  //       const response = await axiosInstance.get("/transaction/count", {
-  //         headers: {
-  //           includeUrn: true,
-  //           authToken: authToken,
-  //         },
-  //       });
-
-  //       const responseData = response?.data?.apiResponseData?.data;
-
-  //       // Start by copying existing data
-  //       const updatedData = { ...data };
-
-  //       if (responseData) {
-  //         Object.entries(updatedData).forEach(([key, value]) => {
-  //           if (responseData[key]) {
-  //             updatedData[key] = {
-  //               ...value, // keep icon
-  //               success: responseData[key]?.success || 0,
-  //               failure: responseData[key]?.failure || 0,
-  //               totalAmount: responseData[key]?.totalAmount || 0,
-  //               initiated: responseData[key]?.initiated || 0,
-  //               initiatedAmount: responseData[key]?.initiatedAmount || 0,
-  //               amountPresent: responseData[key]?.amountPresent ?? false,
-  //             };
-  //           } else {
-  //             // responseData has no entry for this key → keep default 0
-  //             updatedData[key] = {
-  //               ...value,
-  //               success: 0,
-  //               failure: 0,
-  //               totalAmount: 0,
-  //               initiated: 0,
-  //               initiatedAmount: 0,
-  //               amountPresent: false,
-  //             };
-  //           }
-  //         });
-  //       } else {
-  //         // no data at all → reset everything to 0 manually
-  //         Object.entries(updatedData).forEach(([key, value]) => {
-  //           updatedData[key] = {
-  //             ...value,
-  //             success: 0,
-  //             failure: 0,
-  //             totalAmount: 0,
-  //             initiated: 0,
-  //             initiatedAmount: 0,
-  //             amountPresent: false,
-  //           };
-  //         });
-  //         toast.error("No data available");
-  //       }
-
-  //       setData(updatedData);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
-
-  // if (isLoading) {
-  //   return <Loader message="please wait" />;
-  // }
-
-  const { data: count } = useCount();
+  const { data: count, isLoading } = useCount();
   const countList = count?.apiResponseData?.data;
+
+  if (isLoading) return <Loader />;
 
   return (
     <div className="p-6 bg-white shadow-md rounded-md overflow-y-auto">

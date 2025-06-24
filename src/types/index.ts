@@ -78,3 +78,28 @@ export interface ChargeInfoProps{
   selectedCardType: string
   selectedGateway: string
 }
+
+// create Order
+export interface RequestBody {
+  requestInfo: {
+    requestIp: string;
+    latitude: number;
+    longitude: number;
+    commDeviceId: string;
+    requestSource: string;
+  };
+  txnPayload: {
+    amount: number;
+    cardType: string;
+  };
+  dynamicValues: {
+    selectedGateway: string;
+    cardLastSixDigits: number;
+    amount: number;
+    charge: number;
+    igst?: number;
+    cgst?: number;
+    sgst?: number;
+    crdrAmount: number;
+  };
+}

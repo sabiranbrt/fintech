@@ -8,7 +8,7 @@ import { getDynamicRequest } from "@/utils/dynamicRequest";
 import { wordCapitalize } from "@/utils/wordCapitalize";
 import clsx from "clsx";
 import { toWords } from "number-to-words";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { MdOutlineVerified } from "react-icons/md";
 import { VscUnverified } from "react-icons/vsc";
@@ -19,6 +19,9 @@ import InputField from "../inputField";
 import RadioButton from "../radioButton";
 import SlipButtons from "../slipbuttons/SlipButtons";
 import TransferNotice from "../transferNotice";
+import LocalStorageUtil from "@/utils/LocalStorageUtil";
+import { getIpAddress } from "@/utils/getIpAddress";
+import { toast } from "react-toastify";
 
 interface IProp {
   handleCancel: () => void;
@@ -28,6 +31,7 @@ interface IProp {
 
 const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
   const checkedBeneficiary = getMobileNumber[0];
+  const [isMarkupSwitchActive, setIsMarkupSwitchActive] = useState(false);
 
   const { selectedService } = useSelector((state: RootState) => state.service);
   const { endpoints } = useSelector((state: RootState) => state.endPoints);
@@ -56,10 +60,15 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
 
   const {
     control,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<any>({
     mode: "onChange",
   });
+
+  const requestAmt = watch("requestAmt");
+  const cardType = watch("cardType");
 
   const stepName = selectedService?.sequence?.[2];
   const chargeDetails = selectedService?.sequence?.[3];
@@ -114,6 +123,14 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
     queryKey: [stepName, selectedPaymentMethod, bankDetails],
   });
 
+  useEffect(() => {
+    if (slabs?.apiResponseData?.responseCode === "401") {
+      toast.error(
+        slabs.apiResponseData.responseMessage || "An error occurred."
+      );
+    }
+  }, [slabs]);
+
   const { data: Charge } = useDynamicQuery<any>(requestCharge!, {
     enabled:
       !!requestCharge &&
@@ -130,51 +147,56 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
   const slab = slabs?.apiResponseData?.data;
   const chargeDetail = Charge?.apiResponseData?.data;
 
-  const params = {
+  const ipAddress = getIpAddress();
+
+  const userID = "9241980104198913";
+
+  const payload = {
     acquirerInfo: {
-      ip: "180.151.31.10",
-      reqLat: "27.67561482423071",
-      reqLong: "85.31395684387198",
+      ip: ipAddress,
+      reqLat: LocalStorageUtil.getItem("latitude"),
+      reqLong: LocalStorageUtil.getItem("longitude"),
       commDeviceId: "commDeviceId_f4c6e43c16d1",
       requestSource: "requestSource_bf89dd79647e",
-      id: "9241980104198913",
+      id: userID,
     },
     paymentInfo: {
-      amount: parseFloat(requestAmount) || 12,
-      transType: selectedService?.alias || "CC",
-      cardType: "credit",
+      amount: requestAmt,
+      transType: selectedService?.alias,
+      // providerId: selectProviderId,
+      cardType: cardType,
+      customerMobile: cusVal?.mobileNumber,
+      beneficiaryMobile: senderData?.beneficiaryMobile,
+      senderMobile: senderData?.mobileNumber,
     },
     dynamicValues: {
-      cardLastSixDigits: cusVal?.cardAccount?.slice(-6) || "",
-      amount: requestAmount || "12",
-      senderMobile: senderData?.mobileNumber || "9878978978",
-      beneMobile:
-        checkedBeneficiary?.beneficiaries[0]?.beneficiaryMobile || "9484944844",
-      charge: chargeDetail?.totalCharge || "29.50",
-      markup: "",
-      transType: selectedService?.alias || "CC",
-      transferType: bankDetails || "IMPS",
-      finalAmount: chargeDetail?.finalAmount || 12,
-      loadAmount: chargeDetail?.requestAmount || 41.5,
-      selectedChargeType: "amount",
+      slipUrl: "",
+      cardLastSixDigits: "123456",
+      amount: requestAmt,
+      senderMobile: senderData?.mobileNumber,
+      beneMobile: senderData?.beneficiaryMobile,
+      charge: chargeDetail?.serviceFee,
+      markup: chargeDetail?.markupCharge,
+      transType: selectedService?.alias,
+      transferType: bankDetails,
+      beneficaryAccountNumber: senderData?.beneficaryAccountNumber,
+      finalAmount: chargeDetail?.finalAmount,
+      loadAmount: requestAmount,
+      selectedChargeType: isMarkupSwitchActive ? "percentage" : "amount",
       accountInfo: {
-        bankName:
-          checkedBeneficiary?.bankName ||
-          cusVal?.bankName?.bankName ||
-          "ABN AMRO BANK CREDIT CARD",
-        bankIfsc: checkedBeneficiary?.accountIfsc || "ABNA0200001",
-        accountNumber:
-          checkedBeneficiary?.accountNumber ||
-          cusVal?.cardAccount ||
-          "3893893892389348",
+        bankName: cusVal?.bankName,
+        bankIfsc: cusVal?.IFSC,
+        accountNumber: senderData?.accountNumber,
       },
     },
+    // userId: userID,
+    // remarks: formData.remarks,
   };
 
   const requestPayout = getDynamicRequest(
     initPayout ?? "",
     endpoints ?? {},
-    params
+    payload
   );
 
   const onSubmit = () => {
@@ -183,7 +205,7 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
         console.log("Mutation success:", data);
       },
       onError: (err: any) => {
-        console.error("Mutation error:", err);
+        toast.error(err);
       },
     });
   };
@@ -211,7 +233,7 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                       labelClassName=" text-[14px]"
                       options={[
                         {
-                          value: "creditCard",
+                          value: "credit",
                           label: "Credit Card",
                           default: true,
                         },
@@ -568,6 +590,11 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                       placeHolder="0.00"
                       onChange={(value) => {
                         setRequestAmount(value || "");
+                        const totalFee = chargeDetail?.totalCharge;
+                        setValue(
+                          "charges",
+                          totalFee ? parseFloat(totalFee).toFixed(2) : ""
+                        );
                       }}
                     >
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
@@ -585,13 +612,7 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                       type="number"
                       label="Charges"
                       placeHolder="Charge Value"
-                      value={
-                        chargeDetail?.totalCharge
-                          ? parseFloat(chargeDetail.totalCharge).toFixed(2)
-                          : ""
-                      }
                       disabled
-                      InputBlur={() => {}}
                     >
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                         ₹

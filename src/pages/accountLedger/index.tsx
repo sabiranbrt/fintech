@@ -4,7 +4,7 @@ import { downloadCsv } from "@/utils/DownloadCsv";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
- const AccountLedger = () =>{
+const AccountLedger = () => {
   // States for storing the selected dates and report data
   const today = new Date().toISOString().split("T")[0];
   const [fromDate, setFromDate] = useState(today);
@@ -74,14 +74,14 @@ import { toast } from "react-toastify";
       };
 
       await downloadCsv(requestData);
-    } catch (error:any) {
+    } catch (error: any) {
       alert(`Download failed: ${error.message}`);
     } finally {
       // setIsLoading(false);
     }
   };
 
-  const parseReportData = (data:any) => {
+  const parseReportData = (data: any) => {
     const { size, tableData: flatData } = data;
     const headers = flatData?.slice(0, size);
     const rows = [];
@@ -100,7 +100,7 @@ import { toast } from "react-toastify";
   // Apply search filter to the entire dataset
   const filteredRows = rows.filter((row) => {
     return row.some(
-      (cell:any) =>
+      (cell: any) =>
         cell.toString().toLowerCase().includes(searchQuery.toLowerCase()) // Search across all cells
     );
   });
@@ -299,7 +299,7 @@ import { toast } from "react-toastify";
           <table className="bg-white  w-full">
             <thead>
               <tr className="bg-gray-200">
-                {headers?.map((header:any, index:number) => (
+                {headers?.map((header: any, index: number) => (
                   <th
                     key={index}
                     className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider sticky top-0 bg-gray-200 z-10"
@@ -325,7 +325,7 @@ import { toast } from "react-toastify";
                     key={rowIndex}
                     className={rowIndex % 2 === 0 ? "bg-gray-50" : "bg-white"}
                   >
-                    {row.map((cell:any, cellIndex:number) => (
+                    {row.map((cell: any, cellIndex: number) => (
                       <td
                         key={cellIndex}
                         className="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
@@ -362,5 +362,5 @@ import { toast } from "react-toastify";
       </div>
     </>
   );
-}
-export default AccountLedger
+};
+export default AccountLedger;
