@@ -25,26 +25,18 @@ const Header = () => {
                 <div className=" bg-primary-dark p-3 rounded-full flex-shrink-0">
                   <img src={item.icon ?? Icon} className="h-7" />
                 </div>
-                <div className="flex flex-col w-full">
-                  <p className="text-[1.09vw] uppercase font-medium tracking-wide">
-                    {item.label}
-                  </p>
-                  <div className=" relative flex items-center">
-                    <p className="inline-flex duration-500 text-sm sm:text-base gap-1 bg-primary-light rounded-md justify-center px-2 py-1 mt-1">
-                      <span className="text-green-400">
-                        {item.transactionSummary.success}
-                      </span>{" "}
-                      /
-                      <span className="text-red-600">
-                        {item.transactionSummary.failure}
-                      </span>
-                      <span className="text-white flex items-center">
-                        / <PiCurrencyInr />{" "}
-                        {Number(item.transactionSummary.totalAmount).toFixed(2)}
-                      </span>
-                    </p>
-                  </div>
-                </div>
+               <div className="flex flex-col justify-center w-full">
+                       <p className="text-[1.09vw] uppercase font-medium tracking-wide mt-8 ml-4">{item.label}</p>
+                       <div className="group relative">
+                         <p className="opacity-0 group-hover:opacity-100 transition-all duration-500 text-sm sm:text-base flex gap-1 bg-primary-light rounded-md justify-center px-2 py-1 mt-1">
+                           <span className="text-green-400">{item.transactionSummary.success}</span> /
+                           <span className="text-red-600">{item.transactionSummary.failure}</span>
+                           <span className="text-white flex items-center">
+                               / <PiCurrencyInr /> {Number(item.transactionSummary.totalAmount).toFixed(2)}
+                             </span>
+                         </p>
+                       </div>
+                     </div>
               </div>
             </div>
           );

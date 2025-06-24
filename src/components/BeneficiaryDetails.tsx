@@ -326,6 +326,7 @@ const BeneficiaryDetails = ({
           title={"Register Beneficiary"}
           subTitle={"Enter Mobile Number To Initiate KYC"}
           onClose={handleCancel}
+          onSubmit={()=>{}}
         />
       )}
       {isModalOpen === "paymentModal" && (

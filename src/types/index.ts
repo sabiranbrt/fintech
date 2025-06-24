@@ -72,3 +72,9 @@ export interface TransactionsProps{
   pageIndex: number
   pageSize: number
 }
+
+export interface ChargeInfoProps{
+  amount: string
+  selectedCardType: string
+  selectedGateway: string
+}

@@ -22,7 +22,7 @@ const interceptor = (page_type = null) => {
     // withCredentials: true,
   });
 
-  instance.interceptors.request.use(async (config) => {
+  instance.interceptors.request.use(async (config: any) => {
     const authToken = localStorage.getItem("authToken");
     const agentId = localStorage.getItem("agentId");
     config.headers["agentId"] = agentId;

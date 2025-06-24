@@ -30,6 +30,7 @@ export interface RegisterModalProps {
   onClose: () => void;
   onChange?: (value: string) => void;
   validation?: ValidationProps;
+  onSubmit: () => void;
 }
 
 const RegisterModal: React.FC<RegisterModalProps> = ({
@@ -56,6 +57,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
   subTitle,
   onClose,
   validation,
+  onSubmit,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -145,7 +147,8 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
                 )}
                 <button
                   type="submit"
-                  disabled={!errors[names] || !field.value}
+                  onClick={onSubmit}
+                  disabled={!!errors[names] || !field.value}
                   className={`w-full rounded-lg py-3 text-white mt-3 cursor-pointer ${
                     errors[names] || !field.value
                       ? "bg-gray-400"

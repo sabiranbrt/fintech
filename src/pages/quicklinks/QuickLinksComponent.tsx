@@ -1,12 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import RegisterModal from "@/components/registerModal";
+import { useDynamicMutation } from "@/hooks/dynamicQuery";
+import {
+  useAadhaarRegistrationBeneLazy,
+  useDigiData,
+  useDigiTokenLazy,
+} from "@/hooks/service";
 import {
   default as service,
   default as services,
 } from "@/jsonDemo/services.json";
 import { setEndpoints } from "@/redux/slices/endpointsSlice";
 import { setSelectedService, updateIsText } from "@/redux/slices/serviceSlice";
+import { RootState } from "@/redux/store";
+import { getDynamicRequest } from "@/utils/dynamicRequest";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { BiSolidWallet } from "react-icons/bi";
@@ -19,10 +27,6 @@ import { MdOutlinePayments, MdOutlineSwitchAccount } from "react-icons/md";
 import { PiHandWithdrawFill } from "react-icons/pi";
 import { useDispatch, useSelector } from "react-redux";
 import QuickLinksTitle from "./components/QuickLinksTitle";
-import { getDynamicRequest } from "@/utils/dynamicRequest";
-import { RootState } from "@/redux/store";
-import { useDynamicMutation } from "@/hooks/dynamicQuery";
-import { useDigiToken } from "@/hooks/service";
 
 const serviceIcons = {
   "Credit Card Bill Payment": (
@@ -86,6 +90,7 @@ const QuickLinksComponent = () => {
   } = useForm<any>({
     mode: "onChange",
   });
+
   const handleCancel = () => {
     setIsModalOpen(false);
   };
@@ -157,8 +162,73 @@ const QuickLinksComponent = () => {
     }
   }, [userRegisterNumber]);
 
-  const { data: digiToken } = useDigiToken();
-  console.log("digi", digiToken);
+  const [aadhaarParams, setAadhaarParams] = useState<{
+    digiToken: string;
+    mobile: string;
+  } | null>(null);
+
+  const { refetch: fetchDigiToken } = useDigiTokenLazy();
+
+  const { refetch: fetchAadhaar } = useAadhaarRegistrationBeneLazy(
+    aadhaarParams?.digiToken,
+    aadhaarParams?.mobile
+  );
+  const { mutateAsync: fetchDigiData } = useDigiData();
+
+  const handleSubmit = async () => {
+    const digiTokenRes = await fetchDigiToken();
+    const aadharRegister = await fetchAadhaar();
+    const accessToken =
+      digiTokenRes.data?.apiResponseData?.responseData?.accessToken;
+
+    if (!accessToken) return;
+
+    setAadhaarParams({ digiToken: accessToken, mobile: mobileNumber });
+
+    const { url } = JSON.parse(
+      aadharRegister.data.apiResponseData.responseData
+    );
+
+    const { requestId } = JSON.parse(
+      aadharRegister.data.apiResponseData.responseData
+    );
+
+    const newChildWindow = window.open(url, "_blank", "width=800,height=600");
+
+    // Monitor the child window
+    const monitorWindow = setInterval(() => {
+      if (!newChildWindow || newChildWindow.closed) {
+        clearInterval(monitorWindow);
+        console.error("Child window closed before success.");
+      } else {
+        try {
+          const currentUrl = newChildWindow.location.href;
+          if (currentUrl.includes(import.meta.env.VITE_REDIRECTION_URL)) {
+            const params = new URLSearchParams(new URL(currentUrl).search);
+            const state = params.get("state");
+
+            if (state || requestId) {
+              (async () => {
+                const digiDataResponse = await fetchDigiData({
+                  digiToken: accessToken,
+                  requestId: requestId!,
+                  beneMobileKyc: mobileNumber,
+                });
+
+                console.log("Fetched Digi Data:", digiDataResponse);
+              })();
+            }
+
+            newChildWindow.close();
+            clearInterval(monitorWindow);
+          }
+        } catch (error) {
+          // Ignore errors due to cross-origin restrictions
+          console.log("error", error);
+        }
+      }
+    }, 500); // Poll every 500ms for better responsiveness
+  };
 
   return (
     <>
@@ -238,6 +308,7 @@ const QuickLinksComponent = () => {
               setValue("mobileNumber", cleanedValue);
             }
           }}
+          onSubmit={handleSubmit}
         />
       )}
     </>

@@ -5,6 +5,7 @@ import checkboxReducer from '../slices/checkboxSlice';
 import serviceReducer from '../slices/serviceSlice';
 import endpointsReducer from '../slices/endpointsSlice';
 import formReducer from '../slices/customFormSlice';
+import stringValueReducer from '../slices/singleValueSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,7 +13,8 @@ export const store = configureStore({
     checkboxes: checkboxReducer,
     service: serviceReducer,
     endPoints: endpointsReducer,
-    form: formReducer
+    form: formReducer,
+    stringValue: stringValueReducer,
   },
 });
 
