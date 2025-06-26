@@ -20,6 +20,7 @@ interface IProp {
   labelClassName?: string;
   readOnly?: boolean;
   validation?: ValidationProps;
+  onChangeCallback?: (selectedValue: string) => void;
 }
 
 const RadioButton = ({
@@ -29,6 +30,7 @@ const RadioButton = ({
   options,
   ValidClassName,
   labelClassName,
+  onChangeCallback,
   validation,
 }: IProp) => {
   return (
@@ -38,7 +40,6 @@ const RadioButton = ({
       defaultValue={options[0].value}
       rules={ValidationRules(validation)}
       render={({ field }) => {
-
         return (
           <div className=" flex flex-row flex-wrap gap-1.5">
             {options?.map((opt) => {
@@ -55,7 +56,10 @@ const RadioButton = ({
                     type="radio"
                     defaultValue={opt.value}
                     checked={field.value === opt.value}
-                    onChange={() => field.onChange(opt.value)}
+                    onChange={() => {
+                      field.onChange(opt.value);
+                      onChangeCallback?.(opt.value);
+                    }}
                   />
                   <label
                     className={clsx(

@@ -1,22 +1,36 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import FeeBox from "@/components/feeBox";
 import InputField from "@/components/inputField";
+import Loader from "@/components/LoaderComponent";
 import RadioButton from "@/components/radioButton";
 import SelectField from "@/components/selectfield";
 import { useChargeInfo, useCreateOrder } from "@/hooks/service";
 import getSlab from "@/jsonDemo/getSlab.json";
 import { setValues } from "@/redux/slices/singleValueSlice";
+import { decryptData3Des } from "@/utils/3desEncrypt";
+import LocalStorageUtil from "@/utils/LocalStorageUtil";
+import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import clsx from "clsx";
 import { toWords } from "number-to-words";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import PGModals from "./PGModals";
-import LocalStorageUtil from "@/utils/LocalStorageUtil";
-import { decryptData3Des } from "@/utils/3desEncrypt";
+import interceptor from "@/utils/services/interceptor";
+import { toast } from "react-toastify";
+
+declare global {
+  interface Window {
+    checkout: any;
+  }
+}
 
 interface IProps {
   slablist: any;
+  refetchSlab: (
+    options?: RefetchOptions | undefined
+  ) => Promise<QueryObserverResult<any, unknown>>;
 }
 
 interface ChargeData {
@@ -31,7 +45,8 @@ interface OrderResponse {
   token: string;
 }
 
-const RightSection = ({ slablist }: IProps) => {
+const RightSection = ({ slablist, refetchSlab }: IProps) => {
+  const [isLoading, setIsLoading] = useState(false);
   // order Api hooks call
   const { mutateAsync: createOrder } = useCreateOrder();
 
@@ -71,8 +86,16 @@ const RightSection = ({ slablist }: IProps) => {
   });
 
   const amt = watch("requestAmt");
-  const getTypes = watch("radio") || "visa";
+  const getTypes = watch("radio");
   const getGateway = watch("gateway");
+
+  useEffect(() => {
+    dispatch(setValues(getTypes));
+  }, [getTypes]);
+
+  useEffect(() => {
+    refetchSlab();
+  }, [getGateway]);
 
   const slab = slablist;
 
@@ -146,6 +169,90 @@ const RightSection = ({ slablist }: IProps) => {
     }
   };
 
+  const paymentGatewayInitiate = async () => {
+    setIsLoading(true);
+    const options = {
+      key: orderResponse?.accessToken,
+      access_key: orderResponse?.accessToken,
+      order_id: orderResponse?.pgOrderID,
+      [orderResponse?.providerId === 0 ? "callback_handler" : "handler"]:
+        async function (response: any) {
+          // const key = import.meta.env.VITE_KEY;
+          // const iv = import.meta.env.VITE_IV;
+          const verifPayload = {
+            requestInfo: {
+              requestIp: localStorage.getItem("privateip"),
+              latitude: JSON.parse(LocalStorageUtil.getItem("latitude")),
+              longitude: JSON.parse(LocalStorageUtil.getItem("longitude")),
+              commDeviceId: "commDeviceId_f4c6e43c16d1",
+              requestSource: "requestSource_bf89dd79647e",
+              providerId: orderResponse?.providerId,
+            },
+            callbackResponse: response,
+          };
+
+          try {
+            setIsLoading(true);
+            const apiResp = (await interceptor().post(
+              "/loadViaPg/verifyOrder",
+              verifPayload,
+              { responseType: "text" }
+            )) as any;
+
+            const contentType = apiResp.headers.get("content-type");
+            if (contentType != "text/html;charset=UTF-8") {
+              const response = JSON.parse(apiResp.data)
+                ? JSON.parse(apiResp.data)
+                : apiResp.data;
+              if (response.apiResponseCode === "200") {
+                if (response.apiResponseData.responseCode === "200") {
+                  setModalContent(apiResp.data);
+                  setModalVisible(true);
+                } else {
+                  toast.error(response.apiResponseData.responseMessage);
+                  setModalVisible(false);
+                }
+              }
+            } else {
+              setModalContent(apiResp.data);
+              setModalVisible(true);
+            }
+          } catch (error) {
+            setModalVisible(false);
+            console.error(error);
+          } finally {
+            setIsLoading(false);
+          }
+        },
+    };
+
+    if (orderResponse?.platform === "RP") {
+      window.checkout = new Razorpay(options);
+    } else {
+      window.checkout = new NimbblCheckout(options);
+    }
+    window.checkout.open(orderResponse?.pgOrderID);
+  };
+
+  useEffect(() => {
+    if (orderResponse?.accessToken && orderResponse?.pgOrderID) {
+      const script = document.createElement("script");
+      setIsLoading(false);
+      if (orderResponse?.platform === "RP") {
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      } else {
+        script.src = "https://api.nimbbl.tech/static/assets/js/checkout.js";
+      }
+      script.async = true;
+
+      script.onload = () => {
+        paymentGatewayInitiate();
+      };
+
+      document.body.appendChild(script);
+    }
+  }, [orderResponse?.accessToken, orderResponse?.pgOrderID]);
+
   return (
     <>
       <div className="py-2 px-2 bg-gray-50 lg:bg-white lg:border-l border-gray-100">
@@ -156,9 +263,9 @@ const RightSection = ({ slablist }: IProps) => {
               control={control}
               names="radio"
               options={[
-                { value: "visa", label: "VISA", default: true },
-                { value: "masterCard", label: "MASTER CARD" },
-                { value: "Rupay", label: "RUPAY", disable: true },
+                { value: "visa", label: "VISA" },
+                { value: "master", label: "MASTER CARD" },
+                { value: "rupay", label: "RUPAY" },
               ]}
             />
           </div>
@@ -200,7 +307,6 @@ const RightSection = ({ slablist }: IProps) => {
                 label="Request Amount"
                 placeHolder="0.00"
                 InputBlur={async () => {
-                  dispatch(setValues(getTypes));
                   if (amt) {
                     try {
                       const response = await mutateAsync({
@@ -252,7 +358,7 @@ const RightSection = ({ slablist }: IProps) => {
             )}
           </div>
           <div className=" grid grid-cols-2 gap-2 mt-4">
-            {amt && (
+            {chargeData && (
               <>
                 <FeeBox
                   title="Load Amount"
@@ -295,8 +401,9 @@ const RightSection = ({ slablist }: IProps) => {
           </div>
         </div>
       </div>
-
+      {isLoading && <Loader message="Loading . . ." />}
       <PGModals
+        title="Transaction Failed or cancelled."
         modalVisible={modalVisible}
         modalContent={modalContent}
         closeModal={handleClose}

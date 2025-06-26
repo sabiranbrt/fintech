@@ -36,7 +36,8 @@
     "redux-persist": "^6.0.0",
     "styled-components": "^6.1.19",
     "sweetalert2": "^11.22.0",
-    "to-words": "^4.6.0"
+    "to-words": "^4.6.0",
+    "use-debounce": "^10.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

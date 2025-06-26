@@ -11,7 +11,6 @@ const ContactCard = () => {
 
   return (
     <div className="flex justify-center flex-wrap gap-10 mt-6 ml-8 mb-4">
-      {/* {isLoading && <Loader/>} */}
       {contactDetail?.map(
         ({ designation, name, region, email, phone }: any, index: number) => {
           // Extracting the initials from the name

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getAgent, getAgentAccount, getContact, getCount, getPennyDrop, getRecentTransaction, getService, getTransaction } from "@/libs"
+import { getAgent, getAgentAccount, getContact, getCount, getLedger, getPennyDrop, getRecentTransaction, getService, getTransaction } from "@/libs"
 import { axiosInstance, generateRandom13DigitNumber } from "@/libs/axios"
 import { ChargeInfoProps, RequestBody, TransactionsProps } from "@/types"
 import interceptor from "@/utils/services/interceptor"
@@ -238,5 +238,22 @@ export const useCreateOrder = () => {
             console.log("data", response)
         },
     })
+    console.log("creteOrder",query)
     return query
 }
+
+export const useAccountLedger = () => {
+    const query = useMutation({
+        mutationFn: getLedger,
+        onError: (error) => {
+            console.log("error", error)
+        },
+
+        onSuccess: (response) => {
+            console.log("data", response)
+        },
+    })
+    return query
+}
+
+

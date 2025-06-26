@@ -6,6 +6,7 @@
       "alias": "CC",
       "type": "payout",
       "uploadSlip": true,
+      "subserviceStatus": "Y",
       "sequence": [
         "getSender",
         "getbankList",
@@ -30,6 +31,7 @@
         }
       ],
       "uploadSlip": true,
+      "subserviceStatus": "Y",
       "sequence": [
         "getAgent",
         "getbankList",
@@ -45,6 +47,7 @@
       "alias": "RP",
       "type": "payout",
       "uploadSlip": true,
+      "subserviceStatus": "N",
       "paymentMethods": [
         {
           "value": "Ik Credit Pay",
@@ -66,6 +69,7 @@
       "type": "pgPayout",
       "alias": "EF",
       "uploadSlip": true,
+      "subserviceStatus": "Y",
       "paymentMethods": [
         {
           "value": "Ik Credit Pay",
@@ -88,6 +92,17 @@
       "type": "payout",
       "alias": "FS",
       "uploadSlip": false,
+      "subserviceStatus": "Y",
+      "paymentMethods": [
+        {
+          "value": "IMPS",
+          "label": "IMPS"
+        },
+        {
+          "value": "NEFT",
+          "label": "NEFT"
+        }
+      ],
       "sequence": [
         "getSender",
         "getbankList",

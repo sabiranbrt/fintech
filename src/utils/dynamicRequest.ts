@@ -7,6 +7,7 @@ export interface DynamicRequest {
   params?: Record<string, any>;
   headers?: any;
   body?: Record<string, unknown> | { encryptedKey: string | false; encryptedBody: string } | null;
+  responseType?: "json" | "text" | "blob";
 }
 
 type EndpointConfig = {
@@ -16,6 +17,7 @@ type EndpointConfig = {
   headers?: any;
   queryParams?: string[];
   body?: any;
+  responseType?: "json" | "text" | "blob"
 };
 
 type EndPointsMap = Record<string, EndpointConfig>;
@@ -24,7 +26,9 @@ export function getDynamicRequest(
   step: string,
   endPoints: EndPointsMap,
   params: Record<string, any> = {},
-  customHeaders: Record<string, any> = {}
+  customHeaders: Record<string, any> = {},
+  manualBody?: Record<string, unknown> | null,
+  responseType?: any
 ): DynamicRequest | null {
   const config = endPoints[step];
   if (!config) return null;
@@ -64,25 +68,40 @@ export function getDynamicRequest(
 
   // 5. Build request body for POST requests
   let requestBody: any = null;
-  if (config.method === "POST" && config.body?.length) {
-    requestBody = {};
-    config.body.forEach((key: any) => {
-      if (params[key] !== undefined && params[key] !== null) {
-        requestBody![key] = params[key];
+
+  if (config.method === "POST") {
+    // If manualBody is provided, use it directly
+    if (manualBody) {
+      requestBody = manualBody;
+    } else {
+      const { body: bodyConfig } = config;
+
+      if (Array.isArray(bodyConfig)) {
+        requestBody = {};
+        bodyConfig.forEach((key) => {
+          if (params[key] !== undefined && params[key] !== null) {
+            requestBody[key] = params[key];
+          }
+        });
+      } else if (bodyConfig === true || bodyConfig === undefined || bodyConfig === null) {
+        requestBody = { ...params };
+      } else if (typeof bodyConfig === "object") {
+        requestBody = bodyConfig;
+      } else {
+        requestBody = bodyConfig;
       }
-    });
-    // Apply encryption if enc is true
-    if (config.enc) {
+    }
+
+    // Apply encryption if enabled
+    if (config.enc && requestBody) {
       const encrypted = encryptRequestBody(requestBody);
       requestBody = {
         encryptedKey: encrypted.encryptedKey,
         encryptedBody: encrypted.encryptedBody,
       };
     }
-    if (!mergedHeaders["Content-Type"]) {
-      mergedHeaders["Content-Type"] = "application/json";
-    }
   }
+
 
   return {
     url: finalUrl,
@@ -90,5 +109,6 @@ export function getDynamicRequest(
     params,
     headers: mergedHeaders,
     body: requestBody,
+    responseType: responseType
   };
 }

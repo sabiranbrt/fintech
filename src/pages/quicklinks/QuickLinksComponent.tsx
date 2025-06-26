@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import RegisterModal from "@/components/registerModal";
@@ -27,6 +28,7 @@ import { MdOutlinePayments, MdOutlineSwitchAccount } from "react-icons/md";
 import { PiHandWithdrawFill } from "react-icons/pi";
 import { useDispatch, useSelector } from "react-redux";
 import QuickLinksTitle from "./components/QuickLinksTitle";
+import clsx from "clsx";
 
 const serviceIcons = {
   "Credit Card Bill Payment": (
@@ -241,12 +243,30 @@ const QuickLinksComponent = () => {
           service.services.map((service: any) => {
             const label = service.label as ServiceLabel;
             return (
-              <div key={service.label}>
+              <div
+                key={service.label}
+                className={clsx(
+                  "relative",
+                  service?.subserviceStatus === "Y"
+                    ? "cursor-pointer text-black"
+                    : "!cursor-not-allowed text-gray-600"
+                )}
+              >
                 <QuickLinksTitle
                   title={service.label}
                   icon={serviceIcons[label]}
-                  onClick={() => handleQuickLinkClick({ service })}
-                />
+                  onClick={() => {
+                    service?.subserviceStatus === "N"
+                      ? undefined
+                      : handleQuickLinkClick({ service });
+                  }}
+                >
+                  {service?.subserviceStatus === "N" && (
+                    <div className="absolute left-16 top-9 transform -translate-y-1/2 ml-2 hidden group-hover:block bg-gray-200 text-gray-600 text-xs px-4 py-1 rounded shadow-sm whitespace-nowrap">
+                      Service not available !
+                    </div>
+                  )}
+                </QuickLinksTitle>
               </div>
             );
           })
@@ -255,12 +275,14 @@ const QuickLinksComponent = () => {
         )}
 
         {ExtraServiceLabel.map(({ title, icon }) => (
-          <QuickLinksTitle
-            key={title}
-            title={title}
-            icon={icon}
-            onClick={() => handleQuickLinkClick({ label: title })}
-          />
+          <div className=" cursor-pointer">
+            <QuickLinksTitle
+              key={title}
+              title={title}
+              icon={icon}
+              onClick={() => handleQuickLinkClick({ label: title })}
+            />
+          </div>
         ))}
       </div>
 

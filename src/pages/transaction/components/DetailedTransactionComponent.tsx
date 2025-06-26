@@ -204,10 +204,16 @@ const DetailedTransactionComponent = () => {
   };
 
   const printContent = () => {
-    // const printWindow = window.open("", "_blank");
-    // printWindow.document.write(modalContent);
-    // printWindow.document.close();
-    // printWindow.print();
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      console.error(
+        "Failed to open print window. It might have been blocked by a popup blocker."
+      );
+      return;
+    }
+    printWindow.document.write(modalContent);
+    printWindow.document.close();
+    printWindow.print();
   };
 
   useEffect(() => {
@@ -232,7 +238,12 @@ const DetailedTransactionComponent = () => {
 
   const transactions = detailTransaction?.apiResponseData?.data?.data;
 
-  if (isLoading) return <Loader />;
+  if (isLoading)
+    return (
+      <Loader
+        message={"Please wait while the tranasaction are being displayed"}
+      />
+    );
 
   return (
     <>

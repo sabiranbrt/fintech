@@ -25,7 +25,7 @@ axiosInstance.interceptors.request.use(
         config.headers = config.headers || {};
         config.headers.includeUrn = true;
 
-        const authToken = localStorage.getItem("digiToken");
+        const authToken = localStorage.getItem("authToken");
         if (authToken) {
             config.headers.authtoken = authToken;
         }
@@ -66,14 +66,14 @@ axiosInstance.interceptors.request.use(
 export const fetchDynamic = async <T = unknown>(
     req: DynamicRequest,
 ): Promise<T> => {
-    const { url, method, params, headers, data } = req;
+    const { url, method, params, headers, data, responseType } = req;
 
     const res = await axiosInstance.request<T>({
         url,
         method,
         params: method === 'GET' ? params : undefined, // GET → query‑string
         data: method !== 'GET' ? data ?? params : undefined, // others → body
-        headers: { ...headers, ...(req.headers ?? {}) },
+        headers: { ...headers, ...(req.headers ?? {}) }, responseType: responseType ?? "json",
     });
 
     return res.data;

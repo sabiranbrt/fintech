@@ -28,6 +28,7 @@ const BeneficiaryDetails = ({
 }: IProps) => {
   const dispatch = useDispatch();
 
+  const [beneData, setBeneData] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState("");
 
@@ -63,6 +64,7 @@ const BeneficiaryDetails = ({
       );
     });
   }, [senderData?.beneficiaries, senderDataFW?.accounts, searchTerm]);
+  
 
   return (
     <div className=" w-full p-4 shadow-md bg-white min-h-0 h-full">
@@ -80,15 +82,15 @@ const BeneficiaryDetails = ({
           )}
         </div>
         <div className=" flex gap-4 whitespace-nowrap">
-          {(selectedService?.label !== QuickLinksType.RP ||
-            selectedService?.type === "pgPayout") && (
-              <ModalBtn
-                title="Add Account +"
-                modalOnClick={() => {
-                  setIsModalOpen("addAccount");
-                }}
-              />
-            )}
+          {(selectedService?.label === QuickLinksType.FW ||
+            selectedService?.label === QuickLinksType.FS) && (
+            <ModalBtn
+              title="Add Account +"
+              modalOnClick={() => {
+                setIsModalOpen("addAccount");
+              }}
+            />
+          )}
 
           {selectedService?.label === QuickLinksType.FS && (
             <ModalBtn
@@ -98,7 +100,7 @@ const BeneficiaryDetails = ({
               }}
             />
           )}
-          
+
           {(selectedService?.label === QuickLinksType.RP ||
             selectedService?.type === "pgPayout") && (
             <ModalBtn
@@ -300,7 +302,10 @@ const BeneficiaryDetails = ({
                       )}
 
                       <BtnPrimary
-                        onClick={() => setIsModalOpen("paymentModal")}
+                        onClick={() => {
+                          setBeneData(account);
+                          setIsModalOpen("paymentModal");
+                        }}
                         title="Proceed"
                       />
                     </div>
@@ -327,11 +332,11 @@ const BeneficiaryDetails = ({
           title={"Register Beneficiary"}
           subTitle={"Enter Mobile Number To Initiate KYC"}
           onClose={handleCancel}
-          onSubmit={()=>{}}
+          onSubmit={() => {}}
         />
       )}
       {isModalOpen === "paymentModal" && (
-        <PaymentModal handleCancel={handleCancel} senderData={senderData} />
+        <PaymentModal handleCancel={handleCancel} senderData={senderData} beneData={beneData} senderDataFW={senderDataFW}/>
       )}
     </div>
   );

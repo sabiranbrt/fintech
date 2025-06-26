@@ -36,6 +36,7 @@ export interface DynamicRequest {
   params?: Record<string, unknown>;
   headers?: any;
   data?: unknown;
+  responseType?: any
 }
 
 export interface ValidationProps {
@@ -66,17 +67,24 @@ export interface AgentAccountProps {
   accountSupportingImage: string
 }
 
-export interface TransactionsProps{
+export interface TransactionsProps {
   fromDate: string
   toDate: string
   pageIndex: number
   pageSize: number
 }
 
-export interface ChargeInfoProps{
+export interface ChargeInfoProps {
   amount: string
   selectedCardType: string
   selectedGateway: string
+}
+
+export interface LedgerProps {
+  fromDate: string
+  toDate: string
+  reportType: string
+  serviceName: string
 }
 
 // create Order
@@ -103,3 +111,12 @@ export interface RequestBody {
     crdrAmount: number;
   };
 }
+
+
+export type EndpointConfig = {
+  method: string;
+  url: string;
+  enc?: boolean;
+  headers?: Record<string, string>;
+  queryParams?: string[];
+};

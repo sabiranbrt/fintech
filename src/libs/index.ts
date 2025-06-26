@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AgentAccountProps, ChargeInfoProps, PennyDropIProps, TransactionsProps } from "@/types"
+import { AgentAccountProps, ChargeInfoProps, LedgerProps, PennyDropIProps, TransactionsProps } from "@/types"
 import { request } from "./axios"
 
 export const getService = () => {
@@ -59,9 +59,18 @@ export const getChargeInfo = (body: ChargeInfoProps) => {
     })
 }
 
+export const getLedger = (body: LedgerProps) => {
+    return request<any>({
+        url: "/api/v1/accounts/get-ledger",
+        method: "POST",
+        data: body
+    })
+}
+
 export const getAgent = () => {
     return request<any>({
         url: "/api/v1/agent",
         method: "GET",
     })
 }
+

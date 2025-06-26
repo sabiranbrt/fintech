@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useDynamicMutation, useDynamicQuery } from "@/hooks/dynamicQuery";
 import agent from "@/jsonDemo/agent.json";
-import getMobileNumber from "@/jsonDemo/getMobileNumberData.json";
+import PGModals from "@/pages/loadWallet/PGModals";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
+import LocalStorageUtil from "@/utils/LocalStorageUtil";
 import { getDynamicRequest } from "@/utils/dynamicRequest";
+import { getIpAddress } from "@/utils/getIpAddress";
 import { wordCapitalize } from "@/utils/wordCapitalize";
 import clsx from "clsx";
 import { toWords } from "number-to-words";
@@ -13,29 +15,45 @@ import { useForm } from "react-hook-form";
 import { MdOutlineVerified } from "react-icons/md";
 import { VscUnverified } from "react-icons/vsc";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import SwitchGroup from "../buttons/switchBtn";
 import FeeBox from "../feeBox";
 import InputField from "../inputField";
 import RadioButton from "../radioButton";
 import SlipButtons from "../slipbuttons/SlipButtons";
 import TransferNotice from "../transferNotice";
-import LocalStorageUtil from "@/utils/LocalStorageUtil";
-import { getIpAddress } from "@/utils/getIpAddress";
-import { toast } from "react-toastify";
 
 interface IProp {
   handleCancel: () => void;
   bankDetails?: string;
   senderData?: any;
+  beneData?: any;
+  cardNo?: string;
+  mobileNumber?: string;
+  senderDataFW?: any;
 }
 
-const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
-  const checkedBeneficiary = getMobileNumber[0];
-  const [isMarkupSwitchActive, setIsMarkupSwitchActive] = useState(false);
-
+const PaymentModal = ({
+  handleCancel,
+  bankDetails,
+  senderData,
+  beneData,
+  cardNo,
+  senderDataFW,
+  mobileNumber,
+}: IProp) => {
   const { selectedService } = useSelector((state: RootState) => state.service);
   const { endpoints } = useSelector((state: RootState) => state.endPoints);
   const { cusVal } = useSelector((state: RootState) => state.form);
+
+  const [modalContent, setModalContent] = useState("");
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const handleClose = () => {
+    setModalVisible(false);
+  };
+
+  const checkedBeneficiary = senderData;
+  const [isMarkupSwitchActive, setIsMarkupSwitchActive] = useState(false);
   const [requestAmount, setRequestAmount] = useState<string>("");
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
@@ -46,7 +64,7 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
   );
 
   const switchOptions = (selectedService?.paymentMethods || []).map(
-    (method) => ({
+    (method: any) => ({
       value: method.value,
       label: method.label,
     })
@@ -68,13 +86,12 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
   });
 
   const requestAmt = watch("requestAmt");
-  const cardType = watch("cardType");
 
   const stepName = selectedService?.sequence?.[2];
   const chargeDetails = selectedService?.sequence?.[3];
   const initPayout = selectedService?.sequence?.[4];
 
-  const { mutate } = useDynamicMutation<any>();
+  const { mutateAsync } = useDynamicMutation<any>();
 
   const request = useMemo(() => {
     return getDynamicRequest(stepName ?? "", endpoints ?? {}, {
@@ -147,67 +164,91 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
   const slab = slabs?.apiResponseData?.data;
   const chargeDetail = Charge?.apiResponseData?.data;
 
-  const ipAddress = getIpAddress();
-
-  const userID = "9241980104198913";
-
-  const payload = {
-    acquirerInfo: {
-      ip: ipAddress,
-      reqLat: LocalStorageUtil.getItem("latitude"),
-      reqLong: LocalStorageUtil.getItem("longitude"),
-      commDeviceId: "commDeviceId_f4c6e43c16d1",
-      requestSource: "requestSource_bf89dd79647e",
-      id: userID,
-    },
-    paymentInfo: {
-      amount: requestAmt,
-      transType: selectedService?.alias,
-      // providerId: selectProviderId,
-      cardType: cardType,
-      customerMobile: cusVal?.mobileNumber,
-      beneficiaryMobile: senderData?.beneficiaryMobile,
-      senderMobile: senderData?.mobileNumber,
-    },
-    dynamicValues: {
-      slipUrl: "",
-      cardLastSixDigits: "123456",
-      amount: requestAmt,
-      senderMobile: senderData?.mobileNumber,
-      beneMobile: senderData?.beneficiaryMobile,
-      charge: chargeDetail?.serviceFee,
-      markup: chargeDetail?.markupCharge,
-      transType: selectedService?.alias,
-      transferType: bankDetails,
-      beneficaryAccountNumber: senderData?.beneficaryAccountNumber,
-      finalAmount: chargeDetail?.finalAmount,
-      loadAmount: requestAmount,
-      selectedChargeType: isMarkupSwitchActive ? "percentage" : "amount",
-      accountInfo: {
-        bankName: cusVal?.bankName,
-        bankIfsc: cusVal?.IFSC,
-        accountNumber: senderData?.accountNumber,
-      },
-    },
-    // userId: userID,
-    // remarks: formData.remarks,
+  const handlePrint = () => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      console.error(
+        "Failed to open print window. It might have been blocked by a popup blocker."
+      );
+      return;
+    }
+    printWindow.document.write(modalContent);
+    printWindow.document.close();
+    printWindow.print();
   };
 
-  const requestPayout = getDynamicRequest(
-    initPayout ?? "",
-    endpoints ?? {},
-    payload
-  );
+  const onSubmit = async () => {
+    const userID = "9241980104198913";
+    const ipAddress = await getIpAddress();
 
-  const onSubmit = () => {
-    mutate(requestPayout ?? { url: "", method: "POST" }, {
-      onSuccess: (data: any) => {
-        console.log("Mutation success:", data);
+    const payload = {
+      acquirerInfo: {
+        ip: ipAddress,
+        reqLat: LocalStorageUtil.getItem("latitude"),
+        reqLong: LocalStorageUtil.getItem("longitude"),
+        commDeviceId: "commDeviceId_f4c6e43c16d1",
+        requestSource: "requestSource_bf89dd79647e",
+        id: userID,
       },
-      onError: (err: any) => {
-        toast.error(err);
+      paymentInfo: {
+        amount: requestAmt,
+        transType: selectedService?.alias,
+        // providerId: selectProviderId,
+        cardType: "credit",
+        customerMobile: senderData?.mobileNumber,
+        beneficiaryMobile: beneData?.beneficiaryMobile,
+        senderMobile: senderData?.mobileNumber,
       },
-    });
+      dynamicValues: {
+        slipUrl: "",
+        cardLastSixDigits: "123456",
+        amount: requestAmt,
+        senderMobile: senderData?.mobileNumber,
+        beneMobile: mobileNumber,
+        charge: String(chargeDetail?.feeAmount),
+        markup: String(chargeDetail?.markUp),
+        transType: selectedService?.alias,
+        transferType: selectedPaymentMethod,
+        beneficaryAccountNumber: null,
+        finalAmount: Number(chargeDetail?.finalAmount),
+        loadAmount: Number(chargeDetail?.requestAmount),
+        selectedChargeType: isMarkupSwitchActive ? "percentage" : "amount",
+        accountInfo: {
+          bankName:
+            selectedService?.alias === "FW"
+              ? beneData?.bankName
+              : cusVal?.bankName?.bankName,
+          bankIfsc:
+            selectedService?.alias === "FW"
+              ? beneData?.ifscCode
+              : cusVal?.IFSC,
+          accountNumber:
+            selectedService?.alias === "FW" ? beneData?.accountNumber : cardNo,
+        },
+      },
+      userId: userID,
+      remarks: undefined,
+    };
+
+    const requestPayout = getDynamicRequest(
+      initPayout ?? "",
+      endpoints ?? {},
+      payload
+    );
+
+    try {
+      await mutateAsync(requestPayout ?? { url: "", method: "POST" }, {
+        onSuccess: (data: any) => {
+          setModalContent(data);
+          setModalVisible(true);
+        },
+        onError: (err: any) => {
+          toast.error(err);
+        },
+      });
+    } catch (err) {
+      console.log("err", err);
+    }
   };
 
   return (
@@ -221,7 +262,8 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
               {slab?.note ?? ""}
             </div>
             {selectedService?.label !== QuickLinksType?.CC &&
-              selectedService?.label !== QuickLinksType?.FW && (
+              selectedService?.label !== QuickLinksType?.FW &&
+              selectedService?.label !== QuickLinksType?.FS && (
                 <div className="flex flex-nowrap items-center justify-end mt-2 w-full space-x-4 relative group">
                   <div className="text-base text-primary w-full">
                     {slab?.note ?? ""}
@@ -444,12 +486,9 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                           <p className="text-sm font-medium text-gray-800">
                             {wordCapitalize(
                               [
-                                checkedBeneficiary?.beneficiaries[0]
-                                  .beneficiaryFirstName,
-                                checkedBeneficiary?.beneficiaries[0]
-                                  .beneficiaryMiddleName,
-                                checkedBeneficiary?.beneficiaries[0]
-                                  .beneficiaryLastName,
+                                beneData?.beneficiaryFirstName,
+                                beneData.beneficiaryMiddleName,
+                                beneData.beneficiaryLastName,
                               ]
                                 ?.filter(Boolean)
                                 ?.join(" ")
@@ -459,8 +498,7 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                         <div>
                           <p className="text-sm text-gray-500">Mobile Number</p>
                           <p className="text-sm font-medium text-gray-800">
-                            {checkedBeneficiary?.beneficiaries[0]
-                              .beneficiaryMobile || "N/A"}
+                            {beneData?.beneficiaryMobile || "N/A"}
                           </p>
                         </div>
                       </div>
@@ -481,8 +519,8 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                           Bank Name & Account Number
                         </p>
                         <p className="text-sm font-medium text-gray-800">
-                          {checkedBeneficiary?.bankName} •{" "}
-                          {checkedBeneficiary?.accountNumber || "N/A"}
+                          {beneData?.bankName} •{" "}
+                          {beneData?.accountNumber || "N/A"}
                         </p>
                       </div>
                     </div>
@@ -590,6 +628,13 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                       placeHolder="0.00"
                       onChange={(value) => {
                         setRequestAmount(value || "");
+                        // const totalFee = chargeDetail?.totalCharge;
+                        // setValue(
+                        //   "charges",
+                        //   totalFee ? parseFloat(totalFee).toFixed(2) : ""
+                        // );
+                      }}
+                      InputBlur={() => {
                         const totalFee = chargeDetail?.totalCharge;
                         setValue(
                           "charges",
@@ -631,7 +676,8 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
               </div>
 
               {selectedService?.label !== QuickLinksType?.CC &&
-                selectedService?.label !== QuickLinksType?.FW && (
+                selectedService?.label !== QuickLinksType?.FW &&
+                selectedService?.label !== QuickLinksType?.FS && (
                   <InputField
                     wrapBorder
                     type="number"
@@ -667,7 +713,8 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
             </div>
 
             {selectedService?.label !== QuickLinksType?.CC &&
-            selectedService?.label !== QuickLinksType?.FW ? (
+            selectedService?.label !== QuickLinksType?.FW &&
+            selectedService?.label !== QuickLinksType?.FS ? (
               <SlipButtons />
             ) : null}
 
@@ -696,11 +743,21 @@ const PaymentModal = ({ handleCancel, bankDetails, senderData }: IProp) => {
                     ? "bg-gray-400 text-gray-800 cursor-not-allowed shadow-none"
                     : "bg-[#4b5a9f] text-white hover:bg-opacity-90 shadow-indigo-200"
                 )}
-                onClick={onSubmit}
+                onClick={() => {
+                  onSubmit();
+                  // handleCancel();
+                }}
               >
                 Proceed to Transfer
               </button>
             </div>
+            <PGModals
+              title="Transaction Failed or cancelled."
+              modalVisible={modalVisible}
+              modalContent={modalContent}
+              closeModal={handleClose}
+              handlePrint={handlePrint}
+            />
           </div>
           {/* Action Buttons */}
         </div>

@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { axiosInstance } from "@/libs/axios";
+import { useAccountLedger } from "@/hooks/service";
 import { downloadCsv } from "@/utils/DownloadCsv";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 const AccountLedger = () => {
   // States for storing the selected dates and report data
+  const { mutateAsync } = useAccountLedger();
   const today = new Date().toISOString().split("T")[0];
   const [fromDate, setFromDate] = useState(today);
   const [toDate, setToDate] = useState(today);
@@ -15,9 +15,11 @@ const AccountLedger = () => {
   // const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [pageIndex, setPageIndex] = useState(0);
   const pageSize = 10; // Fixed page size of 10
+
   useEffect(() => {
     fetchData();
   }, []);
+
   // Function to fetch data from the backend API
   const fetchData = async () => {
     if (!fromDate || !toDate) {
@@ -27,24 +29,12 @@ const AccountLedger = () => {
     // setIsLoading(true);
 
     try {
-      const payload = {
+      const response = await mutateAsync({
         fromDate: fromDate,
         toDate: toDate,
         reportType: "merchantDailySummary",
         serviceName: "",
-      };
-      // console.log("payload",payload);
-
-      const response = await axiosInstance.post(
-        "/accounts/get-ledger",
-        payload,
-        {
-          headers: {
-            includeUrn: true,
-            authToken: localStorage.getItem("authToken"),
-          },
-        }
-      );
+      });
       if (response?.data?.apiResponseData?.responseCode === "200") {
         setReportData(response?.data?.apiResponseData?.data);
       } else {
@@ -74,14 +64,14 @@ const AccountLedger = () => {
       };
 
       await downloadCsv(requestData);
-    } catch (error: any) {
+    } catch (error: TODO) {
       alert(`Download failed: ${error.message}`);
     } finally {
       // setIsLoading(false);
     }
   };
 
-  const parseReportData = (data: any) => {
+  const parseReportData = (data: TODO) => {
     const { size, tableData: flatData } = data;
     const headers = flatData?.slice(0, size);
     const rows = [];
@@ -100,7 +90,7 @@ const AccountLedger = () => {
   // Apply search filter to the entire dataset
   const filteredRows = rows.filter((row) => {
     return row.some(
-      (cell: any) =>
+      (cell: TODO) =>
         cell.toString().toLowerCase().includes(searchQuery.toLowerCase()) // Search across all cells
     );
   });
@@ -113,7 +103,7 @@ const AccountLedger = () => {
   const currentPageRows = filteredRows.slice(startIndex, startIndex + pageSize);
 
   // Handle page change
-  const handlePageChange = (pageNumber: any) => {
+  const handlePageChange = (pageNumber: TODO) => {
     setPageIndex(pageNumber - 1); // Adjusting for zero-based index
   };
 
@@ -121,6 +111,7 @@ const AccountLedger = () => {
   useEffect(() => {
     setPageIndex(0); // Reset to the first page whenever the search query changes
   }, [searchQuery]);
+
   const renderPageNumbers = () => {
     const pageButtons = [];
     const maxVisiblePages = 3;
@@ -285,12 +276,6 @@ const AccountLedger = () => {
           >
             Export
           </button>
-          {/* <button
-          
-            className="px-3 mr-2 bg-secondary h-9 text-white rounded-md shadow-sm hover:bg-secondary-light transition-all duration-300"
-          >
-            Filter
-          </button> */}
         </div>
 
         {/* Add search input */}
@@ -299,7 +284,7 @@ const AccountLedger = () => {
           <table className="bg-white  w-full">
             <thead>
               <tr className="bg-gray-200">
-                {headers?.map((header: any, index: number) => (
+                {headers?.map((header: TODO, index: number) => (
                   <th
                     key={index}
                     className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider sticky top-0 bg-gray-200 z-10"
@@ -325,7 +310,7 @@ const AccountLedger = () => {
                     key={rowIndex}
                     className={rowIndex % 2 === 0 ? "bg-gray-50" : "bg-white"}
                   >
-                    {row.map((cell: any, cellIndex: number) => (
+                    {row.map((cell: TODO, cellIndex: number) => (
                       <td
                         key={cellIndex}
                         className="px-6 py-4 whitespace-nowrap text-sm text-gray-600"

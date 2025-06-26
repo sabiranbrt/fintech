@@ -10,10 +10,6 @@ import ArrowRight from "@assets/icons/arrowRight.svg";
 
 const RegisterBeneficiary = () => {
   const [index, setIndex] = useState(0);
-  //   const dispatch = useDispatch();
-  //   const { data: formList, isLoading } = useFormList();
-  //   const { mutateAsync } = useSaveForm();
-
   const methods = useForm<any>({
     mode: "onChange",
   });
@@ -25,17 +21,6 @@ const RegisterBeneficiary = () => {
   const onSubmitForData = () => {
     setValue("mobileNumber", mobileNumber);
   };
-
-  //   const onSubmit = async (formValues: any) => {
-  //     localStorage.setItem("dynamicMethod", formList?.dynamicMethod);
-  //     dispatch(updateLoading({ isLoading: true }));
-  //     try {
-  //       const response = await mutateAsync({ ...formValues });
-  //       console.log("response", response);
-  //     } catch (err) {
-  //       console.log("error", err);
-  //     }
-  //   };
 
   const render = () => {
     const stepKeys = Object.keys(formList?.dataFields) as Array<
@@ -75,31 +60,6 @@ const RegisterBeneficiary = () => {
     return null;
   };
 
-  // const statusName = () => {
-  //   const stepKeys = Object.keys(formList.dataFields) as Array<
-  //     keyof typeof formList.dataFields
-  //   >;
-  //   const currentKey = stepKeys[index];
-  //   const currentStep = formList.dataFields[currentKey];
-
-  //   if (!Array.isArray(currentStep)) {
-  //     return (
-  //       <h1
-  //         className={clsx(
-  //           " font-semibold text-[20px] !mb-5 text-[#5081B9] uppercase border-b border-gray-300 !pb-5",
-  //           formList.formTitle === "center"
-  //             ? "text-center"
-  //             : formList.formTitle === "end" && "text-end"
-  //         )}
-  //       >
-  //         {currentStep?.status}
-  //       </h1>
-  //     );
-  //   }
-
-  //   return null;
-  // };
-
   const getCurrentStepFieldNames = (): any[] => {
     const stepKeys = Object.keys(formList?.dataFields ?? {}) as Array<
       keyof typeof formList.dataFields
@@ -113,8 +73,6 @@ const RegisterBeneficiary = () => {
 
     return [];
   };
-
-  //   if (isLoading) return <Spinner />;
 
   return (
       <div className=" min-h-0 h-full">

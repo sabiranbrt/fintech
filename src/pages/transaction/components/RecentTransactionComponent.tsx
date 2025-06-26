@@ -2,72 +2,20 @@
 import { formatDateTime } from "@/utils/formatDateDDMMYYYY";
 import { useRecentTransaction } from "@/hooks/service";
 import Loader from "@/components/LoaderComponent";
-// import Loader from "./LoaderComponent";
 
 const RecentTransactionComponent = () => {
   const { data: recentTransaction, isLoading } = useRecentTransaction();
   const recentTraList = recentTransaction?.apiResponseData?.data;
 
-  // const [transactions, setTransactions] = useState([]);
-  // const [isLoading, setIsLoading] = useState(false);
-  // const transactionTypes = {
-  //   EP: "Express Payment",
-  //   RP: "Rent Payment",
-  //   LG: "Load Gateway",
-  //   FT: "Fund Transfer",
-  //   IC: "Ik Credit Pay",
-  //   IP: "Ik Pay",
-  //   CC: "Credit Card Bill Pay",
-  //   FW: "Fund Withdrawal",
-  // };
-  // useEffect(() => {
-  //   const fetchRecentTransactions = async () => {
-  //     try {
-  //       setIsLoading(true);
-  //       const authToken = localStorage.getItem("authToken");
-  //       const response = await axiosInstance.get("/transaction/recent", {
-  //         headers: {
-  //           includeUrn: true,
-  //           authToken: authToken,
-  //           "Content-Type": "application/json",
-  //         },
-  //       });
-  //       const data = response.data.apiResponseData.data;
+  if (isLoading)
+    return (
+      <Loader
+        message={"Please wait while the tranasaction are being displayed"}
+      />
+    );
 
-  //       if (Array.isArray(data)) {
-  //         setTransactions(data);
-  //       } else {
-  //         console.error("Data is not an array:", data);
-  //         setTransactions([]);
-  //         // toast.error(message);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching recent transactions:", error);
-  //       setTransactions([]);
-  //       toast.error("Error fetching recent transactions");
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   fetchRecentTransactions();
-  // }, []);
-  // const formatDate = (dateString) => {
-  //   const date = new Date(dateString);
-  //   const day = String(date.getDate()).padStart(2, "0");
-  //   const month = String(date.getMonth() + 1).padStart(2, "0");
-  //   const year = date.getFullYear();
-  //   return `${day}-${month}-${year}`;
-  // };
-
-  if (isLoading) return <Loader />;
   return (
     <>
-      {/* {isLoading && (
-        <Loader
-          message={"Please wait while the tranasaction are being displayed"}
-        />
-      )} */}
       <div className="overflow-x-auto min-w-full customTable h-96">
         {/* <p className='text-center mb-6 font-semibold text-primary-dark '>RECENT TRANSACTIONS</p> */}
         <table className="min-w-full divide-y divide-gray-200">

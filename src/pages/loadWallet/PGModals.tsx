@@ -1,7 +1,7 @@
-import React from "react";
 import { ImCross } from "react-icons/im";
 
 interface IProps {
+  title: string;
   modalVisible: boolean;
   modalContent: string;
   closeModal: () => void;
@@ -9,6 +9,7 @@ interface IProps {
 }
 
 const PGModals = ({
+  title,
   modalVisible,
   modalContent,
   closeModal,
@@ -16,7 +17,6 @@ const PGModals = ({
 }: IProps) => {
   return (
     <>
-      {/* Main Modal */}
       {modalVisible && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-gray-100 p-8 rounded-xl shadow-lg max-w-4xl max-h-[80vh] overflow-y-auto relative flex flex-col transform transition-transform duration-300 ease-in-out scale-95 hover:scale-100">
@@ -44,13 +44,13 @@ const PGModals = ({
                   if (isFailure || isSuccess) {
                     return (
                       <div className="text-center text-md font-medium text-red-600 mt-3">
-                        <p>Transaction Failed or cancelled.</p>
+                        <p>{title}</p>
                       </div>
                     );
                   }
                 } catch (err) {
                   // Not JSON, assume it's HTML
-                  console.log("error",err)
+                  console.log("error", err);
                   return (
                     <>
                       <div dangerouslySetInnerHTML={{ __html: modalContent }} />

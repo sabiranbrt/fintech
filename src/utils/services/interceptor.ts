@@ -23,7 +23,7 @@ const interceptor = (page_type = null) => {
   });
 
   instance.interceptors.request.use(async (config: any) => {
-    const authToken = localStorage.getItem("digiToken");
+    const authToken = localStorage.getItem("authToken");
     const agentId = localStorage.getItem("agentId");
     config.headers["agentId"] = agentId;
     config.headers["clientId"] = import.meta.env.VITE_CLIENT_ID;

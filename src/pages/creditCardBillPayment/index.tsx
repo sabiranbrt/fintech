@@ -43,6 +43,9 @@ const CreditCardBillPayment = ({ senderData }: IProps) => {
     mode: "onChange",
   });
 
+  const cardNo = watch("cardAccount")
+  const mobileNumber = watch("mobileNumber")
+
   const onSubmit = (data: any) => {
     setIsModalOpen("creditCard");
     dispatch(
@@ -147,6 +150,8 @@ const CreditCardBillPayment = ({ senderData }: IProps) => {
               handleCancel={handleCancel}
               bankDetails={bankDetails?.mode}
               senderData={senderData}
+              cardNo={cardNo}
+              mobileNumber={mobileNumber}
             />
           )}
         </div>
