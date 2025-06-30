@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getAgent, getAgentAccount, getContact, getCount, getLedger, getPennyDrop, getRecentTransaction, getService, getTransaction } from "@/libs"
+import { getAgentAccount, getContact, getCount, getLedger, getPennyDrop, getService } from "@/libs"
 import { axiosInstance, generateRandom13DigitNumber } from "@/libs/axios"
-import { ChargeInfoProps, RequestBody, TransactionsProps } from "@/types"
+import { ChargeInfoProps, RequestBody } from "@/types"
 import interceptor from "@/utils/services/interceptor"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import axios from "axios"
@@ -31,22 +31,22 @@ export const useContact = () => {
     return contact
 }
 
-export const useRecentTransaction = () => {
-    const recentTransaction = useQuery({
-        queryKey: ['RECENT_TRANSACTION'],
-        queryFn: getRecentTransaction,
-    })
-    return recentTransaction
-}
+// export const useRecentTransaction = () => {
+//     const recentTransaction = useQuery({
+//         queryKey: ['RECENT_TRANSACTION'],
+//         queryFn: getRecentTransaction,
+//     })
+//     return recentTransaction
+// }
 
-export const useTransaction = (data: TransactionsProps) => {
-    const detailTransaction = useQuery({
-        queryKey: ['DETAIL_TRANSACTION', data.fromDate, data.toDate, data.pageIndex],
-        queryFn: () => getTransaction({ fromDate: data.fromDate, toDate: data.toDate, pageIndex: data.pageIndex, pageSize: data.pageSize }),
-    })
+// export const useTransaction = (data: TransactionsProps) => {
+//     const detailTransaction = useQuery({
+//         queryKey: ['DETAIL_TRANSACTION', data.fromDate, data.toDate, data.pageIndex],
+//         queryFn: () => getTransaction({ fromDate: data.fromDate, toDate: data.toDate, pageIndex: data.pageIndex, pageSize: data.pageSize }),
+//     })
 
-    return detailTransaction
-}
+//     return detailTransaction
+// }
 
 export const usePennyDrop = () => {
     const query = useMutation({
@@ -214,14 +214,6 @@ export const useSlabViaPG = (cardType: string) => {
         enabled: !!cardType,
     })
     return slab
-}
-
-export const useAgent = () => {
-    const agent = useQuery({
-        queryKey: ['AGENT_LIST'],
-        queryFn: getAgent
-    })
-    return agent
 }
 
 export const useCreateOrder = () => {

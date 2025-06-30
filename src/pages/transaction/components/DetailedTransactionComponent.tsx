@@ -1,14 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Loader from "@/components/LoaderComponent";
-import { useTransaction } from "@/hooks/service";
+import { useDynamicQuery } from "@/hooks/dynamicQuery";
 import { generateRandom13DigitNumber } from "@/libs/axios";
+import { RootState } from "@/redux/store";
+import { getDynamicRequest } from "@/utils/dynamicRequest";
 import { formatDateTime } from "@/utils/formatDateDDMMYYYY";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { ImCross } from "react-icons/im";
+import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 const DetailedTransactionComponent = () => {
+  const { selectedService } = useSelector((state: RootState) => state.service);
+  const { endpoints } = useSelector((state: RootState) => state.endPoints);
+
   const today = new Date().toISOString().split("T")[0];
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
@@ -16,17 +22,6 @@ const DetailedTransactionComponent = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [modalContent, setModalContent] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // const transactionTypes = {
-  //   EP: "Express Payment",
-  //   RP: "Rent Payment",
-  //   LG: "Load Gateway",
-  //   FT: "Fund Transfer",
-  //   IC: "Ik Credit Pay",
-  //   IP: "Ik Pay",
-  //   CC: "Credit Card Bill Pay",
-  //   FW: "Fund Withdrawal",
-  // };
 
   const handleDateChange = () => {
     if (startDate && endDate) {
@@ -36,159 +31,65 @@ const DetailedTransactionComponent = () => {
     }
   };
 
-  // const formatDate = (dateString) => {
-  //   const date = new Date(dateString);
-  //   const day = String(date.getDate()).padStart(2, "0");
-  //   const month = String(date.getMonth() + 1).padStart(2, "0");
-  //   const year = date.getFullYear();
-  //   return `${day}-${month}-${year}`;
-  // };
+  const stepName = selectedService?.sequence[1];
+  const receiptTransaction = selectedService?.sequence[2];
 
-  // const renderPagination = () => {
-  //   const pages = [];
+  const request = getDynamicRequest(stepName ?? "", endpoints ?? {}, {
+    fromDate: startDate,
+    toDate: endDate,
+    pageIndex: currentPage,
+    pageSize: 10,
+  });
 
-  //   // First page button
-  //   pages.push(
-  //     <button
-  //       key={0}
-  //       onClick={() => handlePageChange(0)}
-  //       className={`px-3 py-1 mx-1 rounded ${
-  //         currentPage === 0
-  //           ? "bg-blue-500 text-white"
-  //           : "bg-gray-300 text-gray-700"
-  //       }`}
-  //     >
-  //       1
-  //     </button>
-  //   );
+  const { data: detailTransaction, isLoading } = useDynamicQuery<TODO>(
+    request ?? { url: "", method: "GET" },
+    {
+      queryKey: [stepName],
+      enabled: !!request,
+    }
+  );
 
-  //   // Add ellipses before currentPage if currentPage is beyond page 2
-  //   if (currentPage > 2) {
-  //     pages.push(
-  //       <span key="ellipsis-prev" className="px-3 py-1 mx-1">
-  //         ...
-  //       </span>
-  //     );
+  // const requestReceipt = getDynamicRequest(
+  //   receiptTransaction ?? "",
+  //   endpoints ?? {},
+  //   {
+  //     id: id,
   //   }
+  // );
 
-  //   // Display previous page if currentPage > 1 and not near the beginning
-  //   if (currentPage > 1) {
-  //     pages.push(
-  //       <button
-  //         key={currentPage - 1}
-  //         onClick={() => handlePageChange(currentPage - 1)}
-  //         className="px-3 py-1 mx-1 bg-gray-300 text-gray-700 rounded"
-  //       >
-  //         {currentPage}
-  //       </button>
-  //     );
+  // const { data: receipt } = useDynamicQuery<TODO>(
+  //   request ?? { url: "", method: "GET" },
+  //   {
+  //     queryKey: [receiptTransaction],
+  //     enabled: !!requestReceipt,
   //   }
+  // );
 
-  //   // Display current page button
-  //   if (currentPage > 0 && currentPage < totalPages - 1) {
-  //     pages.push(
-  //       <button
-  //         key={currentPage}
-  //         onClick={() => handlePageChange(currentPage)}
-  //         className="px-3 py-1 mx-1 bg-blue-500 text-white rounded"
-  //       >
-  //         {currentPage + 1}
-  //       </button>
-  //     );
-  //   }
-
-  //   // Display next page if currentPage is before the last two pages
-  //   if (currentPage < totalPages - 2) {
-  //     pages.push(
-  //       <button
-  //         key={currentPage + 1}
-  //         onClick={() => handlePageChange(currentPage + 1)}
-  //         className="px-3 py-1 mx-1 bg-gray-300 text-gray-700 rounded"
-  //       >
-  //         {currentPage + 2}
-  //       </button>
-  //     );
-  //   }
-
-  //   // Add ellipses after currentPage if not near the end
-  //   if (currentPage < totalPages - 3) {
-  //     pages.push(
-  //       <span key="ellipsis-next" className="px-3 py-1 mx-1">
-  //         ...
-  //       </span>
-  //     );
-  //   }
-
-  //   // Last page button
-  //   if (totalPages > 1) {
-  //     pages.push(
-  //       <button
-  //         key={totalPages - 1}
-  //         onClick={() => handlePageChange(totalPages - 1)}
-  //         className={`px-3 py-1 mx-1 rounded ${
-  //           currentPage === totalPages - 1
-  //             ? "bg-blue-500 text-white"
-  //             : "bg-gray-300 text-gray-700"
-  //         }`}
-  //       >
-  //         {totalPages}
-  //       </button>
-  //     );
-  //   }
-
-  //   return (
-  //     <div className="flex items-center justify-center mt-4 mb-4">
-  //       <button
-  //         onClick={() => handlePageChange(currentPage - 1)}
-  //         disabled={currentPage === 0}
-  //         className="px-8 py-1 mx-1 bg-gray-300 text-gray-700 rounded disabled:opacity-50 text-sm"
-  //         style={{
-  //           borderRadius: "8px", // Ensure border-radius is maintained
-  //           borderImage: "linear-gradient(45deg, #4b5a9f, #4fb5b7) 3",
-  //           backgroundClip: "border-box", // Keep the background clipped to the border
-  //           WebkitMaskImage: "linear-gradient(white, white)", // Fix for some browsers
-  //           boxShadow:
-  //             "rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px",
-  //         }}
-  //       >
-  //         Previous
-  //       </button>
-  //       {pages}
-  //       <button
-  //         onClick={() => handlePageChange(currentPage + 1)}
-  //         disabled={currentPage === totalPages - 1}
-  //         className="px-10 py-1 mx-1 bg-gray-300 text-gray-700 rounded disabled:opacity-50 text-sm"
-  //         style={{
-  //           borderRadius: "8px", // Ensure border-radius is maintained
-  //           borderImage: "linear-gradient(45deg, #4b5a9f, #4fb5b7) 3",
-  //           backgroundClip: "border-box", // Keep the background clipped to the border
-  //           WebkitMaskImage: "linear-gradient(white, white)", // Fix for some browsers
-  //           boxShadow:
-  //             "rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px",
-  //         }}
-  //       >
-  //         Next
-  //       </button>
-  //     </div>
-  //   );
-  // };
+  const transactions = detailTransaction?.apiResponseData?.data?.data;
 
   const fetchHtmlReceipt = async (id: number) => {
     try {
-      const authToken = localStorage.getItem("authToken");
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/transaction/html-receipt/${id}`,
-        {
-          headers: {
-            urn: generateRandom13DigitNumber(),
-            "Content-Type": "application/json",
-            authToken: authToken,
-          },
-        }
+      const requestReceipt = getDynamicRequest(
+        receiptTransaction ?? "",
+        endpoints ?? {},
+        { id }
       );
-      const htmlContent = response.data;
-      // console.log("html content", response.data);
 
+      if (!requestReceipt?.url || !requestReceipt?.method) {
+        toast.error("Invalid request configuration.");
+        return;
+      }
+
+      const response = await axios({
+        method: requestReceipt.method,
+        url: requestReceipt.url,
+        data: requestReceipt.body || {}, // for POST requests
+        params:
+          requestReceipt.method === "GET" ? requestReceipt.body : undefined,
+      });
+
+      const htmlContent = response.data;
+      console.log("html content", response.data);
       setModalContent(htmlContent);
       setIsModalOpen(true);
     } catch (error: TODO) {
@@ -227,15 +128,6 @@ const DetailedTransactionComponent = () => {
       document.body.classList.remove("overflow-hidden");
     };
   }, [isModalOpen]);
-
-  const { data: detailTransaction, isLoading } = useTransaction({
-    fromDate: startDate,
-    toDate: endDate,
-    pageIndex: currentPage,
-    pageSize: 10,
-  });
-
-  const transactions = detailTransaction?.apiResponseData?.data?.data;
 
   if (isLoading)
     return (

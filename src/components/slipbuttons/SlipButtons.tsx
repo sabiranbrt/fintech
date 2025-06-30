@@ -111,7 +111,8 @@ const SlipButtons = ({ onSlipUpload, beneData, senderData }: IProps) => {
       const initTokenResponse = await EncrptionInterceptor("SESSION_INIT").get(
         "session/init"
       );
-      const token = initTokenResponse?.data?.apiResponseData?.responseData?.token;
+      const token =
+        initTokenResponse?.data?.apiResponseData?.responseData?.token;
       localStorage.setItem("access_token", token);
       if (!token) {
         Swal.fire("Error", "Session expired. Please login again.", "error");

@@ -1,14 +1,29 @@
-import { useAgent, useSlabViaPG } from "@/hooks/service";
+import Loader from "@/components/LoaderComponent";
+import { useDynamicQuery } from "@/hooks/dynamicQuery";
+import { useSlabViaPG } from "@/hooks/service";
+import { RootState } from "@/redux/store";
+import { getDynamicRequest } from "@/utils/dynamicRequest";
+import { useSelector } from "react-redux";
 import LeftSection from "./LeftSection";
 import RightSection from "./RightSection";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import Loader from "@/components/LoaderComponent";
 
 const LoadWallet = () => {
   const value = useSelector((state: RootState) => state.stringValue.value);
 
-  const { data: agent, isLoading: agentLoad } = useAgent();
+  const { selectedService } = useSelector((state: RootState) => state.service);
+  const { endpoints } = useSelector((state: RootState) => state.endPoints);
+
+  const stepName = selectedService?.sequence[0];
+  const request = getDynamicRequest(stepName ?? "", endpoints ?? {});
+
+  const { data: agent, isLoading: agentLoad } = useDynamicQuery<TODO>(
+    request ?? { url: "", method: "GET" },
+    {
+      queryKey: [stepName],
+      enabled: !!request,
+    }
+  );
+
   const { data: slab, isLoading: SlabLoad, refetch } = useSlabViaPG(value);
 
   const slablist = slab?.apiResponseData?.data;

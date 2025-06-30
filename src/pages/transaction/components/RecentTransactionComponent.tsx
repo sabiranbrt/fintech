@@ -1,9 +1,26 @@
-import { formatDateTime } from "@/utils/formatDateDDMMYYYY";
-import { useRecentTransaction } from "@/hooks/service";
 import Loader from "@/components/LoaderComponent";
+import { useDynamicQuery } from "@/hooks/dynamicQuery";
+import { RootState } from "@/redux/store";
+import { getDynamicRequest } from "@/utils/dynamicRequest";
+import { formatDateTime } from "@/utils/formatDateDDMMYYYY";
+import { useSelector } from "react-redux";
 
 const RecentTransactionComponent = () => {
-  const { data: recentTransaction, isLoading } = useRecentTransaction();
+  const { selectedService } = useSelector((state: RootState) => state.service);
+  const { endpoints } = useSelector((state: RootState) => state.endPoints);
+
+  const stepName = selectedService?.sequence[0];
+
+  const request = getDynamicRequest(stepName ?? "", endpoints ?? {});
+
+  const { data: recentTransaction, isLoading } = useDynamicQuery<TODO>(
+    request ?? { url: "", method: "GET" },
+    {
+      queryKey: [stepName],
+      enabled: !!request,
+    }
+  );
+  
   const recentTraList = recentTransaction?.apiResponseData?.data;
 
   if (isLoading)

@@ -36,7 +36,7 @@ const BeneficiaryDetails = ({
     setIsModalOpen("");
   };
   const methods = useForm<any>();
-
+  
   const { selectedService } = useSelector((state: RootState) => state.service);
   const [expandedAccount, setExpandedAccount] = useState(null);
 
@@ -104,7 +104,7 @@ const BeneficiaryDetails = ({
             <ModalBtn
               title="Add Beneficiary +"
               modalOnClick={() => {
-                dispatch(updateIsText("Register Beneficiary"));
+                dispatch(updateIsText(QuickLinksType.RB));
               }}
             />
           )}

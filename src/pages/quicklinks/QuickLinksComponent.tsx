@@ -45,36 +45,54 @@ const serviceIcons = {
   "Fund Withdrawal": (
     <PiHandWithdrawFill className="text-secondary text-xl md:text-2xl" />
   ),
+  "Register Sender": (
+    <IoPersonOutline className="text-orange-500 text-xl md:text-2xl" />
+  ),
+  Transactions: (
+    <GrTransaction className="text-green-500 text-xl md:text-2xl" />
+  ),
+  "Total Payout": (
+    <MdOutlinePayments className="text-primary text-xl md:text-2xl" />
+  ),
+  "Load Wallet": (
+    <BiSolidWallet className="text-lime-600 text-xl md:text-2xl" />
+  ),
+  "Account Ledger": (
+    <MdOutlineSwitchAccount className="text-secondary-light text-xl md:text-2xl" />
+  ),
+  "Relationship Manager": (
+    <FaHeadset className="text-secondary-dark text-xl md:text-2xl" />
+  ),
 };
 
-const ExtraServiceLabel = [
-  {
-    title: "Register Sender",
-    icon: <IoPersonOutline className="text-orange-500 text-xl md:text-2xl" />,
-  },
-  {
-    title: "Transactions",
-    icon: <GrTransaction className="text-green-500 text-xl md:text-2xl" />,
-  },
-  {
-    title: "Total Payout",
-    icon: <MdOutlinePayments className="text-primary text-xl md:text-2xl" />,
-  },
-  {
-    title: "Load Wallet",
-    icon: <BiSolidWallet className="text-lime-600 text-xl md:text-2xl" />,
-  },
-  {
-    title: "Account Ledger",
-    icon: (
-      <MdOutlineSwitchAccount className="text-secondary-light text-xl md:text-2xl" />
-    ),
-  },
-  {
-    title: "Relationship Manager",
-    icon: <FaHeadset className="text-secondary-dark text-xl md:text-2xl" />,
-  },
-];
+// const ExtraServiceLabel = [
+//   {
+//     title: "Register Sender",
+//     icon: <IoPersonOutline className="text-orange-500 text-xl md:text-2xl" />,
+//   },
+//   {
+//     title: "Transactions",
+//     icon: <GrTransaction className="text-green-500 text-xl md:text-2xl" />,
+//   },
+//   {
+//     title: "Total Payout",
+//     icon: <MdOutlinePayments className="text-primary text-xl md:text-2xl" />,
+//   },
+//   {
+//     title: "Load Wallet",
+//     icon: <BiSolidWallet className="text-lime-600 text-xl md:text-2xl" />,
+//   },
+//   {
+//     title: "Account Ledger",
+//     icon: (
+//       <MdOutlineSwitchAccount className="text-secondary-light text-xl md:text-2xl" />
+//     ),
+//   },
+//   {
+//     title: "Relationship Manager",
+//     icon: <FaHeadset className="text-secondary-dark text-xl md:text-2xl" />,
+//   },
+// ];
 
 type ServiceLabel = keyof typeof serviceIcons;
 
@@ -111,8 +129,11 @@ const QuickLinksComponent = () => {
     label?: string;
   }) => {
     if (opts.service) {
+      if (opts.service.label === "Register Sender") {
+        setIsModalOpen(true);
+        return;
+      }
       dispatch(setSelectedService(opts.service as TODO));
-      // dispatch(setSenderData(null));
       dispatch(updateIsText(""));
     } else if (opts.label) {
       if (opts.label === "Register Sender") {
@@ -175,16 +196,17 @@ const QuickLinksComponent = () => {
     aadhaarParams?.digiToken,
     aadhaarParams?.mobile
   );
+
   const { mutateAsync: fetchDigiData } = useDigiData();
 
   const handleSubmit = async () => {
     const digiTokenRes = await fetchDigiToken();
     const aadharRegister = await fetchAadhaar();
+
     const accessToken =
       digiTokenRes.data?.apiResponseData?.responseData?.accessToken;
 
     if (!accessToken) return;
-
     setAadhaarParams({ digiToken: accessToken, mobile: mobileNumber });
 
     const { url } = JSON.parse(
@@ -276,7 +298,7 @@ const QuickLinksComponent = () => {
           <p className="text-sm text-gray-500 italic">No services available.</p>
         )}
 
-        {ExtraServiceLabel.map(({ title, icon }) => (
+        {/* {ExtraServiceLabel.map(({ title, icon }) => (
           <div className=" cursor-pointer">
             <QuickLinksTitle
               key={title}
@@ -285,7 +307,7 @@ const QuickLinksComponent = () => {
               onClick={() => handleQuickLinkClick({ label: title })}
             />
           </div>
-        ))}
+        ))} */}
       </div>
 
       {isModalOpen && (
@@ -324,10 +346,6 @@ const QuickLinksComponent = () => {
               });
               return;
             }
-
-            // if (/(\d)\1{5}/.test(cleanedValue ??""))
-            //   return setValue("mobileNumber", "");
-
             if (cleanedValue.length <= 10) {
               setValue("mobileNumber", cleanedValue);
             }
