@@ -59,8 +59,9 @@
         "getbankList",
         "getSlabDetails",
         "getChargeDetails",
-        "initPayout",
-        "uploadSlip"
+        "uploadSlip",
+        "initPgPayout",
+        "initVerify"
       ]
     },
     {
@@ -110,13 +111,121 @@
         "getChargeDetails",
         "initPayout"
       ]
+    },
+    {
+      "label": "Register Sender",
+      "key": "registerSender",
+      "type": "payout",
+      "alias": "RS",
+      "uploadSlip": false,
+      "subserviceStatus": "Y",
+      "paymentMethods": [
+        {
+          "value": "IMPS",
+          "label": "IMPS"
+        },
+        {
+          "value": "NEFT",
+          "label": "NEFT"
+        }
+      ],
+      "sequence": [
+        "getSender",
+        "getbankList",
+        "getSlabDetails",
+        "getChargeDetails",
+        "initPayout"
+      ]
+    },
+    {
+      "label": "Transactions",
+      "key": "transactions",
+      "type": "payout",
+      "alias": "T",
+      "uploadSlip": false,
+      "subserviceStatus": "Y",
+      "sequence": [
+        "recentTransaction",
+        "initPgPayout",
+        "receiptTransaction"
+      ]
+    },
+    {
+      "label": "Total Payout",
+      "key": "totalPayout",
+      "type": "payout",
+      "alias": "TP",
+      "uploadSlip": false,
+      "subserviceStatus": "Y",
+      "sequence": [
+        "getSender",
+        "getbankList",
+        "getSlabDetails",
+        "getChargeDetails",
+        "initPayout"
+      ]
+    },
+    {
+      "label": "Load Wallet",
+      "key": "loadWallet",
+      "type": "payout",
+      "alias": "LW",
+      "uploadSlip": false,
+      "subserviceStatus": "Y",
+      "sequence": [
+        "getAgent",
+        "getbankList",
+        "getSlabDetails",
+        "getChargeDetails",
+        "initPayout"
+      ]
+    },
+    {
+      "label": "Account Ledger",
+      "key": "accountLedger",
+      "type": "payout",
+      "alias": "AL",
+      "uploadSlip": false,
+      "subserviceStatus": "Y",
+      "sequence": [
+        "getSender",
+        "getbankList",
+        "getSlabDetails",
+        "getChargeDetails",
+        "initPayout"
+      ]
+    },
+    {
+      "label": "Relationship Manager",
+      "key": "relationshipManager",
+      "type": "payout",
+      "alias": "RM",
+      "uploadSlip": false,
+      "subserviceStatus": "Y",
+      "sequence": [
+        "getSender",
+        "getbankList",
+        "getSlabDetails",
+        "getChargeDetails",
+        "initPayout"
+      ]
     }
   ],
   "endPoints": {
     "initPgPayout": {
-      "method": "POST",
+      "method": "GET",
       "enc": true,
       "url": "/api/v1/transaction"
+    },
+    "recentTransaction": {
+      "method": "GET",
+      "enc": true,
+      "url": "/api/v1/transaction/recent"
+    },
+    "receiptTransaction": {
+      "method": "GET",
+      "enc": true,
+      "url": "/api/v1/transaction/html-receipt/"
     },
     "initVerify": {
       "method": "POST",

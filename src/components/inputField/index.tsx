@@ -223,22 +223,6 @@ const InputField = ({
                       type="button"
                       onClick={handleVerifyClick}
                       className="absolute right-6 top-8 bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !py-[2px] !px-2 rounded text-sm cursor-pointer"
-                      //  ${
-                      //   loading ||
-                      //   !watch("accountNumber") ||
-                      //   !watch("accountNumber1") ||
-                      //   errors.accountNumber ||
-                      //   errors.accountNumber1
-                      //     ? "bg-gray-300 "
-                      //     : "bg-primary-light text-white"
-                      // }`}
-                      // disabled={
-                      //   loading ||
-                      //   !watch("accountNumber") ||
-                      //   !watch("accountNumber1") ||
-                      //   errors.accountNumber ||
-                      //   errors.accountNumber1
-                      // }
                     >
                       {loading ? "Verifying..." : "Click to Verify"}
                     </button>

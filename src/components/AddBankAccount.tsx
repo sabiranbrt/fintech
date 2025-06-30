@@ -47,7 +47,7 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
 
   useEffect(() => {
     if (bankDetails?.ifsc) {
-      setValue("ifsc", bankDetails.ifsc);
+      setValue("ifsc", bankDetails?.ifsc);
     }
   }, [bankDetails?.ifsc]);
 
@@ -132,7 +132,7 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
         </button>
         <h2 className="text-xl font-semibold mb-4">Add Bank Account</h2>
 
-        <form className="space-y-4">
+        <form className="space-y-4" autoComplete="off">
           <div className="flex flex-wrap md:flex-nowrap gap-16 items-start">
             <div className="flex flex-col gap-5 w-full justify-center">
               <div className="relative">

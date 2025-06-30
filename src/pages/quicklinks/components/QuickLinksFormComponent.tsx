@@ -1,8 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import BackButton from "@/components/buttons/BackButton";
 import EmptyMessage from "@/components/EmptyMessage";
-import NoticeComponent from "@/components/NoticeComponent";
+import Loader from "@/components/LoaderComponent";
 import { useDynamicMutation, useDynamicQuery } from "@/hooks/dynamicQuery";
+import service from "@/jsonDemo/services.json";
 import AccountLedger from "@/pages/accountLedger";
 import CreditCardBill from "@/pages/creditCardBillPayment";
 import EducationFees from "@/pages/educationFees";
@@ -15,6 +16,7 @@ import ContactCard from "@/pages/relationshipManager";
 import RentPayment from "@/pages/rentPayment";
 import TotalPayoutList from "@/pages/totalPayout";
 import TransactionsTabs from "@/pages/transaction";
+import { setSelectedService } from "@/redux/slices/serviceSlice";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
 import { getDynamicRequest } from "@/utils/dynamicRequest";
@@ -23,9 +25,6 @@ import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { FaSyncAlt } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import service from "@/jsonDemo/services.json";
-import { setSelectedService } from "@/redux/slices/serviceSlice";
-import Loader from "@/components/LoaderComponent";
 
 interface FormData {
   mobileNumber: string;
@@ -115,17 +114,27 @@ const QuickLinksFormComponent = () => {
 
   if (isLoading) return <Loader />;
 
+  const hiddenLabels: QuickLinksType[] = [
+    QuickLinksType.T,
+    QuickLinksType.TP,
+    QuickLinksType.AL,
+    QuickLinksType.RM,
+    QuickLinksType.LW,
+    QuickLinksType.RB,
+    QuickLinksType.FW,
+  ];
+
+  const shouldShowMobileInput =
+    selectedService?.label !== undefined &&
+    !hiddenLabels.includes(selectedService.label as QuickLinksType);
+
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div>
-        {selectedService?.type !== "pgPayout" && (selectedService || isText) ? (
-          <BackButton />
-        ) : null}
-      </div>
+      <div>{selectedService?.type !== "pgPayout" || isText ? <BackButton /> : null}</div>
       {!isText ? (
         <div className="flex flex-row gap-4 h-full min-h-0">
-          <div className="w-64 bg-white">
-            {selectedService?.label !== QuickLinksType.FW && (
+          <div className={clsx("bg-white")}>
+            {shouldShowMobileInput && (
               <form
                 autoComplete="off"
                 className="p-3 rounded-md w-full"
@@ -224,15 +233,17 @@ const QuickLinksFormComponent = () => {
                 </div>
               </form>
             )}
-            {selectedService?.label === QuickLinksType.CC ||
-            selectedService?.label === QuickLinksType.FS ||
-            selectedService?.label === QuickLinksType.RP ||
-            selectedService?.type === "pgPayout" ? (
-              <SenderDetails senderData={sendData} />
-            ) : null}
-            {selectedService?.label === QuickLinksType.FW && (
-              <SenderDetails showBankAcc={false} senderData={agentsData} />
-            )}
+            <>
+              {selectedService?.label === QuickLinksType.CC ||
+              selectedService?.label === QuickLinksType.FS ||
+              selectedService?.label === QuickLinksType.RP ||
+              selectedService?.type === "pgPayout" ? (
+                <SenderDetails senderData={sendData} />
+              ) : null}
+              {selectedService?.label === QuickLinksType.FW && (
+                <SenderDetails showBankAcc={false} senderData={agentsData} />
+              )}
+            </>
           </div>
           {senderData?.apiResponseData?.data === "" ? (
             <div className="flex-1 h-full min-h-0">
@@ -270,8 +281,16 @@ const QuickLinksFormComponent = () => {
                   <FundSettlement senderData={sendData} />
                 ) : selectedService.label === QuickLinksType.RP ? (
                   <RentPayment senderData={sendData} />
-                ) : selectedService.label ? (
-                  <NoticeComponent />
+                ) : selectedService?.label === QuickLinksType.T ? (
+                  <TransactionsTabs />
+                ) : selectedService?.label === QuickLinksType.TP ? (
+                  <TotalPayoutList />
+                ) : selectedService?.label === QuickLinksType.AL ? (
+                  <AccountLedger />
+                ) : selectedService?.label === QuickLinksType.RM ? (
+                  <ContactCard />
+                ) : selectedService?.label === QuickLinksType.LW ? (
+                  <LoadWallet />
                 ) : (
                   <EmptyMessage />
                 )
@@ -280,21 +299,7 @@ const QuickLinksFormComponent = () => {
           )}
         </div>
       ) : (
-        <>
-          {isText === QuickLinksType.T ? (
-            <TransactionsTabs />
-          ) : isText === QuickLinksType.TP ? (
-            <TotalPayoutList />
-          ) : isText === QuickLinksType.AL ? (
-            <AccountLedger />
-          ) : isText === QuickLinksType.RM ? (
-            <ContactCard />
-          ) : isText === QuickLinksType.LW ? (
-            <LoadWallet />
-          ) : isText === QuickLinksType.RB ? (
-            <RegisterBeneficiary />
-          ) : null}
-        </>
+        <>{isText === QuickLinksType.RB && <RegisterBeneficiary />}</>
       )}
     </div>
   );
