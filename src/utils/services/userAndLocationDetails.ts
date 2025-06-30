@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import LocalStorageUtil from "@/utils/LocalStorageUtil";
 import * as internalIp from "internal-ip";
 import FingerprintJS from "fingerprintjs2";
@@ -42,7 +41,7 @@ export const fetchUserDetails = async () => {
         }
       });
 
-    const location = await getLocation() as any;
+    const location = await getLocation() as TODO;
 
     const getIP = async () => {
       const response = await fetch("https://api.ipify.org?format=json");
@@ -54,14 +53,14 @@ export const fetchUserDetails = async () => {
 
     const getFingerprint = () =>
       new Promise((resolve) => {
-        FingerprintJS.get((components: any) => {
-          const values = components.map((component: any) => component.value);
+        FingerprintJS.get((components: TODO) => {
+          const values = components.map((component: TODO) => component.value);
           const fingerprint = FingerprintJS.x64hash128(values.join(""), 31);
           resolve(fingerprint);
         });
       });
 
-    const fingerprint = await getFingerprint() as any;
+    const fingerprint = await getFingerprint() as TODO;
 
     // Store in session and local storage
     sessionStorage.setItem("latitude", location.latitude?.toFixed(6));

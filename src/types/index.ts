@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AxiosRequestConfig } from "axios";
 
 export enum FieldTypes {
@@ -34,9 +33,9 @@ export interface DynamicRequest {
   url: string;
   method: AxiosRequestConfig['method'];
   params?: Record<string, unknown>;
-  headers?: any;
+  headers?: TODO;
   data?: unknown;
-  responseType?: any
+  responseType?: TODO
 }
 
 export interface ValidationProps {
@@ -45,7 +44,7 @@ export interface ValidationProps {
   validations: Validations[]
 }
 export interface Validations {
-  regex: any
+  regex: TODO
   errorMessage?: string;
 }
 

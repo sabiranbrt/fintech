@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import BeneficiaryDetails from "@/components/BeneficiaryDetails";
 import EmptyMessage from "@/components/EmptyMessage";
 import React from "react";
 
 interface IProps {
-  senderData: any;
+  senderData: TODO;
 }
 
 const FundSettlement = ({ senderData }: IProps) => {

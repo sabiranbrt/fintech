@@ -1,14 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { getGeolocationData } from "./geolocation";
 import { getBrowserFingerprintData } from "./browserFingerprint";
 import { formatDate } from "../datehelper";
 
 export const getRequestBaseData = async (type=null) => {
-    const baseData = { requestSource: "Web" } as any;
+    const baseData = { requestSource: "Web" } as TODO;
 
     try {
-        const geoData = await getGeolocationData() as any;
+        const geoData = await getGeolocationData() as TODO;
         if (geoData?.coords) {
             baseData.reqLong = geoData.coords.longitude.toFixed(6).toString();
             baseData.reqLat = geoData.coords.latitude.toFixed(6).toString();

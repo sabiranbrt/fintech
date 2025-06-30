@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import CryptoJS from 'crypto-js';
 
 type JsonData = Record<string, unknown> | string;
@@ -45,7 +44,7 @@ export const decryptData3Des = (ciphertext: string, key: string) => {
   const decodedCiphertext = CryptoJS.enc.Base64.parse(ciphertext);
   const keyBytes = CryptoJS.enc.Utf8.parse(key);
   const keyWords = CryptoJS.lib.WordArray.create(keyBytes.words.slice(0, 6), 24);
-  const decrypted = CryptoJS.TripleDES.decrypt({ ciphertext: decodedCiphertext } as any, keyWords, {
+  const decrypted = CryptoJS.TripleDES.decrypt({ ciphertext: decodedCiphertext } as TODO, keyWords, {
     mode: CryptoJS.mode.ECB,
     padding: CryptoJS.pad.Pkcs7,
   });

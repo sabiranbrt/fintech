@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import Loader from "@/components/LoaderComponent";
 import { useContact } from "@/hooks/service";
@@ -12,7 +11,7 @@ const ContactCard = () => {
   return (
     <div className="flex justify-center flex-wrap gap-10 mt-6 ml-8 mb-4">
       {contactDetail?.map(
-        ({ designation, name, region, email, phone }: any, index: number) => {
+        ({ designation, name, region, email, phone }: TODO, index: number) => {
           // Extracting the initials from the name
           const initials = name
             .split(" ") // Split the name into first and last name

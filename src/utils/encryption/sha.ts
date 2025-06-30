@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import forge from "node-forge";
 
 // const publicKey = process.env.REACT_APP_PUBLIC_KEY;
@@ -12,7 +11,7 @@ ssKQh9A8Bz6gK0C9m3MkZB78nuO0ieCONbF87/VU+Dm7B7kvlu6X+RVZDoNo6oOm
 fwIDAQAB
 -----END PUBLIC KEY-----`;
 
-export function encryptSha(data:any) {
+export function encryptSha(data:TODO) {
   const publicKeyForged = forge.pki.publicKeyFromPem(publicKey);
   const encryptedDataBytes = publicKeyForged.encrypt(data, "RSA-OAEP", {
     md: forge.md.sha256.create(),

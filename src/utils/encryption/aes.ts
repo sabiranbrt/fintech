@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export async function encryptWithKey(message:any) {
+export async function encryptWithKey(message:TODO) {
   const key = await crypto.subtle.generateKey(
     { name: "AES-GCM", length: 256 },
     true,
@@ -22,9 +21,9 @@ export async function encryptWithKey(message:any) {
 
   const exportedKey = await crypto.subtle.exportKey("raw", key);
 
-  const base64Encrypted = btoa(String.fromCharCode.apply(null, encryptedData as any));
+  const base64Encrypted = btoa(String.fromCharCode.apply(null, encryptedData as TODO));
   const base64Key = btoa(
-    String.fromCharCode.apply(null, new Uint8Array(exportedKey) as any)
+    String.fromCharCode.apply(null, new Uint8Array(exportedKey) as TODO)
   );
 
   return { data: base64Encrypted, key: base64Key };

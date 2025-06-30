@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import FeeBox from "@/components/feeBox";
 import InputField from "@/components/inputField";
 import Loader from "@/components/LoaderComponent";
@@ -22,19 +21,19 @@ import { toast } from "react-toastify";
 
 declare global {
   interface Window {
-    checkout: any;
+    checkout: TODO;
   }
 }
 
 interface IProps {
-  slablist: any;
+  slablist: TODO;
   refetchSlab: (
     options?: RefetchOptions | undefined
-  ) => Promise<QueryObserverResult<any, unknown>>;
+  ) => Promise<QueryObserverResult<TODO, unknown>>;
 }
 
 interface ChargeData {
-  [key: string]: any;
+  [key: string]: TODO;
 }
 interface OrderResponse {
   providerId: number;
@@ -81,7 +80,7 @@ const RightSection = ({ slablist, refetchSlab }: IProps) => {
     reset,
     setValue,
     formState: { errors },
-  } = useForm<any>({
+  } = useForm<TODO>({
     mode: "onChange",
   });
 
@@ -176,7 +175,7 @@ const RightSection = ({ slablist, refetchSlab }: IProps) => {
       access_key: orderResponse?.accessToken,
       order_id: orderResponse?.pgOrderID,
       [orderResponse?.providerId === 0 ? "callback_handler" : "handler"]:
-        async function (response: any) {
+        async function (response: TODO) {
           // const key = import.meta.env.VITE_KEY;
           // const iv = import.meta.env.VITE_IV;
           const verifPayload = {
@@ -197,7 +196,7 @@ const RightSection = ({ slablist, refetchSlab }: IProps) => {
               "/loadViaPg/verifyOrder",
               verifPayload,
               { responseType: "text" }
-            )) as any;
+            )) as TODO;
 
             const contentType = apiResp.headers.get("content-type");
             if (contentType != "text/html;charset=UTF-8") {

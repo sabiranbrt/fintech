@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import BackButton from "@/components/buttons/BackButton";
 import EmptyMessage from "@/components/EmptyMessage";
 import NoticeComponent from "@/components/NoticeComponent";
@@ -33,7 +32,8 @@ interface FormData {
 }
 
 const QuickLinksFormComponent = () => {
-  const [senderData, setSenderData] = useState<any | null>(null);
+  const [senderData, setSenderData] = useState<TODO | null>(null);
+  const SenderResponseData = senderData?.apiResponseData?.data[0];
 
   const { selectedService, isText } = useSelector(
     (state: RootState) => state.service
@@ -47,7 +47,7 @@ const QuickLinksFormComponent = () => {
       const educationService = service.services.find(
         (service) =>
           service.type === "pgPayout" && service.label === "Education Fees"
-      ) as any;
+      ) as TODO;
       if (educationService) {
         dispatch(setSelectedService(educationService));
       }
@@ -60,13 +60,12 @@ const QuickLinksFormComponent = () => {
     watch,
     handleSubmit,
     setError,
-    setValue,
   } = useForm<FormData>({
     mode: "onChange",
   });
 
   const mobileNumber = watch("mobileNumber");
-  const { mutate } = useDynamicMutation<any>();
+  const { mutate } = useDynamicMutation<TODO>();
 
   const stepName = selectedService?.sequence[0];
 
@@ -102,7 +101,7 @@ const QuickLinksFormComponent = () => {
     }
   }, [mobileNumber, errors.mobileNumber]);
 
-  const { data, isLoading } = useDynamicQuery<any>(
+  const { data, isLoading } = useDynamicQuery<TODO>(
     request ?? { url: "", method: "GET" },
     {
       queryKey: [stepName],
@@ -157,62 +156,69 @@ const QuickLinksFormComponent = () => {
                       },
                     }}
                     render={({ field }) => (
-                      <div>
-                        <input
-                          {...field}
-                          type="tel"
-                          value={field.value ?? ""}
-                          readOnly={(field.value?.length ?? 0) === 10}
-                          placeholder="Mobile Number"
+                      <>
+                        <div
                           className={clsx(
-                            "my-1 inner-content px-3 py-1 focus:outline-none text-sm w-full border-2 rounded-md",
-                            (field.value?.length ?? 0) === 10
+                            "relative rounded-lg h-9 w-[230px]",
+                            field.value?.length === 10
                               ? "border border-gray-400 bg-gray-200"
                               : "border-gradient"
                           )}
-                          onChange={(e) => {
-                            const rawValue = e.target.value;
-                            const cleanedValue = rawValue.replace(/\D/g, "");
+                        >
+                          <input
+                            {...field}
+                            type="tel"
+                            value={field.value ?? ""}
+                            readOnly={(field.value?.length ?? 0) === 10}
+                            placeholder="Mobile Number"
+                            className={clsx(
+                              "my-1 inner-content px-3 py-1 focus:outline-none text-sm w-full",
+                              (field.value?.length ?? 0) === 10
+                                ? " cursor-not-allowed bg-gray-200"
+                                : ""
+                            )}
+                            onChange={(e) => {
+                              const rawValue = e.target.value;
+                              const cleanedValue = rawValue.replace(/\D/g, "");
 
-                            if (
-                              cleanedValue.length === 1 &&
-                              !/^[6-9]$/.test(cleanedValue)
-                            ) {
-                              setError("mobileNumber", {
-                                type: "manual",
-                                message: "Mobile number must start with 6-9.",
-                              });
-                              return;
-                            }
+                              if (
+                                cleanedValue.length === 1 &&
+                                !/^[6-9]$/.test(cleanedValue)
+                              ) {
+                                setError("mobileNumber", {
+                                  type: "manual",
+                                  message: "Mobile number must start with 6-9.",
+                                });
+                                return;
+                              }
 
-                            if (/(\d)\1{5}/.test(cleanedValue))
-                              return field.onChange("");
+                              if (/(\d)\1{5}/.test(cleanedValue))
+                                return field.onChange("");
 
-                            if (cleanedValue.length <= 10) {
-                              field.onChange(cleanedValue);
-                            }
-                          }}
-                        />
+                              if (cleanedValue.length <= 10) {
+                                field.onChange(cleanedValue);
+                              }
+                            }}
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() => window.location.reload()}
+                            className="absolute right-3 top-5 transform -translate-y-1/2"
+                            disabled={(field.value?.length ?? 0) !== 10}
+                          >
+                            <FaSyncAlt
+                              size={16}
+                              className="text-secondary-extra-dark"
+                            />
+                          </button>
+                        </div>
                         {errors?.mobileNumber?.message && (
                           <div className="!mt-0.5 text-[10px] text-[#f94d44]">
                             <p>{String(errors.mobileNumber.message)}</p>
                           </div>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setValue("mobileNumber", "");
-                            setSenderData(null);
-                          }}
-                          className="absolute right-3 top-5 transform -translate-y-1/2"
-                          disabled={(field.value?.length ?? 0) !== 10}
-                        >
-                          <FaSyncAlt
-                            size={16}
-                            className="text-secondary-extra-dark"
-                          />
-                        </button>
-                      </div>
+                      </>
                     )}
                   />
                 </div>
@@ -259,7 +265,7 @@ const QuickLinksFormComponent = () => {
                 ) : selectedService.label === QuickLinksType.FW ? (
                   <FundWithdrawal senderDataFW={agentsDataForBeneficiary} />
                 ) : selectedService.label === QuickLinksType.CC ? (
-                  <CreditCardBill senderData={sendData} />
+                  <CreditCardBill senderData={SenderResponseData} />
                 ) : selectedService.label === QuickLinksType.FS ? (
                   <FundSettlement senderData={sendData} />
                 ) : selectedService.label === QuickLinksType.RP ? (

@@ -1,10 +1,9 @@
 import { PiCurrencyInr } from "react-icons/pi";
 import { BsCashStack } from "react-icons/bs";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface IProps {
   title: string;
-  data: any;
+  data: TODO;
 }
 
 const TransactionCard = ({ title, data }: IProps) => {

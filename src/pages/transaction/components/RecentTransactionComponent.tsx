@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { formatDateTime } from "@/utils/formatDateDDMMYYYY";
 import { useRecentTransaction } from "@/hooks/service";
 import Loader from "@/components/LoaderComponent";
@@ -73,7 +72,7 @@ const RecentTransactionComponent = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {recentTraList?.length > 0 ? (
-              recentTraList?.map((transaction: any, index: number) => (
+              recentTraList?.map((transaction: TODO, index: number) => (
                 <tr key={index}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {transaction.status === "SUCCESS" ? (

@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getRequestBaseData } from "@/utils/commonHeader/BaseRequest";
 
 export async function generateBearerData(type = null) {
-  const headerParams = {} as any;
+  const headerParams = {} as TODO;
   let bearerData = await getRequestBaseData(type);
 
   try {

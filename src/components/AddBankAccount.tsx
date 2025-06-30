@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useDynamicQuery } from "@/hooks/dynamicQuery";
 import { RootState } from "@/redux/store";
@@ -48,7 +49,7 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
     if (bankDetails?.ifsc) {
       setValue("ifsc", bankDetails.ifsc);
     }
-  }, [bankDetails?.ifsc, setValue]);
+  }, [bankDetails?.ifsc]);
 
   const { endpoints } = useSelector((state: RootState) => state.endPoints);
   const { selectedService } = useSelector((state: RootState) => state.service);
@@ -85,11 +86,12 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
         status: result.status,
         isVerified: result.status === "COMPLETED",
       });
-     
+
       // Set the registeredName in accountNameAsPerBank field
       if (result.status === "COMPLETED" && result.registeredName) {
         setValue("accountNameAsPerBank", result.registeredName);
       }
+
       if (response?.apiResponseData?.responseCode === "401") {
         toast.error(response?.apiResponseData?.responseMessage);
       }
@@ -109,8 +111,9 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
         accountRegisterFor: "",
         accountSupportingImage: "string",
       });
-      const result = response?.apiResponseData?.data;
-      console.log("result", result);
+      if (response?.apiResponseData?.responseCode === "401") {
+        toast.error(response?.apiResponseData?.responseMessage);
+      }
     } catch (err) {
       console.log("error", err);
     }
@@ -120,14 +123,16 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-4xl relative">
         <button
-          onClick={handleCancel}
+          onClick={() => {
+            handleCancel();
+          }}
           className="absolute top-3 right-3 text-gray-600 hover:text-black"
         >
           <IoClose size={24} />
         </button>
         <h2 className="text-xl font-semibold mb-4">Add Bank Account</h2>
 
-        <form autoComplete="off" className="space-y-4">
+        <form className="space-y-4">
           <div className="flex flex-wrap md:flex-nowrap gap-16 items-start">
             <div className="flex flex-col gap-5 w-full justify-center">
               <div className="relative">
@@ -165,7 +170,7 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
                 <InputField
                   control={control}
                   errors={errors}
-                  names={"accountNameAsPerBank"}
+                  names="accountNameAsPerBank"
                   label="Name as per Bank"
                   placeHolder="Enter Name as per Bank"
                 />

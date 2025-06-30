@@ -1,14 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import JSEncrypt from 'jsencrypt';
 import CryptoJS from 'crypto-js';
 
-export const encryptKey = (data:any, publicKeyPEM:any) => {
+export const encryptKey = (data:TODO, publicKeyPEM:TODO) => {
   const encrypt = new JSEncrypt();
   encrypt.setPublicKey(publicKeyPEM);
   return encrypt.encrypt(data);
 };
 
-export const encryptBody = (input:any, key:any, iv:any) => {
+export const encryptBody = (input:TODO, key:TODO, iv:TODO) => {
   const cipherText = CryptoJS.AES.encrypt(input, CryptoJS.enc.Utf8.parse(key), {
     iv: CryptoJS.enc.Utf8.parse(iv),
     mode: CryptoJS.mode.CBC,

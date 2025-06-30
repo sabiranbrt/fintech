@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MdOutlinePending } from "react-icons/md";
 
 interface IProps {
   showBankAcc?: boolean;
-  senderData: any;
+  senderData: TODO;
 }
 
 const SenderDetails = ({ showBankAcc = true, senderData }: IProps) => {

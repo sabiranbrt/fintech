@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./index.html",
-    "./src/**/*.{ts,tsx}", // include all TS and TSX files in src
-  ],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       scrollbar: ["rounded"],
@@ -42,9 +39,9 @@ module.exports = {
       animation: {
         "fade-in-out": "fade-in-out 2s infinite",
       },
-      borderImage: {
-        "custom-gradient": "linear-gradient(45deg, #4b5a9f, #4fb5b7)",
-      },
+      // borderImage: {
+      //   "custom-gradient": "linear-gradient(45deg, #4b5a9f, #4fb5b7)",
+      // },
     },
   },
   plugins: [],

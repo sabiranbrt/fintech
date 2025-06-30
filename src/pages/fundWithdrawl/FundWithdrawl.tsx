@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import BeneficiaryDetails from "@/components/BeneficiaryDetails";
 
 interface IProps{
-  senderData?: any
-   senderDataFW: any
+  senderData?: TODO
+   senderDataFW: TODO
 }
 
 const FundWithdrawal = ({senderData, senderDataFW}:IProps) => {

@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 import RegisterModal from "@/components/registerModal";
 import { useDynamicMutation } from "@/hooks/dynamicQuery";
 import {
@@ -16,6 +15,7 @@ import { setEndpoints } from "@/redux/slices/endpointsSlice";
 import { setSelectedService, updateIsText } from "@/redux/slices/serviceSlice";
 import { RootState } from "@/redux/store";
 import { getDynamicRequest } from "@/utils/dynamicRequest";
+import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { BiSolidWallet } from "react-icons/bi";
@@ -28,7 +28,6 @@ import { MdOutlinePayments, MdOutlineSwitchAccount } from "react-icons/md";
 import { PiHandWithdrawFill } from "react-icons/pi";
 import { useDispatch, useSelector } from "react-redux";
 import QuickLinksTitle from "./components/QuickLinksTitle";
-import clsx from "clsx";
 
 const serviceIcons = {
   "Credit Card Bill Payment": (
@@ -89,7 +88,7 @@ const QuickLinksComponent = () => {
     setError,
     setValue,
     watch,
-  } = useForm<any>({
+  } = useForm<TODO>({
     mode: "onChange",
   });
 
@@ -112,7 +111,8 @@ const QuickLinksComponent = () => {
     label?: string;
   }) => {
     if (opts.service) {
-      dispatch(setSelectedService(opts.service as any));
+      dispatch(setSelectedService(opts.service as TODO));
+      // dispatch(setSenderData(null));
       dispatch(updateIsText(""));
     } else if (opts.label) {
       if (opts.label === "Register Sender") {
@@ -130,7 +130,7 @@ const QuickLinksComponent = () => {
     mobileNumber: mobileNumber,
   });
 
-  const { mutate } = useDynamicMutation<any>();
+  const { mutate } = useDynamicMutation<TODO>();
 
   const fetchSender = () => {
     if (!request?.url) return;
@@ -240,36 +240,38 @@ const QuickLinksComponent = () => {
         </p>
 
         {service && service.services.length > 0 ? (
-          service.services.map((service: any) => {
-            const label = service.label as ServiceLabel;
-            return (
-              <div
-                key={service.label}
-                className={clsx(
-                  "relative",
-                  service?.subserviceStatus === "Y"
-                    ? "cursor-pointer text-black"
-                    : "!cursor-not-allowed text-gray-600"
-                )}
-              >
-                <QuickLinksTitle
-                  title={service.label}
-                  icon={serviceIcons[label]}
-                  onClick={() => {
-                    service?.subserviceStatus === "N"
-                      ? undefined
-                      : handleQuickLinkClick({ service });
-                  }}
-                >
-                  {service?.subserviceStatus === "N" && (
-                    <div className="absolute left-16 top-9 transform -translate-y-1/2 ml-2 hidden group-hover:block bg-gray-200 text-gray-600 text-xs px-4 py-1 rounded shadow-sm whitespace-nowrap">
-                      Service not available !
-                    </div>
+          service.services
+            .filter((s: TODO) => !(s.label === "Education Fees"))
+            .map((service: TODO) => {
+              const label = service.label as ServiceLabel;
+              return (
+                <div
+                  key={service.label}
+                  className={clsx(
+                    "relative",
+                    service?.subserviceStatus === "Y"
+                      ? "cursor-pointer text-black"
+                      : "!cursor-not-allowed text-gray-600"
                   )}
-                </QuickLinksTitle>
-              </div>
-            );
-          })
+                >
+                  <QuickLinksTitle
+                    title={service.label}
+                    icon={serviceIcons[label]}
+                    onClick={() => {
+                      service?.subserviceStatus === "N"
+                        ? undefined
+                        : handleQuickLinkClick({ service });
+                    }}
+                  >
+                    {service?.subserviceStatus === "N" && (
+                      <div className="absolute left-16 top-9 transform -translate-y-1/2 ml-2 hidden group-hover:block bg-gray-200 text-gray-600 text-xs px-4 py-1 rounded shadow-sm whitespace-nowrap">
+                        Service not available !
+                      </div>
+                    )}
+                  </QuickLinksTitle>
+                </div>
+              );
+            })
         ) : (
           <p className="text-sm text-gray-500 italic">No services available.</p>
         )}
@@ -298,16 +300,16 @@ const QuickLinksComponent = () => {
           rules={{
             required: "Mobile number is required",
             validate: {
-              validFormat: (value: any) =>
+              validFormat: (value: TODO) =>
                 /^[6-9]\d{0,9}$/.test(value) ||
                 "Enter a valid 10-digit mobile number starting with 6-9.",
-              noSixIdenticalDigits: (value: any) =>
+              noSixIdenticalDigits: (value: TODO) =>
                 !/(.)\1{5}/.test(value ?? "") ||
                 "Mobile number cannot have a sequence of the same 6 digits.",
-              notSixDigits: (value: any) =>
+              notSixDigits: (value: TODO) =>
                 value.length !== 6 ||
                 "6-digit mobile numbers are not acceptable.",
-              exactTenDigits: (value: any) =>
+              exactTenDigits: (value: TODO) =>
                 value.length === 10 ||
                 "Mobile number must be exactly 10 digits.",
             },

@@ -1,13 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import Loader from "../LoaderComponent";
-import agents from "@/jsonDemo/agent.json";
-import getMobileNumber from "@/jsonDemo/getMobileNumberData.json";
 import EncrptionInterceptor from "@/utils/encryptionInterceptor";
 import Swal from "sweetalert2";
 
-const SlipButtons = () => {
-  const isRP= true
+interface IProps {
+  onSlipUpload: (url: string) => void;
+  beneData: any;
+  senderData: any;
+}
+
+const SlipButtons = ({ onSlipUpload, beneData, senderData }: IProps) => {
+  const isRP = true;
   const [isUploading, setIsUploading] = useState(false);
 
   const handleDownload = () => {
@@ -17,33 +21,34 @@ const SlipButtons = () => {
     const formattedDate = today.toLocaleDateString("en-GB", options);
     const optionsMonth = { month: "long", year: "numeric" } as any;
     const formattedMonthYear = today.toLocaleDateString("en-GB", optionsMonth);
+
     const senderName = [
-      agents.panCardData.firstName,
-      agents.panCardData.middleName,
-      agents.panCardData.lastName,
+      senderData?.panCardData?.firstName,
+      senderData?.panCardData?.middleName,
+      senderData?.panCardData?.lastName,
     ]
       .filter(Boolean)
       .join(" ");
 
     const beneName = [
-      getMobileNumber[0].beneficiaries[0].beneficiaryFirstName,
-      getMobileNumber[0].beneficiaries[0].beneficiaryMiddleName,
-      getMobileNumber[0].beneficiaries[0].beneficiaryLastName,
+      beneData?.beneficiaryFirstName,
+      beneData?.beneficiaryMiddleName,
+      beneData?.beneficiaryLastName,
     ]
       .filter(Boolean)
       .join(" ");
- 
+
     let url;
     let replacements;
     if (isRP) {
       url = "https://clf.finkeda.com/resources/pg-html/rp.html";
       replacements = {
         senderName: senderName,
-        senderphoneNumber: agents.panCardData.mobile_no,
+        senderphoneNumber: senderData?.panCardData?.mobile_no,
         beneName: beneName,
-        beneaddress: getMobileNumber[0].beneficiaries[0].beneAddress,
-        benephoneNumber: getMobileNumber[0].beneficiaries[0].beneficiaryMobile,
-        benepanNumber: getMobileNumber[0].beneficiaries[0].beneficiaryPan,
+        beneaddress: beneData?.beneAddress,
+        benephoneNumber: beneData?.beneficiaryMobile,
+        benepanNumber: beneData?.beneficiaryPan,
         rentMonth: formattedMonthYear,
         rentAmount: 2000,
         lateFee: 0,
@@ -56,11 +61,11 @@ const SlipButtons = () => {
       url = "https://clf.finkeda.com/resources/pg-html/edu.html";
       replacements = {
         senderName: senderName,
-        senderphoneNumber: agents.panCardData.mobile_no,
+        senderphoneNumber: senderData?.panCardData?.mobile_no,
         beneName: beneName,
-        beneaddress: getMobileNumber[0].beneficiaries[0].beneAddress,
-        benephoneNumber: getMobileNumber[0].beneficiaries[0].beneficiaryMobile,
-        benepanNumber: getMobileNumber[0].beneficiaries[0].beneficiaryPan,
+        beneaddress: beneData?.beneAddress,
+        benephoneNumber: beneData?.beneficiaryMobile,
+        benepanNumber: beneData?.beneficiaryPan,
         tutionFee: 2000,
         materialFee: 0,
         discount: 0,
@@ -74,7 +79,7 @@ const SlipButtons = () => {
     replaceAndOpen(url, replacements);
   };
 
-  const replaceAndOpen = async (url:any, replacements:any) => {
+  const replaceAndOpen = async (url: any, replacements: any) => {
     try {
       const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
         url
@@ -95,7 +100,7 @@ const SlipButtons = () => {
     }
   };
 
-  const handleFileUpload = async (file:any) => {
+  const handleFileUpload = async (file: any) => {
     if (!file) {
       Swal.fire("Error", "No file selected!", "error");
       return;
@@ -106,8 +111,7 @@ const SlipButtons = () => {
       const initTokenResponse = await EncrptionInterceptor("SESSION_INIT").get(
         "session/init"
       );
-      const token =
-        initTokenResponse?.data?.apiResponseData?.responseData?.token;
+      const token = initTokenResponse?.data?.apiResponseData?.responseData?.token;
       localStorage.setItem("access_token", token);
       if (!token) {
         Swal.fire("Error", "Session expired. Please login again.", "error");
@@ -138,7 +142,7 @@ const SlipButtons = () => {
         return;
       }
 
-      const { url, fields } = responseData;
+      const { url, fields, cdnUrl } = responseData;
 
       const formData = new FormData();
       Object.entries(fields).forEach(([key, value]) => {
@@ -153,7 +157,7 @@ const SlipButtons = () => {
       });
 
       if (s3Response.status === 0) {
-        // onSlipUpload(cdnUrl);
+        onSlipUpload(cdnUrl);
         Swal.fire("Success", "Slip uploaded successfully.", "success");
       } else {
         Swal.fire("Error", "Failed to upload file to S3.", "error");

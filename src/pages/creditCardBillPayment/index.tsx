@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import BtnPrimary from "@/components/buttons/BtnPrimary";
 import CustomPassField from "@/components/customPassField";
 import EmptyMessage from "@/components/EmptyMessage";
@@ -7,25 +6,25 @@ import InputField from "@/components/inputField";
 import PaymentModal from "@/components/paymentModal";
 import SelectCusOpt from "@/components/selectCusOpt.tsx";
 import { useDynamicQuery } from "@/hooks/dynamicQuery";
-import { setFormSubmission } from "@/redux/slices/customFormSlice";
 import { RootState } from "@/redux/store";
 import { getDynamicRequest } from "@/utils/dynamicRequest";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
+import { CCFormDataProps } from "./types";
 
 interface IProps {
-  senderData: any;
+  senderData: TODO;
 }
 
 const CreditCardBillPayment = ({ senderData }: IProps) => {
   const [isModalOpen, setIsModalOpen] = useState("");
+  const [CCFromData, setCCFormData] = useState<CCFormDataProps | null>(null);
 
   const handleCancel = () => {
     setIsModalOpen("");
   };
 
-  const dispatch = useDispatch();
   // Handle paste events
 
   const { endpoints } = useSelector((state: RootState) => state.endPoints);
@@ -39,20 +38,13 @@ const CreditCardBillPayment = ({ senderData }: IProps) => {
     watch,
     setValue,
     formState: { errors },
-  } = useForm<any>({
+  } = useForm<TODO>({
     mode: "onChange",
   });
 
-  const cardNo = watch("cardAccount")
-  const mobileNumber = watch("mobileNumber")
-
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: TODO) => {
     setIsModalOpen("creditCard");
-    dispatch(
-      setFormSubmission({
-        value: data,
-      })
-    );
+    setCCFormData(data);
   };
 
   const bankDetails = watch("bankName");
@@ -69,7 +61,7 @@ const CreditCardBillPayment = ({ senderData }: IProps) => {
     transferType: bankDetails?.mode,
   });
 
-  const { data, refetch } = useDynamicQuery<any>(request!, {
+  const { data, refetch } = useDynamicQuery<TODO>(request!, {
     enabled: !!request,
     queryKey: [stepName],
   });
@@ -79,7 +71,7 @@ const CreditCardBillPayment = ({ senderData }: IProps) => {
   return (
     <>
       {senderData ? (
-        <div className=" !p-4 bg-white w-full h-full">
+        <div className=" !p-4 bg-white w-full h-full overflow-y-auto">
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-1 mt-2 relative">
               <SelectCusOpt
@@ -150,8 +142,7 @@ const CreditCardBillPayment = ({ senderData }: IProps) => {
               handleCancel={handleCancel}
               bankDetails={bankDetails?.mode}
               senderData={senderData}
-              cardNo={cardNo}
-              mobileNumber={mobileNumber}
+              CCFromData={CCFromData}
             />
           )}
         </div>

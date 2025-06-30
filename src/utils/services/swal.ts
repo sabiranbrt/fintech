@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Swal from "sweetalert2";
 // import { Messages } from "../../constants/locales/messages";
 const Messages = {
@@ -8,7 +7,7 @@ const Messages = {
   ensureDateFormat: "Please ensure the date is in mm-dd-yyyy format.",
 };
 
-export const ShowSwalMsg = (icon: any, msg:any) => {
+export const ShowSwalMsg = (icon: TODO, msg:TODO) => {
   return Swal.fire({
     title: getSwalTitle(icon),
     text: msg,
@@ -36,7 +35,7 @@ export const getSwalTitle = (val: string) => {
   }
 }
 
-export const ShowSwalWithResult = (icon:any, msg:any) => {
+export const ShowSwalWithResult = (icon:TODO, msg:TODO) => {
   return Swal.fire({
     title: getSwalTitle(icon),
     text: msg,
@@ -47,7 +46,7 @@ export const ShowSwalWithResult = (icon:any, msg:any) => {
   });
 }
 
-export const CustomSwal = (icon:any, msg:any, subMsg = "") => {
+export const CustomSwal = (icon:TODO, msg:TODO, subMsg = "") => {
   Swal.fire({
     title: msg,
     icon,
@@ -55,7 +54,7 @@ export const CustomSwal = (icon:any, msg:any, subMsg = "") => {
   });
 }
 
-export const htmlSwal = (resp:any) => {
+export const htmlSwal = (resp:TODO) => {
   return Swal.fire({
     title: "Error!",
     icon: "error",
@@ -67,7 +66,7 @@ export const htmlSwal = (resp:any) => {
   });
 }
 
-export const javaHtmlSwal = (resp: any) => {
+export const javaHtmlSwal = (resp: TODO) => {
   return Swal.fire({
     title: "Error!",
     icon: "error",
@@ -81,7 +80,7 @@ export const javaHtmlSwal = (resp: any) => {
   });
 }
 
-export const AreYouSureSwal = ( title:any, fxn:any ) => {
+export const AreYouSureSwal = ( title:TODO, fxn:TODO ) => {
   Swal.fire({
     title: title ?? "Confirmation!",
     icon: "question",

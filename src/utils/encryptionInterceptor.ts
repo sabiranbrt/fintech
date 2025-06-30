@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 import { encryptWithKey } from "@/utils/encryption/aes";
 import { encryptSha } from "@/utils/encryption/sha";
@@ -7,7 +6,7 @@ import { generateRandom13DigitNumber } from "@/libs/axios";
 import CommonHeader from "./commonHeader";
 
 
-const getBaseURL = (page_type: any) => {
+const getBaseURL = (page_type: TODO) => {
   // console.log("pagetype",page_type);
   if (page_type === "report") {
     return import.meta.env.VITE_REPORT_API_URL;
@@ -16,7 +15,7 @@ const getBaseURL = (page_type: any) => {
 };
 
 // Function to create an interceptor with dynamic baseURL
-const EncrptionInterceptor = (page_type: any) => {
+const EncrptionInterceptor = (page_type: TODO) => {
 
   const instance = axios.create({
     baseURL: getBaseURL(page_type),

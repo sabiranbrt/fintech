@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 import { ShowSwalMsg } from "./swal";
 import { encryptWithKey } from "@/utils/encryption/aes";
@@ -7,7 +6,7 @@ import { generateRandom13DigitNumber } from "@/libs/axios";
 import { generateBearerData } from "./bearerData";
 import { encryptBody, encryptKey, generateAESKey, generateIV } from "../encrypt";
 
-const getBaseURL = (page_type: any) => {
+const getBaseURL = (page_type: TODO) => {
   // console.log("pagetype",page_type);
   if (page_type === "file_upload") {
     return import.meta.env.VITE_FILE_API_URL; // Define this in .env
@@ -22,7 +21,7 @@ const interceptor = (page_type = null) => {
     // withCredentials: true,
   });
 
-  instance.interceptors.request.use(async (config: any) => {
+  instance.interceptors.request.use(async (config: TODO) => {
     const authToken = localStorage.getItem("authToken");
     const agentId = localStorage.getItem("agentId");
     config.headers["agentId"] = agentId;

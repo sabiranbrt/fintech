@@ -5,7 +5,7 @@ import { QuickLinksType } from "@/types";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { GrUserSettings } from "react-icons/gr";
-import { MdOutlineVerified } from "react-icons/md";
+import { MdOutlinePending, MdOutlineVerified } from "react-icons/md";
 import { VscUnverified } from "react-icons/vsc";
 import { useDispatch, useSelector } from "react-redux";
 import AddBankAccount from "./AddBankAccount";
@@ -48,7 +48,6 @@ const BeneficiaryDetails = ({
 
   const filteredAccounts = useMemo(() => {
     const search = searchTerm.toLowerCase();
-
     const accounts = senderData?.beneficiaries || senderDataFW?.accounts || [];
 
     return accounts.filter((account: any) => {
@@ -64,7 +63,6 @@ const BeneficiaryDetails = ({
       );
     });
   }, [senderData?.beneficiaries, senderDataFW?.accounts, searchTerm]);
-  
 
   return (
     <div className=" w-full p-4 shadow-md bg-white min-h-0 h-full">
@@ -180,26 +178,78 @@ const BeneficiaryDetails = ({
                               ) : null}
                             </div>
 
-                            <div className="flex items-center mt-1">
-                              {account.defaultAccount ? (
-                                <div className="flex items-center text-green-600">
-                                  <MdOutlineVerified className="w-4 h-4" />
-                                  <span className="text-sm ml-1">Verified</span>
-                                </div>
-                              ) : account.isAccountVerified ? (
-                                <div className="flex items-center text-green-600">
-                                  <MdOutlineVerified className="w-4 h-4" />
-                                  <span className="text-sm ml-1">Verified</span>
-                                </div>
-                              ) : (
-                                <div className="flex items-center text-red-500">
-                                  <VscUnverified className="w-4 h-4" />
-                                  <span className="text-sm ml-1">
-                                    Unverified
-                                  </span>
-                                </div>
-                              )}
-                            </div>
+                            {selectedService?.type !== "pgPayout" ? (
+                              <div className="flex items-center mt-1">
+                                {account.defaultAccount ? (
+                                  <div className="flex items-center text-green-600">
+                                    <MdOutlineVerified className="w-4 h-4" />
+                                    <span className="text-sm ml-1">
+                                      Verified
+                                    </span>
+                                  </div>
+                                ) : account.isAccountVerified ? (
+                                  <div className="flex items-center text-green-600">
+                                    <MdOutlineVerified className="w-4 h-4" />
+                                    <span className="text-sm ml-1">
+                                      Verified
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center text-red-500">
+                                    <VscUnverified className="w-4 h-4" />
+                                    <span className="text-sm ml-1">
+                                      Unverified
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="flex items-center mt-1">
+                                {account.isAccountVerified ? (
+                                  <>
+                                    {account?.accountVerificationStage?.toLowerCase() ===
+                                    "completed" ? (
+                                      <>
+                                        <div className="flex items-center text-green-600">
+                                          <MdOutlineVerified className="w-4 h-4" />
+                                          <span className="text-sm ml-1">
+                                            Verified
+                                          </span>
+                                        </div>
+                                      </>
+                                    ) : account?.accountVerificationStage ===
+                                      "MIN_KYC" ? (
+                                      <>
+                                        <div className="flex items-center text-green-600">
+                                          <MdOutlineVerified className="w-4 h-4" />
+                                          <span className="text-sm ml-1">
+                                            MIN KYC
+                                          </span>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <div className="flex items-center text-orange-600">
+                                          <MdOutlinePending className="w-4 h-4" />
+                                          <span className="text-sm ml-1">
+                                            KYC Pending
+                                          </span>
+                                        </div>
+                                      </>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="flex items-center text-red-500">
+                                      <VscUnverified className="w-4 h-4" />
+                                      <span className="text-sm ml-1">
+                                        Unverified
+                                      </span>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </label>
                       </div>
@@ -336,7 +386,12 @@ const BeneficiaryDetails = ({
         />
       )}
       {isModalOpen === "paymentModal" && (
-        <PaymentModal handleCancel={handleCancel} senderData={senderData} beneData={beneData} senderDataFW={senderDataFW}/>
+        <PaymentModal
+          handleCancel={handleCancel}
+          senderData={senderData}
+          beneData={beneData}
+          senderDataFW={senderDataFW}
+        />
       )}
     </div>
   );

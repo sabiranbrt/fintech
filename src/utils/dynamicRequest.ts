@@ -1,11 +1,10 @@
 import { encryptRequestBody } from "@/libs/encryptBody";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface DynamicRequest {
   url: string;
   method: "GET" | "POST";
-  params?: Record<string, any>;
-  headers?: any;
+  params?: Record<string, TODO>;
+  headers?: TODO;
   body?: Record<string, unknown> | { encryptedKey: string | false; encryptedBody: string } | null;
   responseType?: "json" | "text" | "blob";
 }
@@ -14,9 +13,9 @@ type EndpointConfig = {
   url: string;
   method: string;
   enc?: boolean;
-  headers?: any;
+  headers?: TODO;
   queryParams?: string[];
-  body?: any;
+  body?: TODO;
   responseType?: "json" | "text" | "blob"
 };
 
@@ -25,10 +24,10 @@ type EndPointsMap = Record<string, EndpointConfig>;
 export function getDynamicRequest(
   step: string,
   endPoints: EndPointsMap,
-  params: Record<string, any> = {},
-  customHeaders: Record<string, any> = {},
+  params: Record<string, TODO> = {},
+  customHeaders: Record<string, TODO> = {},
   manualBody?: Record<string, unknown> | null,
-  responseType?: any
+  responseType?: TODO
 ): DynamicRequest | null {
   const config = endPoints[step];
   if (!config) return null;
@@ -56,7 +55,7 @@ export function getDynamicRequest(
   // 3. Resolve headers
   const resolvedHeaders = config.headers
     ? Object.fromEntries(
-      Object.entries(config.headers).map(([k, v]: any) => [
+      Object.entries(config.headers).map(([k, v]: TODO) => [
         k,
         typeof v === "string" ? v.replace("{{urn}}", params.urn || "") : v,
       ])
@@ -67,7 +66,7 @@ export function getDynamicRequest(
   const mergedHeaders = { ...resolvedHeaders, ...customHeaders };
 
   // 5. Build request body for POST requests
-  let requestBody: any = null;
+  let requestBody: TODO = null;
 
   if (config.method === "POST") {
     // If manualBody is provided, use it directly

@@ -2,3 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .border-gradient {
+    position: relative;
+    background: linear-gradient(45deg, #4b5a9f, #4fb5b7); /* Gradient border */
+    padding: 2px; /* Thickness of the border */
+    border-radius: 0.7rem; /* Ensure rounded corners */
+    display: flex; /* Flexbox for centering */
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+  }
+
+  .border-gradient > .inner-content {
+    background: #f8fafc; /* Inner background color */
+    border-radius: 0.5rem; /* Match parent border-radius */
+    padding: 10px; /* Inner padding */
+    text-align: left; /* Center align text */
+    width: 99.5%; /* Adjust width if needed */
+    height: 97.5%;
+  }
+  .button-border-gradient {
+    position: relative;
+    background: linear-gradient(45deg, #4b5a9f, #4fb5b7); /* Gradient border */
+    padding: 2px; /* Thickness of the border */
+    border-radius: 0.7rem; /* Ensure rounded corners */
+    display: flex; /* Flexbox for centering */
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+  }
+
+  .button-border-gradient > .inner-content {
+    background: linear-gradient(45deg, #4b5a9f, #4fb5b7) 3; /* Inner background color */
+    border-radius: 0.5rem; /* Match parent border-radius */
+    padding: 4px; /* Inner padding */
+    text-align: start; /* Center align text */
+    width: 99.5%; /* Adjust width if needed */
+    height: 97.5%;
+  }
+}

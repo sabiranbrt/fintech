@@ -71,7 +71,7 @@ const PassField = ({
 
   // const inputType =
   //   fieldType === "password" ? (isHolding ? "password" : "text") : fieldType;
-  const inputType = isHolding ? "password" : "text";
+  const inputType = !isHolding ? "password" : "text";
 
   return (
     <Controller
@@ -147,7 +147,7 @@ const PassField = ({
                 onMouseUp={() => setIsHolding(false)}
                 onMouseLeave={() => setIsHolding(false)}
               >
-                {isHolding ? <FaEyeSlash /> : <FaEye />}
+                {!isHolding ? <FaEyeSlash /> : <FaEye />}
               </div>
             </div>
             {errors[names] && (

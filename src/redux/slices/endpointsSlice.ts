@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // store/endpointSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface EndpointState {
-    endpoints: Record<string, any> | null;
+    endpoints: Record<string, TODO> | null;
 }
 
 const initialState: EndpointState = {
@@ -14,7 +13,7 @@ const endpointSlice = createSlice({
     name: 'endpoints',
     initialState,
     reducers: {
-        setEndpoints(state, action: PayloadAction<Record<string, any>>) {
+        setEndpoints(state, action: PayloadAction<Record<string, TODO>>) {
             state.endpoints = action.payload;
             localStorage.setItem('endpoints', JSON.stringify(action.payload));
         },

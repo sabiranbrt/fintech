@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Loader from "@/components/LoaderComponent";
 import { useTransaction } from "@/hooks/service";
 import { generateRandom13DigitNumber } from "@/libs/axios";
@@ -192,7 +191,7 @@ const DetailedTransactionComponent = () => {
 
       setModalContent(htmlContent);
       setIsModalOpen(true);
-    } catch (error: any) {
+    } catch (error: TODO) {
       toast.error(error);
       console.error("Error fetching HTML receipt:", error);
     }
@@ -346,7 +345,7 @@ const DetailedTransactionComponent = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {transactions?.length > 0 ? (
-                transactions?.map((transaction: any, index: number) => (
+                transactions?.map((transaction: TODO, index: number) => (
                   <tr key={index}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                       <button
@@ -509,7 +508,7 @@ const DetailedTransactionComponent = () => {
                       </div>
                     );
                   }
-                } catch (err: any) {
+                } catch (err: TODO) {
                   // Not JSON, assume it's HTML
                   return (
                     <>

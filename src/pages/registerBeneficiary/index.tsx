@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import CustomField from "@/components/multiForm/CustomField";
 import MultiFormHeader from "@/components/multiForm/multiFormHeader";
 import formList from "@/jsonDemo/structure.json";
@@ -10,7 +9,7 @@ import ArrowRight from "@assets/icons/arrowRight.svg";
 
 const RegisterBeneficiary = () => {
   const [index, setIndex] = useState(0);
-  const methods = useForm<any>({
+  const methods = useForm<TODO>({
     mode: "onChange",
   });
 
@@ -30,7 +29,7 @@ const RegisterBeneficiary = () => {
     const currentStep = formList.dataFields[currentKey];
 
     if (!Array.isArray(currentStep)) {
-      return currentStep?.displayField?.map((displaylist: any) => (
+      return currentStep?.displayField?.map((displaylist: TODO) => (
         <CustomField
           key={displaylist?.key ?? ""}
           names={displaylist?.key ?? ""}
@@ -60,7 +59,7 @@ const RegisterBeneficiary = () => {
     return null;
   };
 
-  const getCurrentStepFieldNames = (): any[] => {
+  const getCurrentStepFieldNames = (): TODO[] => {
     const stepKeys = Object.keys(formList?.dataFields ?? {}) as Array<
       keyof typeof formList.dataFields
     >;
@@ -68,7 +67,7 @@ const RegisterBeneficiary = () => {
     const currentStep = formList?.dataFields?.[currentKey];
 
     if (!Array.isArray(currentStep)) {
-      return currentStep?.displayField?.map((item: any) => item.key) ?? [];
+      return currentStep?.displayField?.map((item: TODO) => item.key) ?? [];
     }
 
     return [];

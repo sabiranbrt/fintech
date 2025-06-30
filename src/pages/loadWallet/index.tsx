@@ -14,8 +14,6 @@ const LoadWallet = () => {
   const slablist = slab?.apiResponseData?.data;
   const agentList = agent?.apiResponseData?.data?.userPersonalDetails;
 
-  console.log("slab",slablist)
-
   return (
     <div className="flex items-center justify-center z-[2]">
       <div className="bg-white rounded-xl w-full animate-fadeIn max-h-full overflow-y-auto shadow-md">

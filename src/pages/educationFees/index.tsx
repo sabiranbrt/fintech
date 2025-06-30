@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import BeneficiaryDetails from "@/components/BeneficiaryDetails";
 import NoticeComponent from "@/components/NoticeComponent";
 
 interface EducationFeesProps {
-  senderData: any;
+  senderData: TODO;
 }
 
 const EducationFees = ({ senderData }: EducationFeesProps) => {

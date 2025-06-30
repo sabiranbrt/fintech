@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 interface IProps {
-  merchantData: any;
-  slabList: any;
+  merchantData: TODO;
+  slabList: TODO;
 }
 
 const LeftSection = ({ merchantData, slabList }: IProps) => {
@@ -72,7 +71,7 @@ const LeftSection = ({ merchantData, slabList }: IProps) => {
               </tr>
             </thead>
             <tbody>
-              {slabList?.slabDetails?.map((item: any, index: number) => (
+              {slabList?.slabDetails?.map((item: TODO, index: number) => (
                 <tr key={index} className="border-b last:border-b-0">
                   <td className="p-1">{item.slabSequence}</td>
                   <td className="p-1">

@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useDynamicMutation, useDynamicQuery } from "@/hooks/dynamicQuery";
 import agent from "@/jsonDemo/agent.json";
+import { CCFormDataProps } from "@/pages/creditCardBillPayment/types";
 import PGModals from "@/pages/loadWallet/PGModals";
+import { AccountData } from "@/pages/quicklinks/types";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
 import LocalStorageUtil from "@/utils/LocalStorageUtil";
@@ -28,9 +30,8 @@ interface IProp {
   bankDetails?: string;
   senderData?: any;
   beneData?: any;
-  cardNo?: string;
-  mobileNumber?: string;
   senderDataFW?: any;
+  CCFromData?: CCFormDataProps | null;
 }
 
 const PaymentModal = ({
@@ -38,13 +39,14 @@ const PaymentModal = ({
   bankDetails,
   senderData,
   beneData,
-  cardNo,
-  senderDataFW,
-  mobileNumber,
+  CCFromData,
 }: IProp) => {
+  const [slipUrl, setSlipUrl] = useState("");
+  const handleSlipUpload = (url: string) => {
+    setSlipUrl(url);
+  };
   const { selectedService } = useSelector((state: RootState) => state.service);
   const { endpoints } = useSelector((state: RootState) => state.endPoints);
-  const { cusVal } = useSelector((state: RootState) => state.form);
 
   const [modalContent, setModalContent] = useState("");
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -52,7 +54,6 @@ const PaymentModal = ({
     setModalVisible(false);
   };
 
-  const checkedBeneficiary = senderData;
   const [isMarkupSwitchActive, setIsMarkupSwitchActive] = useState(false);
   const [requestAmount, setRequestAmount] = useState<string>("");
 
@@ -204,12 +205,16 @@ const PaymentModal = ({
         cardLastSixDigits: "123456",
         amount: requestAmt,
         senderMobile: senderData?.mobileNumber,
-        beneMobile: mobileNumber,
+        beneMobile:
+          selectedService?.alias === "CC"
+            ? CCFromData?.mobileNumber
+            : beneData?.beneficiaryMobile,
         charge: String(chargeDetail?.feeAmount),
         markup: String(chargeDetail?.markUp),
         transType: selectedService?.alias,
         transferType: selectedPaymentMethod,
-        beneficaryAccountNumber: null,
+        beneficaryAccountNumber:
+          selectedService?.alias === "CC" ? null : beneData?.accountNumber,
         finalAmount: Number(chargeDetail?.finalAmount),
         loadAmount: Number(chargeDetail?.requestAmount),
         selectedChargeType: isMarkupSwitchActive ? "percentage" : "amount",
@@ -217,13 +222,23 @@ const PaymentModal = ({
           bankName:
             selectedService?.alias === "FW"
               ? beneData?.bankName
-              : cusVal?.bankName?.bankName,
+              : selectedService?.alias === "CC"
+              ? CCFromData?.bankName?.bankName
+              : "",
           bankIfsc:
             selectedService?.alias === "FW"
               ? beneData?.ifscCode
-              : cusVal?.IFSC,
+              : selectedService?.alias === "CC"
+              ? CCFromData?.IFSC
+              : "",
           accountNumber:
-            selectedService?.alias === "FW" ? beneData?.accountNumber : cardNo,
+            selectedService?.alias === "FW"
+              ? beneData?.accountNumber
+              : selectedService?.alias === "CC"
+              ? selectedService?.alias === "CC"
+                ? CCFromData?.cardAccount
+                : ""
+              : "",
         },
       },
       userId: userID,
@@ -406,22 +421,22 @@ const PaymentModal = ({
                       <div>
                         <p className="text-sm text-gray-500">Card Number</p>
                         <p className="text-sm font-medium text-gray-800">
-                          {cusVal?.cardAccount
-                            ? `XXXXXXXXXXXX${cusVal?.cardAccount.slice(-4)}`
+                          {CCFromData?.cardAccount
+                            ? `XXXXXXXXXXXX${CCFromData?.cardAccount.slice(-4)}`
                             : "N/A"}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Bank Name</p>
                         <p className="text-sm font-medium text-gray-800">
-                          {cusVal?.bankName?.bankName || "N/A"}
+                          {CCFromData?.bankName?.bankName || "N/A"}
                         </p>
                       </div>
                       {selectedService.label !== QuickLinksType?.CC && (
                         <div>
                           <p className="text-sm text-gray-500">Bank IFSC</p>
                           <p className="text-sm font-medium text-gray-800">
-                            {checkedBeneficiary.accountIfsc || "N/A"}
+                            {senderData?.accountIfsc || "N/A"}
                           </p>
                         </div>
                       )}
@@ -445,7 +460,7 @@ const PaymentModal = ({
                        </span> */}{" "}
                       {!isVerified ? (
                         <>
-                          {checkedBeneficiary.isAccountVerified ? (
+                          {senderData?.isAccountVerified ? (
                             <div className="flex items-center text-green-600">
                               <MdOutlineVerified className="w-4 h-4" />
                               <span className="text-sm ml-1">Verified</span>
@@ -715,7 +730,11 @@ const PaymentModal = ({
             {selectedService?.label !== QuickLinksType?.CC &&
             selectedService?.label !== QuickLinksType?.FW &&
             selectedService?.label !== QuickLinksType?.FS ? (
-              <SlipButtons />
+              <SlipButtons
+                senderData={senderData}
+                onSlipUpload={handleSlipUpload}
+                beneData={beneData}
+              />
             ) : null}
 
             <div className="mt-8 flex items-center justify-end space-x-4">

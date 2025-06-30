@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { generateRandom13DigitNumber } from '@/libs/axios';
 import { encryptRequestBody } from '@/libs/encryptBody';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-export const downloadCsv = async (requestData: any) => {
+export const downloadCsv = async (requestData: TODO) => {
   try {
     const authToken = localStorage.getItem('authToken');
     if (!authToken) {
@@ -41,7 +40,7 @@ export const downloadCsv = async (requestData: any) => {
           toast.error(errorMessage);
           return;
         }
-      } catch (err: any) {
+      } catch (err: TODO) {
         console.log("error", err)
       }
     }
@@ -59,7 +58,7 @@ export const downloadCsv = async (requestData: any) => {
       a.remove();
     }, 100);
 
-  } catch (error: any) {
+  } catch (error: TODO) {
     console.error('CSV download failed:', error);
 
     let errorMessage = error.message;
