@@ -1,9 +1,25 @@
-
 import Loader from "@/components/LoaderComponent";
-import { useContact } from "@/hooks/service";
+import { useDynamicQuery } from "@/hooks/dynamicQuery";
+import { RootState } from "@/redux/store";
+import { getDynamicRequest } from "@/utils/dynamicRequest";
+import { useSelector } from "react-redux";
 
 const ContactCard = () => {
-  const { data: contact, isLoading } = useContact();
+  const { selectedService } = useSelector((state: RootState) => state.service);
+  const { endpoints } = useSelector((state: RootState) => state.endPoints);
+
+  const stepName = selectedService?.sequence?.find(
+    (item) => item === "getContact"
+  );
+
+  const request = getDynamicRequest(stepName ?? "", endpoints ?? {});
+  const { data: contact, isLoading } = useDynamicQuery<TODO>(
+    request ?? { url: "", method: "GET" },
+    {
+      queryKey: [stepName],
+      enabled: !!request,
+    }
+  );
 
   const contactDetail = contact?.apiResponseData?.data;
   if (isLoading) return <Loader />;

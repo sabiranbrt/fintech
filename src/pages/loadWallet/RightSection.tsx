@@ -5,19 +5,18 @@ import Loader from "@/components/LoaderComponent";
 import RadioButton from "@/components/radioButton";
 import SelectField from "@/components/selectfield";
 import { useChargeInfo, useCreateOrder } from "@/hooks/service";
-import getSlab from "@/jsonDemo/getSlab.json";
 import { setValues } from "@/redux/slices/singleValueSlice";
 import { decryptData3Des } from "@/utils/3desEncrypt";
 import LocalStorageUtil from "@/utils/LocalStorageUtil";
+import interceptor from "@/utils/services/interceptor";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import clsx from "clsx";
 import { toWords } from "number-to-words";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
-import PGModals from "./PGModals";
-import interceptor from "@/utils/services/interceptor";
 import { toast } from "react-toastify";
+import PGModals from "./PGModals";
 
 declare global {
   interface Window {
@@ -35,6 +34,7 @@ interface IProps {
 interface ChargeData {
   [key: string]: TODO;
 }
+
 interface OrderResponse {
   providerId: number;
   invoiceID: string;
@@ -59,6 +59,7 @@ const RightSection = ({ slablist, refetchSlab }: IProps) => {
   const handleClose = () => {
     setModalVisible(false);
   };
+
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
@@ -274,7 +275,7 @@ const RightSection = ({ slablist, refetchSlab }: IProps) => {
               control={control}
               placeHolder="Select"
               names="gateway"
-              options={getSlab?.gatewayPreferences}
+              options={slab?.gatewayPreferences}
               labelKey={"displayName"}
               valueKey={"serviceName"}
             />

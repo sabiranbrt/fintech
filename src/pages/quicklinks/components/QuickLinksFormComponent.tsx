@@ -59,6 +59,7 @@ const QuickLinksFormComponent = () => {
     watch,
     handleSubmit,
     setError,
+    reset
   } = useForm<FormData>({
     mode: "onChange",
   });
@@ -107,6 +108,10 @@ const QuickLinksFormComponent = () => {
       enabled: !!request,
     }
   );
+  useEffect(() => {
+    reset({ mobileNumber: "" });
+    setSenderData(null);
+  }, [selectedService]);
 
   const agentsDataForBeneficiary = data?.apiResponseData?.data;
   const agentsData = data?.apiResponseData?.data?.panCardData;
@@ -130,7 +135,9 @@ const QuickLinksFormComponent = () => {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div>{selectedService?.type !== "pgPayout" || isText ? <BackButton /> : null}</div>
+      <div>
+        {selectedService?.type !== "pgPayout" || isText ? <BackButton /> : null}
+      </div>
       {!isText ? (
         <div className="flex flex-row gap-4 h-full min-h-0">
           <div className={clsx("bg-white")}>
@@ -269,7 +276,7 @@ const QuickLinksFormComponent = () => {
               </div>
             </div>
           ) : (
-            <div className="flex-1 h-full min-h-0">
+            <div className="flex-1 h-full min-h-0 overflow-hidden">
               {selectedService ? (
                 selectedService.type === "pgPayout" ? (
                   <EducationFees senderData={sendData} />

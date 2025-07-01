@@ -1,45 +1,55 @@
-import { useAccountLedger } from "@/hooks/service";
+import { useDynamicMutation } from "@/hooks/dynamicQuery";
+import { RootState } from "@/redux/store";
 import { downloadCsv } from "@/utils/DownloadCsv";
+import { getDynamicRequest } from "@/utils/dynamicRequest";
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 const AccountLedger = () => {
   // States for storing the selected dates and report data
-  const { mutateAsync } = useAccountLedger();
+  const { mutateAsync } = useDynamicMutation<TODO>();
+  const { selectedService } = useSelector((state: RootState) => state.service);
+  const { endpoints } = useSelector((state: RootState) => state.endPoints);
+
+  const stepName = selectedService?.sequence?.find(
+    (item) => item === "getLedger"
+  );
+
   const today = new Date().toISOString().split("T")[0];
   const [fromDate, setFromDate] = useState(today);
   const [toDate, setToDate] = useState(today);
   const [reportData, setReportData] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [currentPage, setCurrentPage] = useState(1); // Track the current page
+
   const [pageIndex, setPageIndex] = useState(0);
-  const pageSize = 10; // Fixed page size of 10
+  const pageSize = 10;
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  const request = getDynamicRequest(stepName ?? "", endpoints ?? {}, {
+    fromDate: fromDate,
+    toDate: toDate,
+    reportType: "merchantDailySummary",
+    serviceName: "",
+  });
+
   // Function to fetch data from the backend API
   const fetchData = async () => {
-    if (!fromDate || !toDate) {
+    if (!fromDate || !toDate || !request) {
       alert("Please select both Start Date and End Date.");
       return;
     }
-    // setIsLoading(true);
 
     try {
-      const response = await mutateAsync({
-        fromDate: fromDate,
-        toDate: toDate,
-        reportType: "merchantDailySummary",
-        serviceName: "",
-      });
-      if (response?.data?.apiResponseData?.responseCode === "200") {
-        setReportData(response?.data?.apiResponseData?.data);
+      const response = await mutateAsync(request);
+      if (response?.apiResponseData?.responseCode === "200") {
+        setReportData(response?.apiResponseData?.data);
       } else {
-        console.error(response?.data.apiResponseData.responseMessage);
-        toast.error(response?.data?.apiResponseData?.responseMessage);
+        console.error(response?.apiResponseData.responseMessage);
+        toast.error(response?.apiResponseData?.responseMessage);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -212,140 +222,130 @@ const AccountLedger = () => {
     }
   };
   return (
-    <>
-      {/* {isLoading && <Loader />} */}
-      <div className="mt-2 flex flex-col customTable min-w-full h-full">
-        <div className="flex space-x-4 mb-4 justify-end items-center">
+    <div className="mt-2 flex flex-col customTable h-full">
+      <div className="flex space-x-4 mb-4 justify-end items-center">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search transactions . . . ."
+          className="px-4 py-2 border border-gray-200 rounded-md focus:outline-none mt-3"
+        />
+
+        <div className="flex flex-col">
+          <label htmlFor="" className="block text-sm font-medium text-gray-700">
+            Start Date
+          </label>
           <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search transactions . . . ."
-            className="px-4 py-2 border border-gray-200 rounded-md w-full focus:outline-none mt-3"
+            type="date"
+            id="start-date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            onKeyDown={(e) => e.preventDefault()}
+            className="mt-1 block w-full border-gray-300 rounded-md focus:outline-none sm:text-sm"
+            required
           />
-
-          <div className="flex flex-col">
-            <label
-              htmlFor=""
-              className="block text-sm font-medium text-gray-700"
-            >
-              {" "}
-              Start Date
-            </label>
-            <input
-              type="date"
-              id="start-date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              onKeyDown={(e) => e.preventDefault()}
-              className="mt-1 block w-full border-gray-300 rounded-md focus:outline-none sm:text-sm"
-              required
-            />
-          </div>
-          <div className="flex flex-col">
-            <label
-              htmlFor=""
-              className="block text-sm font-medium text-gray-700"
-            >
-              {" "}
-              End Date
-            </label>
-            <input
-              type="date"
-              id="end-date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              onKeyDown={(e) => e.preventDefault()}
-              className="mt-1 block w-full border-gray-300 rounded-md focus:outline-none sm:text-sm"
-              required
-            />{" "}
-          </div>
-          <button
-            type="button"
-            onClick={fetchData}
-            //disabled={!fromDate || !toDate}
-            className="px-3 mr-2 bg-secondary h-9 text-white rounded-md shadow-sm hover:bg-secondary-light transition-all duration-300"
-          >
-            Filter
-          </button>
-          <button
-            type="button"
-            onClick={fetchExportData}
-            //disabled={!fromDate || !toDate}
-            className="px-3 mr-2 bg-primary h-9 text-white rounded-md shadow-sm hover:bg-primary-light transition-all duration-300"
-          >
-            Export
-          </button>
         </div>
-
-        {/* Add search input */}
-
-        <div className="overflow-x-auto overflow-y-auto w-full">
-          <table className="bg-white  w-full">
-            <thead>
-              <tr className="bg-gray-200">
-                {headers?.map((header: TODO, index: number) => (
-                  <th
-                    key={index}
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider sticky top-0 bg-gray-200 z-10"
-                  >
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {currentPageRows?.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={headers?.length}
-                    className="px-6 py-4 text-center text-gray-600"
-                  >
-                    No results . . .
-                  </td>
-                </tr>
-              ) : (
-                currentPageRows?.map((row, rowIndex) => (
-                  <tr
-                    key={rowIndex}
-                    className={rowIndex % 2 === 0 ? "bg-gray-50" : "bg-white"}
-                  >
-                    {row.map((cell: TODO, cellIndex: number) => (
-                      <td
-                        key={cellIndex}
-                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
-                      >
-                        {cell}
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        <div className="flex flex-col">
+          <label htmlFor="" className="block text-sm font-medium text-gray-700">
+            {" "}
+            End Date
+          </label>
+          <input
+            type="date"
+            id="end-date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            onKeyDown={(e) => e.preventDefault()}
+            className="mt-1 block w-full border-gray-300 rounded-md focus:outline-none sm:text-sm"
+            required
+          />{" "}
         </div>
-
-        <div className="flex justify-center items-center mt-2">
-          <button
-            onClick={handlePrevious}
-            disabled={pageIndex === 0}
-            className="mx-2 px-4 py-2 rounded bg-gray-300 disabled:opacity-50"
-          >
-            Previous
-          </button>
-
-          {renderPageNumbers()}
-
-          <button
-            onClick={handleNext}
-            disabled={pageIndex === totalPages - 1}
-            className="mx-2 px-4 py-2 rounded bg-gray-300 disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={fetchData}
+          //disabled={!fromDate || !toDate}
+          className="px-3 mr-2 bg-secondary h-9 text-white rounded-md shadow-sm hover:bg-secondary-light transition-all duration-300"
+        >
+          Filter
+        </button>
+        <button
+          type="button"
+          onClick={fetchExportData}
+          //disabled={!fromDate || !toDate}
+          className="px-3 mr-2 bg-primary h-9 text-white rounded-md shadow-sm hover:bg-primary-light transition-all duration-300"
+        >
+          Export
+        </button>
       </div>
-    </>
+
+      {/* Add search input */}
+
+      <div className="overflow-x-auto overflow-y-auto w-full h-[450px]">
+        <table className="bg-white w-full">
+          <thead>
+            <tr className="bg-gray-200">
+              {headers?.map((header: TODO, index: number) => (
+                <th
+                  key={index}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider sticky top-0 bg-gray-200 z-10"
+                >
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {currentPageRows?.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={headers?.length}
+                  className="px-6 py-4 text-center text-gray-600"
+                >
+                  No results . . .
+                </td>
+              </tr>
+            ) : (
+              currentPageRows?.map((row, rowIndex) => (
+                <tr
+                  key={rowIndex}
+                  className={rowIndex % 2 === 0 ? "bg-gray-50" : "bg-white"}
+                >
+                  {row.map((cell: TODO, cellIndex: number) => (
+                    <td
+                      key={cellIndex}
+                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
+                    >
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex justify-center items-center mt-2">
+        <button
+          onClick={handlePrevious}
+          disabled={pageIndex === 0}
+          className="mx-2 px-4 py-2 rounded bg-gray-300 disabled:opacity-50"
+        >
+          Previous
+        </button>
+
+        {renderPageNumbers()}
+
+        <button
+          onClick={handleNext}
+          disabled={pageIndex === totalPages - 1}
+          className="mx-2 px-4 py-2 rounded bg-gray-300 disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+    </div>
   );
 };
 export default AccountLedger;

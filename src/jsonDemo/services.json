@@ -38,7 +38,9 @@
         "getSlabDetails",
         "getChargeDetails",
         "initPayout",
-        "uploadSlip"
+        "uploadSlip",
+        "getPennyDrop",
+        "getAgentAccount"
       ]
     },
     {
@@ -109,7 +111,8 @@
         "getbankList",
         "getSlabDetails",
         "getChargeDetails",
-        "initPayout"
+        "initPayout",
+        "getPennyDrop"
       ]
     },
     {
@@ -162,7 +165,8 @@
         "getbankList",
         "getSlabDetails",
         "getChargeDetails",
-        "initPayout"
+        "initPayout",
+        "getCount"
       ]
     },
     {
@@ -192,7 +196,8 @@
         "getbankList",
         "getSlabDetails",
         "getChargeDetails",
-        "initPayout"
+        "initPayout",
+        "getLedger"
       ]
     },
     {
@@ -207,7 +212,8 @@
         "getbankList",
         "getSlabDetails",
         "getChargeDetails",
-        "initPayout"
+        "initPayout",
+        "getContact"
       ]
     }
   ],
@@ -246,9 +252,18 @@
       "method": "GET",
       "url": "/api/v1/transaction/charge-detail"
     },
+    "getPennyDrop": {
+      "method": "POST",
+      "enc": true,
+      "url": "/api/v1/penny-drop"
+    },
     "getAgent": {
       "method": "GET",
       "url": "/api/v1/agent"
+    },
+    "getAgentAccount": {
+      "method": "POST",
+      "url": "/api/v1/agent/account"
     },
     "getSlabDetails": {
       "method": "GET",
@@ -273,6 +288,14 @@
     "getbankList": {
       "method": "GET",
       "url": "/api/v1/bank"
+    },
+    "getContact": {
+      "method": "GET",
+      "url": "/api/v1/agent/relationship-manager/get"
+    },
+    "getLedger": {
+      "method": "POST",
+      "url": "/api/v1/accounts/get-ledger"
     }
   }
 }

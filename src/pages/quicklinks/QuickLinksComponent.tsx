@@ -128,6 +128,7 @@ const QuickLinksComponent = () => {
     service?: (typeof services.services)[number];
     label?: string;
   }) => {
+
     if (opts.service) {
       if (opts.service.label === "Register Sender") {
         setIsModalOpen(true);

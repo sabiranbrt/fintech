@@ -4,10 +4,15 @@ import { FaEye, FaEyeSlash, FaHome } from "react-icons/fa";
 import { IoMdQrScanner } from "react-icons/io";
 import { MdFullscreenExit } from "react-icons/md";
 import logo from "@assets/images/logo.png";
-import balance from "../jsonDemo/balance.json";
+import { useBalance } from "@/hooks/service";
 
 export const TopNavbar = () => {
-  const totalBalance = balance.current_balance;
+  const { data: balanceData } = useBalance();
+
+  const balance = balanceData?.apiResponseData?.data;
+
+  const totalBalance = balance?.current_balance;
+
   const [showBalance, setShowBalance] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
