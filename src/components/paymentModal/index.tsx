@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useDynamicMutation, useDynamicQuery } from "@/hooks/dynamicQuery";
-import agent from "@/jsonDemo/agent.json";
 import { CCFormDataProps } from "@/pages/creditCardBillPayment/types";
 import PGModals from "@/pages/loadWallet/PGModals";
-import { AccountData } from "@/pages/quicklinks/types";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
 import LocalStorageUtil from "@/utils/LocalStorageUtil";
@@ -22,7 +20,7 @@ import SwitchGroup from "../buttons/switchBtn";
 import FeeBox from "../feeBox";
 import InputField from "../inputField";
 import RadioButton from "../radioButton";
-import SlipButtons from "../slipbuttons/SlipButtons";
+import SlipButtons from "../slipbuttons";
 import TransferNotice from "../transferNotice";
 
 interface IProp {
@@ -201,7 +199,7 @@ const PaymentModal = ({
         senderMobile: senderData?.mobileNumber,
       },
       dynamicValues: {
-        slipUrl: "",
+        slipUrl: slipUrl ?? "",
         cardLastSixDigits: "123456",
         amount: requestAmt,
         senderMobile: senderData?.mobileNumber,
@@ -270,12 +268,16 @@ const PaymentModal = ({
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-[2]">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl animate-fadeIn max-h-[76vh] overflow-y-auto">
         <div className="p-1 border-b border-gray-100">
-          <h1 className="text-xl font-semibold text-gray-800 items-center gap-3 ml-4 mr-4">
+          <div className="text-xl font-semibold text-gray-800 items-center gap-3 ml-4 mr-4">
             {selectedService?.label}
+            {(selectedService?.label === QuickLinksType.CC ||
+              selectedService?.label === QuickLinksType.FW ||
+              selectedService?.label === QuickLinksType.FS) && (
+              <div className="text-base text-primary flex justify-center text-left flex-nowrap">
+                {slab?.note ?? ""}
+              </div>
+            )}
 
-            <div className="text-base text-primary flex justify-center text-left flex-nowrap">
-              {slab?.note ?? ""}
-            </div>
             {selectedService?.label !== QuickLinksType?.CC &&
               selectedService?.label !== QuickLinksType?.FW &&
               selectedService?.label !== QuickLinksType?.FS && (
@@ -305,7 +307,7 @@ const PaymentModal = ({
                   </div>
                 </div>
               )}
-          </h1>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -322,25 +324,25 @@ const PaymentModal = ({
                     <div>
                       <p className="text-sm text-gray-500">First Name</p>
                       <p className="text-sm font-medium text-gray-800 capitalize">
-                        {agent?.panCardData?.firstName || "N/A"}
+                        {senderData?.panCardData?.firstName || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Middle Name</p>
                       <p className="text-sm font-medium text-gray-800 capitalize">
-                        {agent?.panCardData?.middleName || "N/A"}
+                        {senderData?.panCardData?.middleName || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Last Name</p>
                       <p className="text-sm font-medium text-gray-800 capitalize">
-                        {agent?.panCardData?.lastName || "N/A"}
+                        {senderData?.panCardData?.lastName || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Mobile</p>
                       <p className="text-sm font-medium text-gray-800">
-                        {agent?.panCardData?.mobile_no || "N/A"}
+                        {senderData?.panCardData?.mobile_no || "N/A"}
                       </p>
                     </div>
                     {/*  <div>
@@ -357,19 +359,19 @@ const PaymentModal = ({
                     <div>
                       <p className="text-sm text-gray-500">Account Number</p>
                       <p className="text-sm font-medium text-gray-800">
-                        {agent.accounts[0].accountNumber || "N/A"}
+                        {senderData?.accounts?.[0]?.accountNumber || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Bank Name</p>
                       <p className="text-sm font-medium text-gray-800">
-                        {agent.accounts[0].bankName || "N/A"}
+                        {senderData?.accounts?.[0]?.bankName || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Bank IFSC</p>
                       <p className="text-sm font-medium text-gray-800">
-                        {agent.accounts[0].ifscCode || "N/A"}
+                        {senderData?.accounts?.[0]?.ifscCode || "N/A"}
                       </p>
                     </div>
                   </div>
@@ -643,11 +645,6 @@ const PaymentModal = ({
                       placeHolder="0.00"
                       onChange={(value) => {
                         setRequestAmount(value || "");
-                        // const totalFee = chargeDetail?.totalCharge;
-                        // setValue(
-                        //   "charges",
-                        //   totalFee ? parseFloat(totalFee).toFixed(2) : ""
-                        // );
                       }}
                       InputBlur={() => {
                         const totalFee = chargeDetail?.totalCharge;
@@ -706,14 +703,14 @@ const PaymentModal = ({
             </div>
 
             <div className=" grid grid-cols-2 gap-2 mt-4">
-              {selectedService?.type === "pgPayout" && requestAmount && (
+              {selectedService?.type !== "pgPayout" && requestAmount && (
                 <>
                   <FeeBox title="service Fee" value={chargeDetail?.feeAmount} />
                   <FeeBox title="Markup" value={chargeDetail?.markUp} />
                 </>
               )}
 
-              {requestAmount && (
+              {requestAmount && selectedService?.type === "pgPayout" && (
                 <>
                   <FeeBox
                     title="Transfer Amount"

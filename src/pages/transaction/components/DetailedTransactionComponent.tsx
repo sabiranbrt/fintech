@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Loader from "@/components/LoaderComponent";
 import { useDynamicQuery } from "@/hooks/dynamicQuery";
-import { generateRandom13DigitNumber } from "@/libs/axios";
 import { RootState } from "@/redux/store";
 import { getDynamicRequest } from "@/utils/dynamicRequest";
 import { formatDateTime } from "@/utils/formatDateDDMMYYYY";
@@ -23,14 +22,6 @@ const DetailedTransactionComponent = () => {
   const [modalContent, setModalContent] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleDateChange = () => {
-    if (startDate && endDate) {
-      // fetchTransactions(0); // Reset to the first page on date change
-    } else {
-      setError("  Please select both start and end dates.");
-    }
-  };
-
   const stepName = selectedService?.sequence[1];
   const receiptTransaction = selectedService?.sequence[2];
 
@@ -41,32 +32,31 @@ const DetailedTransactionComponent = () => {
     pageSize: 10,
   });
 
-  const { data: detailTransaction, isLoading } = useDynamicQuery<TODO>(
-    request ?? { url: "", method: "GET" },
-    {
-      queryKey: [stepName],
-      enabled: !!request,
-    }
-  );
-
-  // const requestReceipt = getDynamicRequest(
-  //   receiptTransaction ?? "",
-  //   endpoints ?? {},
-  //   {
-  //     id: id,
-  //   }
-  // );
-
-  // const { data: receipt } = useDynamicQuery<TODO>(
-  //   request ?? { url: "", method: "GET" },
-  //   {
-  //     queryKey: [receiptTransaction],
-  //     enabled: !!requestReceipt,
-  //   }
-  // );
+  const {
+    data: detailTransaction,
+    isLoading,
+    refetch,
+  } = useDynamicQuery<TODO>(request ?? { url: "", method: "GET" }, {
+    queryKey: [stepName, currentPage],
+    enabled: !!request && currentPage >= 0,
+  });
 
   const transactions = detailTransaction?.apiResponseData?.data?.data;
+  const totalPages = detailTransaction?.apiResponseData?.data?.totalPages;
 
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleDateChange = () => {
+    if (startDate && endDate) {
+      setCurrentPage(0);
+      refetch()
+    } else {
+      setError("  Please select both start and end dates.");
+    }
+  };
+  
   const fetchHtmlReceipt = async (id: number) => {
     try {
       const requestReceipt = getDynamicRequest(
@@ -83,7 +73,7 @@ const DetailedTransactionComponent = () => {
       const response = await axios({
         method: requestReceipt.method,
         url: requestReceipt.url,
-        data: requestReceipt.body || {}, // for POST requests
+        data: requestReceipt.body || {},
         params:
           requestReceipt.method === "GET" ? requestReceipt.body : undefined,
       });
@@ -128,6 +118,136 @@ const DetailedTransactionComponent = () => {
       document.body.classList.remove("overflow-hidden");
     };
   }, [isModalOpen]);
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+    const pages = [];
+
+    // First page button
+    pages.push(
+      <button
+        key={0}
+        onClick={() => goToPage(0)}
+        className={`px-3 py-1 mx-1 rounded ${
+          currentPage === 0
+            ? "bg-blue-500 text-white"
+            : "bg-gray-300 text-gray-700"
+        }`}
+      >
+        1
+      </button>
+    );
+
+    // Add ellipses before currentPage if currentPage is beyond page 2
+    if (currentPage > 2) {
+      pages.push(
+        <span key="ellipsis-prev" className="px-3 py-1 mx-1">
+          ...
+        </span>
+      );
+    }
+
+    // Display previous page if currentPage > 1 and not near the beginning
+    if (currentPage > 1) {
+      pages.push(
+        <button
+          key={currentPage - 1}
+          onClick={() => goToPage(currentPage - 1)}
+          className="px-3 py-1 mx-1 bg-gray-300 text-gray-700 rounded"
+        >
+          {currentPage}
+        </button>
+      );
+    }
+
+    // Display current page button
+    if (currentPage > 0 && currentPage < totalPages - 1) {
+      pages.push(
+        <button
+          key={currentPage}
+          onClick={() => goToPage(currentPage)}
+          className="px-3 py-1 mx-1 bg-blue-500 text-white rounded"
+        >
+          {currentPage + 1}
+        </button>
+      );
+    }
+
+    // Display next page if currentPage is before the last two pages
+    if (currentPage < totalPages - 2) {
+      pages.push(
+        <button
+          key={currentPage + 1}
+          onClick={() => goToPage(currentPage + 1)}
+          className="px-3 py-1 mx-1 bg-gray-300 text-gray-700 rounded"
+        >
+          {currentPage + 2}
+        </button>
+      );
+    }
+
+    // Add ellipses after currentPage if not near the end
+    if (currentPage < totalPages - 3) {
+      pages.push(
+        <span key="ellipsis-next" className="px-3 py-1 mx-1">
+          ...
+        </span>
+      );
+    }
+
+    // Last page button
+    if (totalPages > 1) {
+      pages.push(
+        <button
+          key={totalPages - 1}
+          onClick={() => goToPage(totalPages - 1)}
+          className={`px-3 py-1 mx-1 rounded ${
+            currentPage === totalPages - 1
+              ? "bg-blue-500 text-white"
+              : "bg-gray-300 text-gray-700"
+          }`}
+        >
+          {totalPages}
+        </button>
+      );
+    }
+
+    return (
+      <div className="flex items-center justify-center mt-4 mb-4">
+        <button
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage === 0}
+          className="px-8 py-1 mx-1 bg-gray-300 text-gray-700 rounded disabled:opacity-50 text-sm"
+          style={{
+            borderRadius: "8px", // Ensure border-radius is maintained
+            borderImage: "linear-gradient(45deg, #4b5a9f, #4fb5b7) 3",
+            backgroundClip: "border-box", // Keep the background clipped to the border
+            WebkitMaskImage: "linear-gradient(white, white)", // Fix for some browsers
+            boxShadow:
+              "rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px",
+          }}
+        >
+          Previous
+        </button>
+        {pages}
+        <button
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage === totalPages - 1}
+          className="px-10 py-1 mx-1 bg-gray-300 text-gray-700 rounded disabled:opacity-50 text-sm"
+          style={{
+            borderRadius: "8px", // Ensure border-radius is maintained
+            borderImage: "linear-gradient(45deg, #4b5a9f, #4fb5b7) 3",
+            backgroundClip: "border-box", // Keep the background clipped to the border
+            WebkitMaskImage: "linear-gradient(white, white)", // Fix for some browsers
+            boxShadow:
+              "rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px",
+          }}
+        >
+          Next
+        </button>
+      </div>
+    );
+  };
 
   if (isLoading)
     return (
@@ -183,7 +303,6 @@ const DetailedTransactionComponent = () => {
 
         {error && <p className="text-red-500 ml-3">{error}</p>}
         <div className="overflow-x-auto max-h-[400px]">
-          {" "}
           {/* Limit the height of table to enable vertical scrolling */}
           <table className="min-w-full border-separate border-spacing-0">
             <thead className="bg-gray-50">
@@ -331,46 +450,8 @@ const DetailedTransactionComponent = () => {
           </table>
         </div>
       </div>
-      <div className="flex items-center justify-center mt-4 mb-4">
-        <button
-          onClick={() => setCurrentPage((p) => Math.max(p - 1, 0))}
-          disabled={currentPage === 0}
-          className="px-8 py-1 mx-1 bg-gray-300 text-gray-700 rounded disabled:opacity-50 text-sm"
-          style={{
-            borderRadius: "8px", // Ensure border-radius is maintained
-            borderImage: "linear-gradient(45deg, #4b5a9f, #4fb5b7) 3",
-            backgroundClip: "border-box", // Keep the background clipped to the border
-            WebkitMaskImage: "linear-gradient(white, white)", // Fix for some browsers
-            boxShadow:
-              "rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px",
-          }}
-        >
-          Previous
-        </button>
-        {currentPage}
-        <button
-          onClick={() => {
-            setCurrentPage((p) => p + 1);
-          }}
-          disabled={
-            currentPage ===
-            detailTransaction?.apiResponseData?.data?.totalPages - 1
-          }
-          className="px-10 py-1 mx-1 bg-gray-300 text-gray-700 rounded disabled:opacity-50 text-sm"
-          style={{
-            borderRadius: "8px", // Ensure border-radius is maintained
-            borderImage: "linear-gradient(45deg, #4b5a9f, #4fb5b7) 3",
-            backgroundClip: "border-box", // Keep the background clipped to the border
-            WebkitMaskImage: "linear-gradient(white, white)", // Fix for some browsers
-            boxShadow:
-              "rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px",
-          }}
-        >
-          Next
-        </button>
-      </div>
 
-      {/* {renderPagination()} */}
+      {renderPagination()}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-[800px] max-h-[80vh] overflow-y-auto relative flex flex-col">
@@ -421,8 +502,6 @@ const DetailedTransactionComponent = () => {
           </div>
         </div>
       )}
-
-      {/* {isLoading && <LoaderComponent message={"Please Wait . . ."} />} */}
     </>
   );
 };

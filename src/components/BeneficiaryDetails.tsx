@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { updateIsText } from "@/redux/slices/serviceSlice";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
@@ -17,8 +16,8 @@ import RegisterModal from "./registerModal";
 interface IProps {
   onClick?: () => void;
   tableName: string;
-  senderData?: any;
-  senderDataFW?: any;
+  senderData?: TODO;
+  senderDataFW?: TODO;
 }
 
 const BeneficiaryDetails = ({
@@ -35,22 +34,21 @@ const BeneficiaryDetails = ({
   const handleCancel = () => {
     setIsModalOpen("");
   };
-  const methods = useForm<any>();
-  
+  const methods = useForm<TODO>();
+
   const { selectedService } = useSelector((state: RootState) => state.service);
   const [expandedAccount, setExpandedAccount] = useState(null);
 
-  const toggleAccountAccordion = (accountNumber: any) => {
-    setExpandedAccount(
-      expandedAccount === accountNumber ? null : accountNumber
-    );
+  const toggleAccountAccordion = (account: TODO) => {
+    const id = senderData ? account.beneficiaryId : account.accountNumber;
+    setExpandedAccount(expandedAccount === id ? null : id);
   };
 
   const filteredAccounts = useMemo(() => {
     const search = searchTerm.toLowerCase();
     const accounts = senderData?.beneficiaries || senderDataFW?.accounts || [];
 
-    return accounts.filter((account: any) => {
+    return accounts.filter((account: TODO) => {
       const bankName = account.bankName?.toLowerCase() || "";
       const accountNumber = account.accountNumber?.toLowerCase() || "";
       const mobile = account.beneficiaryMobile?.toLowerCase() || "";
@@ -74,7 +72,7 @@ const BeneficiaryDetails = ({
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by bank name"
+              placeholder="Search by bank account,mobile,bank name,or IFSC..."
               className="border-2 rounded-lg w-full p-2 focus:outline-none"
             />
           )}
@@ -114,14 +112,16 @@ const BeneficiaryDetails = ({
         <p className="block font-medium my-2">{tableName}</p>
         <div className=" overflow-y-auto min-h-0 h-[80%]">
           {filteredAccounts && filteredAccounts.length > 0 ? (
-            filteredAccounts?.map((account: any, index: number) => {
-              const isExpanded = expandedAccount === account.accountNumber;
+            filteredAccounts?.map((account: TODO, index: number) => {
+              const isExpanded =
+                expandedAccount ===
+                (senderData ? account.beneficiaryId : account.accountNumber);
               return (
-                <div key={index} className="mb-2 border rounded ">
+                <div key={index} className="mb-2 border rounded">
                   <div
-                    className="flex items-center justify-between p-2 bg-gray-100 "
+                    className="flex items-center justify-between p-2 bg-gray-100"
                     onClick={() => {
-                      toggleAccountAccordion(account.accountNumber);
+                      toggleAccountAccordion(account);
                     }}
                   >
                     <div className="flex items-center flex-grow">
@@ -172,7 +172,6 @@ const BeneficiaryDetails = ({
                                   {account.accountIfsc ?? account.ifscCode}
                                 </h1>
                               )}
-
                               {selectedService?.label !== QuickLinksType.FW ? (
                                 <h1>Mobile: {account?.beneficiaryMobile}</h1>
                               ) : null}

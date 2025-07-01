@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getAgentAccount, getContact, getCount, getLedger, getPennyDrop, getService } from "@/libs"
+import { getBalance, getService } from "@/libs"
 import { axiosInstance, generateRandom13DigitNumber } from "@/libs/axios"
 import { ChargeInfoProps, RequestBody } from "@/types"
 import interceptor from "@/utils/services/interceptor"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import axios from "axios"
-import { toast } from "react-toastify"
 
 export const useServicesList = () => {
     const serviceList = useQuery({
@@ -15,67 +14,12 @@ export const useServicesList = () => {
     return serviceList
 }
 
-export const useCount = () => {
-    const count = useQuery({
-        queryKey: ['COUNT_LIST'],
-        queryFn: getCount,
+export const useBalance = () => {
+    const balanceList = useQuery({
+        queryKey: ['BALANCE_LIST'],
+        queryFn: getBalance,
     })
-    return count
-}
-
-export const useContact = () => {
-    const contact = useQuery({
-        queryKey: ['CONTACT_LIST'],
-        queryFn: getContact,
-    })
-    return contact
-}
-
-// export const useRecentTransaction = () => {
-//     const recentTransaction = useQuery({
-//         queryKey: ['RECENT_TRANSACTION'],
-//         queryFn: getRecentTransaction,
-//     })
-//     return recentTransaction
-// }
-
-// export const useTransaction = (data: TransactionsProps) => {
-//     const detailTransaction = useQuery({
-//         queryKey: ['DETAIL_TRANSACTION', data.fromDate, data.toDate, data.pageIndex],
-//         queryFn: () => getTransaction({ fromDate: data.fromDate, toDate: data.toDate, pageIndex: data.pageIndex, pageSize: data.pageSize }),
-//     })
-
-//     return detailTransaction
-// }
-
-export const usePennyDrop = () => {
-    const query = useMutation({
-        mutationFn: getPennyDrop,
-        onError: (error) => {
-            toast.error(error?.message)
-        },
-
-        onSuccess: (response) => {
-            const data = response
-            console.log("data", data)
-        },
-    })
-    return query
-}
-
-export const useAgentAccount = () => {
-    const query = useMutation({
-        mutationFn: getAgentAccount,
-        onError: (error) => {
-            console.log("error", error)
-        },
-
-        onSuccess: (response) => {
-            const data = response
-            console.log("data", data)
-        },
-    })
-    return query
+    return balanceList
 }
 
 export const useAuthToken = () => {
@@ -222,21 +166,6 @@ export const useCreateOrder = () => {
             return interceptor().post("loadViaPg/createOrder",
                 body,)
         },
-        onError: (error) => {
-            console.log("error", error)
-        },
-
-        onSuccess: (response) => {
-            console.log("data", response)
-        },
-    })
-    console.log("creteOrder",query)
-    return query
-}
-
-export const useAccountLedger = () => {
-    const query = useMutation({
-        mutationFn: getLedger,
         onError: (error) => {
             console.log("error", error)
         },

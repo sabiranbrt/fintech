@@ -1,24 +1,24 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useDynamicQuery } from "@/hooks/dynamicQuery";
+import { useDynamicMutation, useDynamicQuery } from "@/hooks/dynamicQuery";
 import { RootState } from "@/redux/store";
 import { getDynamicRequest } from "@/utils/dynamicRequest";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { IoClose } from "react-icons/io5";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import SubmitBtn from "./buttons/SubmitBtn";
 import InputField from "./inputField";
 import PassField from "./passfield";
 import SelectCusOpt from "./selectCusOpt.tsx";
 import SelectField from "./selectfield";
-import { useEffect, useState } from "react";
-import { useAgentAccount, usePennyDrop } from "@/hooks/service";
-import { toast } from "react-toastify";
 
 interface IProps {
   handleCancel: () => void;
   senderMobileNumber: string;
 }
+
 interface PennyDropResult {
   registeredName?: string;
   transID?: string;
@@ -29,6 +29,9 @@ interface PennyDropResult {
 }
 
 const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
+  const { mutateAsync: pennyDropMutant } = useDynamicMutation<TODO>();
+  const { mutateAsync: agentAccountMutant } = useDynamicMutation<TODO>();
+
   const [pennyDropResult, setPennyDropResult] =
     useState<PennyDropResult | null>(null);
 
@@ -55,7 +58,38 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
   const { selectedService } = useSelector((state: RootState) => state.service);
 
   const stepName = selectedService?.sequence?.[1];
+  const pennyDropName = selectedService?.sequence?.find(
+    (item) => item === "getPennyDrop"
+  );
+  const agentAccountName = selectedService?.sequence?.find(
+    (item) => item === "getAgentAccount"
+  );
+
   const request = getDynamicRequest(stepName ?? "", endpoints ?? {});
+  const requestPennyDrop = getDynamicRequest(
+    pennyDropName ?? "",
+    endpoints ?? {},
+    {
+      bankIfsc: bankDetails?.ifsc,
+      bankAccountNumber: getValues("accountNumber1"),
+      mobileNumber: senderMobileNumber,
+      senderMobileNumber: senderMobileNumber,
+      type: "SENDER",
+    }
+  );
+  const requestAgentAccount = getDynamicRequest(
+    agentAccountName ?? "",
+    endpoints ?? {},
+    {
+      accountName: pennyDropResult?.registeredName ?? "",
+      accountNumber: getValues("accountNumber1"),
+      accountIfsc: bankDetails?.ifsc,
+      bankName: getValues("bankName")?.bankName,
+      accountType: getValues("accountType"),
+      accountRegisterFor: "",
+      accountSupportingImage: "string",
+    }
+  );
 
   const { data, refetch } = useDynamicQuery<any>(request!, {
     enabled: !!request,
@@ -63,20 +97,12 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
   });
 
   const bank = data?.apiResponseData?.data;
-
-  const { mutateAsync: pennyMutant } = usePennyDrop();
-  const { mutateAsync: agentAccountMutant } = useAgentAccount();
+  // const { mutateAsync: agentAccountMutant } = useAgentAccount();
 
   const handlePennyVerified = async () => {
+    if (!requestPennyDrop) return;
     try {
-      const response = await pennyMutant({
-        bankIfsc: bankDetails?.ifsc,
-        bankAccountNumber: getValues("accountNumber1"),
-        mobileNumber: senderMobileNumber,
-        senderMobileNumber: senderMobileNumber,
-        type: "SENDER",
-      });
-
+      const response = await pennyDropMutant(requestPennyDrop);
       const result = response?.apiResponseData?.data;
       setPennyDropResult({
         registeredName: result.registeredName,
@@ -101,16 +127,9 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
   };
 
   const handleAddBank = async () => {
+    if (!requestAgentAccount) return;
     try {
-      const response = await agentAccountMutant({
-        accountName: pennyDropResult?.registeredName ?? "",
-        accountNumber: getValues("accountNumber1"),
-        accountIfsc: bankDetails.ifsc,
-        bankName: getValues("bankName")?.bankName,
-        accountType: getValues("accountType"),
-        accountRegisterFor: "",
-        accountSupportingImage: "string",
-      });
+      const response = await agentAccountMutant(requestAgentAccount);
       if (response?.apiResponseData?.responseCode === "401") {
         toast.error(response?.apiResponseData?.responseMessage);
       }

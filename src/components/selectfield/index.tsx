@@ -196,17 +196,17 @@ const SelectField = ({
       render={({ field }) => {
          // Initialize field.value with default option in single-select mode if undefined or null
         if (!isMulti && (field.value === undefined || field.value === null)) {
-          const defaultOption = options.find((o) => o.default);
+          const defaultOption = options?.find((o) => o.default);
           if (defaultOption) {
             field.onChange(defaultOption[valueKey]);
           }
         }
         
         const selectedValue = isMulti
-          ? options.filter(
+          ? options?.filter(
               (o) => o.default || field.value?.includes?.(o[valueKey])
             )
-          : options.find((o) => o[valueKey] === field.value) ?? null;
+          : options?.find((o) => o[valueKey] === field.value) ?? null;
 
         return (
           <div
