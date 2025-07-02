@@ -12,6 +12,11 @@ import BtnPrimary from "./buttons/BtnPrimary";
 import ModalBtn from "./buttons/ModalBtn";
 import PaymentModal from "./paymentModal";
 import RegisterModal from "./registerModal";
+import {
+  useAadhaarRegistrationBeneLazy,
+  useDigiData,
+  useDigiTokenLazy,
+} from "@/hooks/service";
 
 interface IProps {
   onClick?: () => void;
@@ -34,8 +39,17 @@ const BeneficiaryDetails = ({
   const handleCancel = () => {
     setIsModalOpen("");
   };
-  const methods = useForm<TODO>();
 
+  const {
+    control,
+    formState: { errors },
+    setError,
+    setValue,
+    watch,
+  } = useForm<TODO>({
+    mode: "onChange",
+  });
+  const mobileNumber = watch("beneficiary");
   const { selectedService } = useSelector((state: RootState) => state.service);
   const [expandedAccount, setExpandedAccount] = useState(null);
 
@@ -61,6 +75,75 @@ const BeneficiaryDetails = ({
       );
     });
   }, [senderData?.beneficiaries, senderDataFW?.accounts, searchTerm]);
+
+  const [aadhaarParams, setAadhaarParams] = useState<{
+    digiToken: string;
+    mobile: string;
+  } | null>(null);
+
+  const { refetch: fetchDigiToken } = useDigiTokenLazy();
+
+  const { refetch: fetchAadhaar } = useAadhaarRegistrationBeneLazy(
+    aadhaarParams?.digiToken,
+    aadhaarParams?.mobile
+  );
+
+  const { mutateAsync: fetchDigiData } = useDigiData();
+
+  const handleSubmit = async () => {
+    const digiTokenRes = await fetchDigiToken();
+    const aadharRegister = await fetchAadhaar();
+
+    const accessToken =
+      digiTokenRes.data?.apiResponseData?.responseData?.accessToken;
+
+    if (!accessToken) return;
+    setAadhaarParams({ digiToken: accessToken, mobile: mobileNumber });
+
+    const { url } = JSON.parse(
+      aadharRegister.data.apiResponseData.responseData
+    );
+
+    const { requestId } = JSON.parse(
+      aadharRegister.data.apiResponseData.responseData
+    );
+
+    const newChildWindow = window.open(url, "_blank", "width=800,height=600");
+
+    // Monitor the child window
+    const monitorWindow = setInterval(() => {
+      if (!newChildWindow || newChildWindow.closed) {
+        clearInterval(monitorWindow);
+        console.error("Child window closed before success.");
+      } else {
+        try {
+          const currentUrl = newChildWindow.location.href;
+          if (currentUrl.includes(import.meta.env.VITE_REDIRECTION_URL)) {
+            const params = new URLSearchParams(new URL(currentUrl).search);
+            const state = params.get("state");
+
+            if (state || requestId) {
+              (async () => {
+                const digiDataResponse = await fetchDigiData({
+                  digiToken: accessToken,
+                  requestId: requestId!,
+                  beneMobileKyc: mobileNumber,
+                });
+
+                console.log("Fetched Digi Data:", digiDataResponse);
+              })();
+            }
+
+            newChildWindow.close();
+            clearInterval(monitorWindow);
+          }
+        } catch (error) {
+          // Ignore errors due to cross-origin restrictions
+          console.log("error", error);
+        }
+      }
+    }, 500); // Poll every 500ms for better responsiveness
+  };
 
   return (
     <div className=" w-full p-4 shadow-md bg-white min-h-0 h-full">
@@ -375,13 +458,45 @@ const BeneficiaryDetails = ({
       )}
       {isModalOpen === "beneficiaryAcc" && (
         <RegisterModal
-          control={methods.control}
+          control={control}
+          errors={errors}
           names="beneficiary"
           placeHolder={"Enter Mobile Number"}
           title={"Register Beneficiary"}
           subTitle={"Enter Mobile Number To Initiate KYC"}
+          rules={{
+            required: "Mobile number is required",
+            validate: {
+              validFormat: (value: TODO) =>
+                /^[6-9]\d{0,9}$/.test(value) ||
+                "Enter a valid 10-digit mobile number starting with 6-9.",
+              noSixIdenticalDigits: (value: TODO) =>
+                !/(.)\1{5}/.test(value ?? "") ||
+                "Mobile number cannot have a sequence of the same 6 digits.",
+              notSixDigits: (value: TODO) =>
+                value.length !== 6 ||
+                "6-digit mobile numbers are not acceptable.",
+              exactTenDigits: (value: TODO) =>
+                value.length === 10 ||
+                "Mobile number must be exactly 10 digits.",
+            },
+          }}
           onClose={handleCancel}
-          onSubmit={() => {}}
+          onChange={(value) => {
+            const cleanedValue = value.replace(/\D/g, "");
+
+            if (cleanedValue.length === 1 && !/^[6-9]$/.test(cleanedValue)) {
+              setError("beneficiary", {
+                type: "manual",
+                message: "Mobile number must start with 6-9.",
+              });
+              return;
+            }
+            if (cleanedValue.length <= 10) {
+              setValue("beneficiary", cleanedValue);
+            }
+          }}
+          onSubmit={handleSubmit}
         />
       )}
       {isModalOpen === "paymentModal" && (

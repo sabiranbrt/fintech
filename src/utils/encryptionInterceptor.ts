@@ -24,13 +24,13 @@ const EncrptionInterceptor = (page_type: TODO) => {
   });
 
   instance.interceptors.request.use(async (config) => {
+    const agentId = localStorage.getItem('userId')
     config.headers["counterid"] = 0;
     config.headers["clientid"] = import.meta.env.VITE_CLIENT_ID;
     config.headers["urn"] = generateRandom13DigitNumber();
     config.headers["sessionId"] = localStorage.getItem('authToken');
-    config.headers["agentId"] = "9241980104198913";
-    config.headers["userId"] = localStorage.getItem('userId');
-    config.headers["userid"] = "9241980104198913";
+    config.headers["agentId"] = agentId;
+    config.headers["userId"] = agentId;
     try {
       const bearerData = await CommonHeader(page_type);
       config.headers["bearerData"] = bearerData.bearerData;

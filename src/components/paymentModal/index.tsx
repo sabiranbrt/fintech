@@ -43,6 +43,7 @@ const PaymentModal = ({
   const handleSlipUpload = (url: string) => {
     setSlipUrl(url);
   };
+
   const { selectedService } = useSelector((state: RootState) => state.service);
   const { endpoints } = useSelector((state: RootState) => state.endPoints);
 
@@ -177,7 +178,7 @@ const PaymentModal = ({
   };
 
   const onSubmit = async () => {
-    const userID = "9241980104198913";
+    const userID =  localStorage.getItem("userId");
     const ipAddress = await getIpAddress();
 
     const payload = {

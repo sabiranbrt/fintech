@@ -1,0 +1,58 @@
+{
+  "userId": 0,
+  "requestId": 0,
+  "senderId": 251421730100001,
+  "senderMobileNumber": "9816661528",
+  "personalInfo": {
+    "registerById": "234432",
+    "gender": "male",
+    "firstName": "firstName_93f40a106311",
+    "middleName": "middleName_f033f53e2619",
+    "lastName": "lastName_bd547957a8b6",
+    "mobile": "989899654",
+    "panNumber": "hjghjghjg",
+    "dob": "2000-05-23",
+    "profileImageId": "profileImageId_7a5bb9560652"
+  },
+  "bankAccountInfo": {
+    "accountName": "erfef",
+    "accountNumber": "23423fdff424",
+    "accountIfsc": "dsddsfdsf",
+    "bankName": "dsfdsf",
+    "accountType": "SAVINGS",
+    "accountRegisterFor": "s",
+    "accountLimit": 0.00,
+    "accountNameAsPerBank": "accountNameAsPerBank_d73138859790",
+    "accountVerificationTxnId": "accountVerificationTxnId_b40b7b15edfe",
+    "isAccountVerified": true,
+    "accountSupportingImageId": "accountSupportingImageId_d679e93c85b4"
+  },
+  "addressInfo": {
+    "completeAddress": "fsdf",
+    "completeAddress2": "sdfs",
+    "addressCity": "sdfdsf",
+    "addressDistrict": "sdfdsf",
+    "addressState": "dsf",
+    "postalPinCode": "sdfds"
+  },
+  "kycAddressInfo": {
+    "completeAddress": "fsdf",
+    "completeAddress2": "sdfs",
+    "addressCity": "sdfdsf",
+    "addressDistrict": "sdfdsf",
+    "addressState": "dsf",
+    "postalPinCode": "sdfds"
+  },
+  "kycFileId": "kycFileId_07977f6fa35d",
+  "documents": [
+    {
+      "documentFor": "fcdfcd",
+      "docType": "fdsfsf",
+      "fileId": 0,
+      "docId": "d",
+      "docStatus": "c",
+      "qcRemarks": "67",
+      "recordStatus": "c"
+    }
+  ]
+}

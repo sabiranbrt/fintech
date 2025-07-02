@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getBalance, getService } from "@/libs"
+import { getBalance, getPan, getService } from "@/libs"
 import { axiosInstance, generateRandom13DigitNumber } from "@/libs/axios"
 import { ChargeInfoProps, RequestBody } from "@/types"
 import interceptor from "@/utils/services/interceptor"
@@ -23,6 +23,7 @@ export const useBalance = () => {
 }
 
 export const useAuthToken = () => {
+    const agentId = localStorage.getItem('userId')
     const token = useQuery({
         queryKey: ['AUTH_TOKEN'],
         queryFn: async () => {
@@ -32,7 +33,7 @@ export const useAuthToken = () => {
                     headers: {
                         Authorization: "Basic Zmlua0JpbGxQYXk6RiFpbmskI0JpbGxQYXk=",
                         scope: 'dmt',
-                        agentId: "9241980104198913",
+                        agentId: agentId,
                     },
                 }
             );
@@ -170,6 +171,19 @@ export const useCreateOrder = () => {
             console.log("error", error)
         },
 
+        onSuccess: (response) => {
+            console.log("data", response)
+        },
+    })
+    return query
+}
+
+export const usePan = () => {
+    const query = useMutation({
+        mutationFn: getPan,
+        onError: (error) => {
+            console.log("error", error)
+        },
         onSuccess: (response) => {
             console.log("data", response)
         },

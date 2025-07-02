@@ -6,6 +6,7 @@ import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import ArrowLeft from "@assets/icons/arrowLeft.svg";
 import ArrowRight from "@assets/icons/arrowRight.svg";
+import { usePan } from "@/hooks/service";
 
 const RegisterBeneficiary = () => {
   const [index, setIndex] = useState(0);
@@ -13,12 +14,24 @@ const RegisterBeneficiary = () => {
     mode: "onChange",
   });
 
-  const {trigger, setValue } = methods;
+  const { trigger, watch, setValue } = methods;
+  const pan = watch("panNumber");
+  const mobileNumber = watch("senderMobileNumber");
 
-  const mobileNumber = "9842143869";
+  const { mutateAsync } = usePan();
 
-  const onSubmitForData = () => {
-    setValue("mobileNumber", mobileNumber);
+  const onSubmitForData = async () => {
+    try {
+      const response = await mutateAsync({ pan: pan, mobile: mobileNumber });
+      const data = response?.apiResponseData?.data;
+      setValue("firstName", data?.firstName);
+      setValue("lastName", data?.lastName);
+      setValue("middleName", data?.middleName);
+      setValue("dob", data?.dob);
+      setValue("gender", data?.gender);
+    } catch (err) {
+      console.log("Error", err);
+    }
   };
 
   const render = () => {
@@ -74,95 +87,93 @@ const RegisterBeneficiary = () => {
   };
 
   return (
-      <div className=" min-h-0 h-full">
-        <FormProvider {...methods}>
+    <div className=" min-h-0 h-full">
+      <FormProvider {...methods}>
+        <div
+          className={clsx(
+            " h-full flex-row gap-8 min-h-0",
+            formList?.layout === "horizontallayout" ? "bg-[#F2F2F2]" : "flex"
+          )}
+        >
           <div
             className={clsx(
-              " h-full flex-row gap-8 min-h-0",
-              formList?.layout === "horizontallayout" ? "bg-[#F2F2F2]" : "flex"
+              " relative rounded-md",
+              formList?.layout === "horizontallayout"
+                ? "text-center !mb-5"
+                : "w-[20%] !p-10 bg-[#F7F7F7]"
             )}
           >
-            <div
-              className={clsx(
-                " relative rounded-md",
-                formList?.layout === "horizontallayout"
-                  ? "text-center !mb-5"
-                  : "w-[20%] !p-10 bg-[#F7F7F7]"
-              )}
-            >
-              {formList?.formType === "multiple" && (
-                <div>
-                  <MultiFormHeader currentIndex={index} formList={formList} />
-                </div>
-              )}
-            </div>
+            {formList?.formType === "multiple" && (
+              <div>
+                <MultiFormHeader currentIndex={index} formList={formList} />
+              </div>
+            )}
+          </div>
 
-            <div
-              className={clsx(
-                " relative flex flex-col gap-5 !px-8 !py-10 h-[400px] overflow-y-auto",
-                formList?.layout === "horizontallayout"
-                  ? "!mx-10 shadow-xl rounded-md bg-white"
-                  : "w-[80%]"
-              )}
-            >
-              <div className=" text-start">
-                {/* {statusName()} */}
-                <div
-                  className="custom-grid overflow-y-auto min-h-0 h-full"
-                  style={{
-                    gridTemplateColumns: `repeat(${
-                      formList?.colGrid ?? 3
-                    }, 1fr)`,
-                    columnGap: `${formList?.gapCol ?? 20}px`,
-                    rowGap: `${formList?.gapRow ?? 40}px`,
-                  }}
-                >
-                  {render()}
-                </div>
-                <div className="flex items-center justify-end gap-5 !mt-10">
-                  {index > 0 && formList?.formType === "multiple" && (
+          <div
+            className={clsx(
+              " relative flex flex-col gap-5 !px-8 !py-10 h-[400px] overflow-y-auto",
+              formList?.layout === "horizontallayout"
+                ? "!mx-10 shadow-xl rounded-md bg-white"
+                : "w-[80%]"
+            )}
+          >
+            <div className=" text-start">
+              {/* {statusName()} */}
+              <div
+                className="custom-grid overflow-y-auto min-h-0 h-full"
+                style={{
+                  gridTemplateColumns: `repeat(${formList?.colGrid ?? 3}, 1fr)`,
+                  columnGap: `${formList?.gapCol ?? 20}px`,
+                  rowGap: `${formList?.gapRow ?? 40}px`,
+                }}
+              >
+                {render()}
+              </div>
+              <div className="flex items-center justify-end gap-5 !mt-10">
+                {index > 0 && formList?.formType === "multiple" && (
+                  <div
+                    onClick={() => {
+                      setIndex((prev) => prev - 1);
+                    }}
+                    className=" flex flex-row items-center gap-2 bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !px-4 !py-2 rounded cursor-pointer"
+                  >
+                    <img src={ArrowLeft} className="w-4 h-4" />
+                    <p className="">Previous</p>
+                  </div>
+                )}
+                {index < Object.keys(formList?.dataFields).length - 1 ? (
+                  formList?.formType === "multiple" && (
                     <div
-                      onClick={() => {
-                        setIndex((prev) => prev - 1);
+                      onClick={async () => {
+                        const fieldsToValidate = getCurrentStepFieldNames();
+                        const isStepValid = await trigger(fieldsToValidate);
+                        if (isStepValid) {
+                          setIndex((prev) => prev + 1);
+                        }
                       }}
                       className=" flex flex-row items-center gap-2 bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !px-4 !py-2 rounded cursor-pointer"
                     >
-                      <img src={ArrowLeft} className="w-4 h-4" />
-                      <p className="">Previous</p>
+                      <p className="">Next</p>
+                      <img src={ArrowRight} className="w-4 h-4" />
                     </div>
-                  )}
-                  {index < Object.keys(formList?.dataFields).length - 1 ? (
-                    formList?.formType === "multiple" && (
-                      <div
-                        onClick={async () => {
-                          const fieldsToValidate = getCurrentStepFieldNames();
-                          const isStepValid = await trigger(fieldsToValidate);
-                          if (isStepValid) {
-                            setIndex((prev) => prev + 1);
-                          }
-                        }}
-                        className=" flex flex-row items-center gap-2 bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !px-4 !py-2 rounded cursor-pointer"
-                      >
-                        <p className="">Next</p>
-                        <img src={ArrowRight} className="w-4 h-4" />
-                      </div>
-                    )
-                  ) : (
-                    <button
-                      type="submit"
-                      className="bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !px-4 !py-2 rounded cursor-pointer"
-                      title="Submit Now"
-                      onClick={() => {}}
-                    >
-                      Submit
-                    </button>
-                  )}
-                </div>
+                  )
+                ) : (
+                  <button
+                    type="submit"
+                    className="bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !px-4 !py-2 rounded cursor-pointer"
+                    title="Submit Now"
+                    onClick={() => {}}
+                  >
+                    Submit
+                  </button>
+                )}
               </div>
             </div>
           </div>
-        </FormProvider>
-      </div>
+        </div>
+      </FormProvider>
+    </div>
   );
 };
 

@@ -78,6 +78,10 @@ export interface ChargeInfoProps {
   selectedCardType: string
   selectedGateway: string
 }
+export interface PanProps {
+  pan: string
+  mobile: string
+}
 
 export interface LedgerProps {
   fromDate: string

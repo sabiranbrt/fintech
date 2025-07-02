@@ -3,6 +3,11 @@ import BackButton from "@/components/buttons/BackButton";
 import EmptyMessage from "@/components/EmptyMessage";
 import Loader from "@/components/LoaderComponent";
 import { useDynamicMutation, useDynamicQuery } from "@/hooks/dynamicQuery";
+import {
+  useAadhaarRegistrationBeneLazy,
+  useDigiData,
+  useDigiTokenLazy,
+} from "@/hooks/service";
 import service from "@/jsonDemo/services.json";
 import AccountLedger from "@/pages/accountLedger";
 import CreditCardBill from "@/pages/creditCardBillPayment";
@@ -34,6 +39,11 @@ const QuickLinksFormComponent = () => {
   const [senderData, setSenderData] = useState<TODO | null>(null);
   const SenderResponseData = senderData?.apiResponseData?.data[0];
 
+  const [aadhaarParams, setAadhaarParams] = useState<{
+    digiToken: string;
+    mobile: string;
+  } | null>(null);
+
   const { selectedService, isText } = useSelector(
     (state: RootState) => state.service
   );
@@ -59,13 +69,21 @@ const QuickLinksFormComponent = () => {
     watch,
     handleSubmit,
     setError,
-    reset
+    reset,
   } = useForm<FormData>({
     mode: "onChange",
   });
 
   const mobileNumber = watch("mobileNumber");
   const { mutate } = useDynamicMutation<TODO>();
+  const { refetch: fetchDigiToken } = useDigiTokenLazy();
+
+  const { refetch: fetchAadhaar } = useAadhaarRegistrationBeneLazy(
+    aadhaarParams?.digiToken,
+    aadhaarParams?.mobile
+  );
+
+  const { mutateAsync: fetchDigiData } = useDigiData();
 
   const stepName = selectedService?.sequence[0];
 
@@ -108,6 +126,7 @@ const QuickLinksFormComponent = () => {
       enabled: !!request,
     }
   );
+  
   useEffect(() => {
     reset({ mobileNumber: "" });
     setSenderData(null);
@@ -132,6 +151,61 @@ const QuickLinksFormComponent = () => {
   const shouldShowMobileInput =
     selectedService?.label !== undefined &&
     !hiddenLabels.includes(selectedService.label as QuickLinksType);
+
+  const handleKYC = async () => {
+    const digiTokenRes = await fetchDigiToken();
+    const aadharRegister = await fetchAadhaar();
+
+    const accessToken =
+      digiTokenRes.data?.apiResponseData?.responseData?.accessToken;
+
+    if (!accessToken) return;
+    setAadhaarParams({ digiToken: accessToken, mobile: mobileNumber });
+
+    const { url } = JSON.parse(
+      aadharRegister.data.apiResponseData.responseData
+    );
+
+    const { requestId } = JSON.parse(
+      aadharRegister.data.apiResponseData.responseData
+    );
+
+    const newChildWindow = window.open(url, "_blank", "width=800,height=600");
+
+    // Monitor the child window
+    const monitorWindow = setInterval(() => {
+      if (!newChildWindow || newChildWindow.closed) {
+        clearInterval(monitorWindow);
+        console.error("Child window closed before success.");
+      } else {
+        try {
+          const currentUrl = newChildWindow.location.href;
+          if (currentUrl.includes(import.meta.env.VITE_REDIRECTION_URL)) {
+            const params = new URLSearchParams(new URL(currentUrl).search);
+            const state = params.get("state");
+
+            if (state || requestId) {
+              (async () => {
+                const digiDataResponse = await fetchDigiData({
+                  digiToken: accessToken,
+                  requestId: requestId!,
+                  beneMobileKyc: mobileNumber,
+                });
+
+                console.log("Fetched Digi Data:", digiDataResponse);
+              })();
+            }
+
+            newChildWindow.close();
+            clearInterval(monitorWindow);
+          }
+        } catch (error) {
+          // Ignore errors due to cross-origin restrictions
+          console.log("error", error);
+        }
+      }
+    }, 500); // Poll every 500ms for better responsiveness
+  };
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -259,7 +333,7 @@ const QuickLinksFormComponent = () => {
               </div>
               <div className={`flex gap-12 justify-center`}>
                 <button
-                  onClick={() => {}}
+                  onClick={handleKYC}
                   className="bg-primary text-white py-2 px-4 rounded-md"
                   style={{
                     border: "3px solid transparent",

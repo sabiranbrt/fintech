@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ChargeInfoProps } from "@/types"
+import { ChargeInfoProps, PanProps } from "@/types"
 import { request } from "./axios"
 
 export const getService = () => {
@@ -18,6 +18,14 @@ export const getBalance = () => {
 export const getChargeInfo = (body: ChargeInfoProps) => {
     return request<any>({
         url: "/api/v1/loadViaPg/getChargeInfo",
+        method: "POST",
+        data: body
+    })
+}
+
+export const getPan = (body: PanProps) => {
+    return request<any>({
+        url: "/api/v1/pan",
         method: "POST",
         data: body
     })

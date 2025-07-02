@@ -11,7 +11,7 @@ function App() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const authToken = params.get("authToken");
-    const userID = params.get("userID");
+    const userID = params.get("agentId");
     const serviceType = params.get("serviceType");
 
     if (authToken) {

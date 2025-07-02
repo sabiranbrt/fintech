@@ -112,8 +112,13 @@ const InputField = ({
               <div className=" absolute top-1.5 right-2.5">
                 <button
                   type="submit"
-                  className="bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !px-2 !py-1 rounded cursor-pointer"
-                  title="Submit Now"
+                  disabled={!field.value?.trim() || !!errors[names]}
+                  className={clsx(
+                    " transition-[2000] text-white !px-2 !py-1 rounded cursor-pointer",
+                    !field.value?.trim() || !!errors[names]
+                      ? "bg-gray-300"
+                      : "bg-[#5081B9]"
+                  )}
                   onClick={onClick}
                 >
                   {ActionFetch}
