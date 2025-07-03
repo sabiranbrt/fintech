@@ -12,6 +12,8 @@ import RadioButton from "./radioButton";
 import FileField from "./fileField";
 import CustomPassField from "./customPassField";
 import { FieldTypes, ValidationProps } from "@/types";
+import { useFormContext } from "react-hook-form";
+import SelectCusOpt from "./selectCusOpt";
 
 interface Options {
   label: string;
@@ -21,24 +23,34 @@ interface Options {
 
 interface IProps {
   names: string;
+  isPennyDropVerified?: boolean;
+  chargeSlab?: string;
+  registeredName?: string;
+  txnId?: string;
   value?: string;
   ValidClassName?: string;
   isSearchable?: boolean;
   readOnly?: boolean;
+  onlyFetchBtn?: boolean;
+  message?: string;
   type?: string;
   maxFile?: number;
   uploadType?: string;
   OptionSelectColor?: string;
   OptionFocusColor?: string;
   OptionTextColor?: string;
+  disableButton?: boolean;
   UploadIcon?: string;
   FileIcon?: string;
   CrossIcon?: string;
+  isFocused: boolean;
+  loading?: boolean;
   placeHolder?: string;
   placeHolderSize?: string;
   focusBorderColor?: string;
   placeHoldercolor?: string;
   focusShadowColor?: string;
+  optionsData: TODO[];
   OptionSelectFocusColor?: string;
   focusErrorBorderColor?: string;
   focusErrorBgColor?: string;
@@ -59,21 +71,31 @@ interface IProps {
   options?: Options[];
   validation?: ValidationProps;
   textSecurity?: string;
+  fetchData?: TODO;
   ActionFetch?: string;
   onClick?: () => void;
+  onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
 }
 
 const CustomField = ({
   names,
+  isPennyDropVerified,
+  txnId,
+  registeredName,
+  message,
   inputHeight = "10",
   inputWidth = "10",
   placeHolder,
+  loading,
+  onlyFetchBtn,
   ValidClassName,
   uploadType,
   OptionSelectColor = "#5081B9",
   OptionSelectFocusColor = "#5081B9",
   isSearchable,
+  fetchData,
   UploadIcon,
+  optionsData,
   onChangeImage,
   onClick,
   OptionFocusColor = "#fff",
@@ -96,12 +118,13 @@ const CustomField = ({
   focusErrorBgColor,
   focusErrorShadowColor = "#F2F2F2",
   textClassName,
+  disableButton,
   type,
   fieldType,
   textSecurity = "&",
+  onInput,
   options = [],
 }: IProps) => {
-
   const [isFocused, setIsFocused] = useState(false);
   const handleFocus = () => {
     setIsFocused(true);
@@ -117,13 +140,16 @@ const CustomField = ({
     fieldType !== FieldTypes.FILE &&
     fieldType !== FieldTypes.PREVIEW;
 
+  const { getValues } = useFormContext();
+  const currentValue = getValues(names);
+
   return (
     <div className=" text-start">
-      <div className={clsx("relative")}>
-        {showFloatingLabel && isFocused && (
+      <div className={clsx("relative mt-3")}>
+        {showFloatingLabel && (isFocused || !!currentValue) && (
           <label
             htmlFor={label}
-            className={clsx("absolute -top-2.5 left-2 z-[9] ")}
+            className={clsx("absolute -top-4 left-2 z-30")}
             data-tooltip-id={`tooltip-${label}`}
             data-tooltip-content={`${label}`}
           >
@@ -165,6 +191,14 @@ const CustomField = ({
             onClick={onClick}
             readOnly={readOnly}
             type={type}
+            onInput={onInput}
+            disableButton={disableButton}
+            txnId={txnId}
+            isPennyDropVerified={isPennyDropVerified}
+            registeredName={registeredName}
+            message={message}
+            loading={loading}
+            onlyFetchBtn={onlyFetchBtn}
           />
         ) : fieldType === FieldTypes?.SELECTFIELD ? (
           <SelectField
@@ -319,6 +353,34 @@ const CustomField = ({
           />
         ) : fieldType === FieldTypes?.PREVIEW ? (
           <Preview names={names} imageLink={imageLink} />
+        ) : fieldType === FieldTypes?.SELECTCUSFIELD ? (
+          <SelectCusOpt
+            names={names}
+            optionsData={optionsData}
+            isFocused={isFocused}
+            handleBlur={handleBlur}
+            handleFocus={handleFocus}
+            placeHolder={placeHolder}
+            inputHeight={inputHeight}
+            inputWidth={inputWidth}
+            focusShadowColor={focusShadowColor}
+            focusErrorBgColor={focusErrorBgColor}
+            focusErrorShadowColor={focusErrorShadowColor}
+            ValidClassName={ValidClassName}
+            placeHolderSize={placeHolderSize}
+            focusBorderColor={focusBorderColor}
+            placeHoldercolor={placeHoldercolor}
+            focusErrorBorderColor={focusErrorBorderColor}
+            validation={validation}
+            readOnly={readOnly}
+            OptionSelectFocusColor={OptionSelectFocusColor}
+            OptionTextColor={OptionTextColor}
+            OptionFocusColor={OptionFocusColor}
+            OptionSelectColor={OptionSelectColor}
+            type={type}
+            label={label}
+            fetchData={fetchData}
+          />
         ) : null}
       </div>
       <Tooltip id={`tooltip-${label}`} place="top" />

@@ -13,8 +13,9 @@ export const ValidationRules = (validation?: ValidationProps): RegisterOptions =
 
   // If required and empty
   if (isRequired) {
-    validators.push((value: string) => {
-      return value?.trim() ? true : requiredMessage;
+    validators.push((value: any) => {
+      const val = typeof value === "object" ? value?.bankName : value;
+      return val?.trim() ? true : requiredMessage;
     });
   }
 
@@ -29,7 +30,7 @@ export const ValidationRules = (validation?: ValidationProps): RegisterOptions =
           const regex = new RegExp(cleanedRegex);
 
           validators.push((value: string) => {
-            if (!value?.trim()) return true; 
+            if (!value?.trim()) return true;
             return regex.test(value) ? true : val.errorMessage || "Invalid format";
           });
         } catch (err) {

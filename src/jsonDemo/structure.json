@@ -21,7 +21,7 @@
           "focusErrorBgColor": "#DCFFDB",
           "focusErrorBorderColor": "#008000",
           "placeHoldercolor": "#000",
-          "readOnly": true,
+          "readOnly": false,
           "validation": {
             "required": "Y",
             "validations": [
@@ -57,6 +57,7 @@
           "label": "Pan Number",
           "placeholder": "Enter Pan Number",
           "fieldType": "text",
+          "onlyFetchBtn": false,
           "ActionFetch": "Fetch Details",
           "validation": {
             "required": "Y",
@@ -231,37 +232,48 @@
       "displayField": [
         {
           "key": "bankName",
-          "label": "bankName",
+          "label": "Bank Name",
           "placeholder": "Enter Bank Name",
           "errorColor": "#ff4d4f",
-          "fieldType": "text",
+          "fieldType": "SELECTCUS",
           "validation": {
             "required": "Y",
             "errorMessage": "Bank Name is required"
           }
         },
         {
-          "key": "accountIfsc",
+          "key": "ifsc",
           "label": "Bank IFSC",
           "placeholder": "Enter IFSC",
           "fieldType": "text",
+          "message": "Update Your IFSC Code As Per Your Branch",
           "validation": {
             "required": "N",
-            "errorMessage": "Please select a valid relationship."
+            "errorMessage": "Please select a valid relationship.",
+            "validations": [
+              {
+                "regex": "^[A-Za-z0-9]{11}$",
+                "errorMessage": "IFSC Code must be 11 alphanumeric characters"
+              },
+              {
+                "regex": "[0-9]",
+                "errorMessage": "IFSC Code must contain at least one numeric character"
+              }
+            ]
           }
         },
         {
-          "key": "accountNumber",
+          "key": "accountNumber1",
           "label": "Account Number",
           "placeholder": "Enter Account Number",
           "fieldType": "password",
           "validation": {
             "required": "Y",
-            "errorMessage": "IFSC Code is required",
+            "errorMessage": "Account Number is required",
             "validations": [
               {
-                "regex": "^[A-Z]{4}0[A-Z0-9]{6}$",
-                "errorMessage": "Invalid IFSC Code format"
+                "regex": "^\\d{8,18}$",
+                "errorMessage": "Account Number must be between 8 and 18 digits and contain only numbers"
               }
             ]
           }
@@ -271,16 +283,169 @@
           "label": "Confirm Account Number",
           "placeholder": "Enter Confirm Number",
           "fieldType": "text",
+          "ActionFetch": "click to verify",
           "validation": {
             "required": "Y",
-            "errorMessage": "IFSC Code is required",
+            "errorMessage": "Account numbers must match",
             "validations": [
               {
-                "regex": "^[A-Z]{4}0[A-Z0-9]{6}$",
-                "errorMessage": "Invalid IFSC Code format"
+                "regex": "^\\d{8,18}$",
+                "errorMessage": "Account Number must be between 8 and 18 digits without spaces"
               }
             ]
           }
+        },
+        {
+          "key": "accountNameAsPerBank",
+          "label": "Name as per Bank",
+          "placeholder": "Enter Name as per Bank",
+          "fieldType": "text",
+          "validation": {
+            "required": "Y",
+            "errorMessage": "Please select a valid relationship."
+          }
+        },
+        {
+          "key": "accountType",
+          "label": "Account Type",
+          "placeholder": "Select Account Type",
+          "fieldType": "dropdown",
+          "dropdownOptions": [
+            {
+              "label": "Saving",
+              "value": "saving"
+            },
+            {
+              "label": "Current",
+              "value": "current"
+            }
+          ],
+          "validation": {
+            "required": "Y",
+            "validations": [
+              {
+                "errorMessage": "Account Type is required"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "3": {
+      "status": "Address Information",
+      "displayRemarks": "KYC Address",
+      "displayField": [
+        {
+          "key": "permanentAddressLine1",
+          "label": "Permanent Address Line 1",
+          "placeholder": "Address Line 1",
+          "fieldType": "text"
+        },
+        {
+          "key": "permanentAddressLine2",
+          "label": "Permanent Address Line 2",
+          "placeholder": "Address Line 2",
+          "fieldType": "text"
+        },
+        {
+          "key": "pinCode",
+          "label": "Permanent Pin Code",
+          "placeholder": "Enter Pin Code",
+          "fieldType": "text"
+        },
+        {
+          "key": "permanentCity",
+          "label": "Permanent City",
+          "placeholder": "City",
+          "fieldType": "text"
+        },
+        {
+          "key": "permanentDistrict",
+          "label": "Permanent District",
+          "placeholder": "District",
+          "fieldType": "dropdown",
+          "dropdownOptions": [
+            {
+              "label": "Morang",
+              "value": "morang",
+              "default": true
+            }
+          ]
+        },
+        {
+          "key": "permanentState",
+          "label": "Permanent State",
+          "placeholder": "State",
+          "fieldType": "dropdown",
+          "dropdownOptions": [
+            {
+              "label": "Province 1",
+              "value": "province-1",
+              "default": true
+            }
+          ]
+        },
+        {
+          "key": "sameAsPermanent",
+          "label": "Same as Permanent Address",
+          "fieldType": "checkbox",
+          "dropdownOptions": [
+            {
+              "label": "Same as Above",
+              "value": "true"
+            }
+          ]
+        },
+        {},
+        {
+          "key": "tempAddressLine1",
+          "label": "Temporary Address Line 1",
+          "placeholder": "Address Line 1",
+          "fieldType": "text"
+        },
+        {
+          "key": "tempAddressLine2",
+          "label": "Temporary Address Line 2",
+          "placeholder": "Address Line 2",
+          "fieldType": "text"
+        },
+        {
+          "key": "tempPinCode",
+          "label": "Temporary Pin Code",
+          "placeholder": "Enter Pin Code",
+          "fieldType": "text"
+        },
+        {
+          "key": "tempCity",
+          "label": "Temporary City",
+          "placeholder": "City",
+          "fieldType": "text"
+        },
+        {
+          "key": "tempDistrict",
+          "label": "Temporary District",
+          "placeholder": "District",
+          "fieldType": "dropdown",
+          "dropdownOptions": [
+            {
+              "label": "Morang",
+              "value": "morang",
+              "default": true
+            }
+          ]
+        },
+        {
+          "key": "tempState",
+          "label": "Temporary State",
+          "placeholder": "State",
+          "fieldType": "dropdown",
+          "dropdownOptions": [
+            {
+              "label": "Province 1",
+              "value": "province-1",
+              "default": true
+            }
+          ]
         }
       ]
     }

@@ -77,6 +77,7 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
       type: "SENDER",
     }
   );
+  
   const requestAgentAccount = getDynamicRequest(
     agentAccountName ?? "",
     endpoints ?? {},

@@ -6,6 +6,7 @@ import serviceReducer from '../slices/serviceSlice';
 import endpointsReducer from '../slices/endpointsSlice';
 import formReducer from '../slices/customFormSlice';
 import stringValueReducer from '../slices/singleValueSlice';
+import accountReducer from '../slices/senderDataSlice';
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
     endPoints: endpointsReducer,
     form: formReducer,
     stringValue: stringValueReducer,
+    senderData: accountReducer
   },
 });
 
