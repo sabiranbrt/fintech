@@ -86,7 +86,8 @@
         "getChargeDetails",
         "uploadSlip",
         "initPgPayout",
-        "initVerify"
+        "initVerify",
+        "getPennyDrop"
       ]
     },
     {

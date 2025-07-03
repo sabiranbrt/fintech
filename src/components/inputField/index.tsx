@@ -12,7 +12,6 @@ interface IProp {
   errors?: FieldErrors<any>;
   names: string;
   chargeSlab?: string;
-  // value?: string;
   rules?: any;
   registeredName?: string;
   txnId?: string;

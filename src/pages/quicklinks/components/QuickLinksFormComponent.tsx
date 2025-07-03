@@ -21,6 +21,7 @@ import ContactCard from "@/pages/relationshipManager";
 import RentPayment from "@/pages/rentPayment";
 import TotalPayoutList from "@/pages/totalPayout";
 import TransactionsTabs from "@/pages/transaction";
+import { setAccount } from "@/redux/slices/senderDataSlice";
 import { setSelectedService } from "@/redux/slices/serviceSlice";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
@@ -75,6 +76,7 @@ const QuickLinksFormComponent = () => {
   });
 
   const mobileNumber = watch("mobileNumber");
+
   const { mutate } = useDynamicMutation<TODO>();
   const { refetch: fetchDigiToken } = useDigiTokenLazy();
 
@@ -112,6 +114,10 @@ const QuickLinksFormComponent = () => {
   };
 
   useEffect(() => {
+    dispatch(setAccount(SenderResponseData));
+  }, [SenderResponseData]);
+
+  useEffect(() => {
     if (mobileNumber?.length === 10 && !errors.mobileNumber) {
       fetchSender();
     } else {
@@ -126,7 +132,7 @@ const QuickLinksFormComponent = () => {
       enabled: !!request,
     }
   );
-  
+
   useEffect(() => {
     reset({ mobileNumber: "" });
     setSenderData(null);

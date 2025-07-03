@@ -10,7 +10,8 @@ export enum FieldTypes {
   FILE = "file",
   CUSTOMPASS = "custompass",
   MULTISELECT = "multiSelect",
-  PREVIEW = "preview"
+  PREVIEW = "preview",
+  SELECTCUSFIELD="SELECTCUS"
 };
 
 

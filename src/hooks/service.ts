@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getBalance, getPan, getService } from "@/libs"
 import { axiosInstance, generateRandom13DigitNumber } from "@/libs/axios"
 import { ChargeInfoProps, RequestBody } from "@/types"
+import EncrptionInterceptor from "@/utils/encryptionInterceptor"
 import interceptor from "@/utils/services/interceptor"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import axios from "axios"
@@ -91,7 +91,7 @@ export const useAadhaarRegistrationBeneLazy = (
 
 export const useDigiData = () => {
     return useMutation({
-        mutationFn: async ({ digiToken, requestId, beneMobileKyc }: any) => {
+        mutationFn: async ({ digiToken, requestId, beneMobileKyc }: {digiToken: string,requestId:TODO,beneMobileKyc:string}) => {
             const headers = {
                 urn: generateRandom13DigitNumber(),
                 authToken: digiToken,
@@ -190,5 +190,35 @@ export const usePan = () => {
     })
     return query
 }
+export const useSessionInit = () => {
+    const sessionInit = useQuery({
+        queryKey: ['SESSION_INIT'],
+        queryFn: async () => {
+            const response = await EncrptionInterceptor("SESSION_INIT").get("session/init", {
+                withCredentials: false,
+            })
+            return response.data;
+        },
+    })
+    return sessionInit
+}
 
+export const usePinCode = ({ token, values }: { token: string; values: string }) => {
+    const pinCode = useQuery({
+        queryKey: ['PINCODE'],
+        queryFn: async () => {
+            const response = await EncrptionInterceptor("report").get(
+                `pincode/${values}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            return response.data;
+        },
+        enabled: !!token && values.length === 6,
+    })
+    return pinCode
+}
 

@@ -1,10 +1,17 @@
+import TruncatedTextWithTooltip from "@/components/truncatedTextwithToolTip";
 import { ValidationProps } from "@/types";
 import { ValidationRules } from "@/utils/ValidationRegister";
 import clsx from "clsx";
 import { Controller, useFormContext } from "react-hook-form";
+import { IoInformationCircleOutline } from "react-icons/io5";
 
 interface IProp {
   names: string;
+  onlyFetchBtn?: boolean;
+  isPennyDropVerified?: boolean;
+  chargeSlab?: string;
+  registeredName?: string;
+  txnId?: string;
   isFocused: boolean;
   placeHolder?: string;
   inputHeight?: string;
@@ -16,14 +23,19 @@ interface IProp {
   ActionFetch?: string;
   placeHolderSize?: string;
   textClassName?: string;
+
+  loading?: boolean;
   focusBorderColor?: string;
   placeHoldercolor?: string;
   focusErrorBorderColor?: string;
+  message?: string;
   labelClassName?: string;
   handleFocus: () => void;
   handleBlur: () => void;
+  onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
   readOnly?: boolean;
   validation?: ValidationProps;
+  disableButton?: boolean;
   type?: string;
   onChange?: (value: string) => void;
   onClick?: () => void;
@@ -31,11 +43,18 @@ interface IProp {
 
 const InputField = ({
   isFocused,
+  chargeSlab,
+  isPennyDropVerified,
   handleBlur,
   handleFocus,
   names,
-  inputHeight,
+  txnId,
+  registeredName,
+  loading,
+  message,
   ActionFetch,
+  inputHeight,
+  onlyFetchBtn,
   inputWidth,
   placeHolder,
   ValidClassName,
@@ -45,18 +64,22 @@ const InputField = ({
   placeHolderSize,
   onChange,
   onClick,
+  onInput,
   placeHoldercolor,
   focusBorderColor,
   focusShadowColor,
+  disableButton,
   focusErrorBgColor,
   focusErrorShadowColor,
   textClassName,
   type,
 }: IProp) => {
+
   const {
     control,
     formState: { errors },
   } = useFormContext();
+
   return (
     <Controller
       control={control}
@@ -106,16 +129,21 @@ const InputField = ({
                 field.onChange(value);
                 onChange?.(value);
               }}
+              onInput={(e) => {
+                if (onInput) onInput(e);
+              }}
             />
 
             {ActionFetch ? (
               <div className=" absolute top-1.5 right-2.5">
                 <button
                   type="submit"
-                  disabled={!field.value?.trim() || !!errors[names]}
+                  disabled={
+                    !field.value?.trim() || !!errors[names] || disableButton
+                  }
                   className={clsx(
                     " transition-[2000] text-white !px-2 !py-1 rounded cursor-pointer",
-                    !field.value?.trim() || !!errors[names]
+                    !field.value?.trim() || !!errors[names] || disableButton
                       ? "bg-gray-300"
                       : "bg-[#5081B9]"
                   )}
@@ -125,7 +153,70 @@ const InputField = ({
                 </button>
               </div>
             ) : null}
+            {ActionFetch && (
+              <>
+                {isPennyDropVerified ? (
+                  <>
+                    <div className="absolute right-12 top-6 mt-1 -mr-8 rounded-md text-xs">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="green"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        className="lucide lucide-check"
+                      >
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    </div>
+                    {txnId && registeredName && (
+                      <span className="flex gap-3 text-sm text-secondary mt-1">
+                        <TruncatedTextWithTooltip
+                          label="Transaction ID:"
+                          value={txnId}
+                        />
+                        <TruncatedTextWithTooltip
+                          label="Reg. Name:"
+                          value={registeredName}
+                        />
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {onlyFetchBtn ? (
+                      <div className="">
+                        <button
+                          type="button"
+                          onClick={onClick}
+                          className="absolute right-6 top-8 bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !py-[2px] !px-2 rounded text-sm cursor-pointer"
+                        >
+                          {loading ? "Verifying..." : "Click to Verify"}
+                        </button>
 
+                        <div className="relative group">
+                          <IoInformationCircleOutline className="absolute right-1 -top-7 text-primary text-lg cursor-pointer" />
+
+                          <div className="absolute right-0 bg-gray-100 border border-gray-200 shadow-md rounded-md opacity-0 group-hover:opacity-100 p-2 text-sm transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto z-20">
+                            <h3 className="text-center text-sm font-medium text-gray-700">
+                              Charge : ₹ {chargeSlab}
+                            </h3>
+                          </div>
+                        </div>
+                      </div>
+                    ) : null}
+                  </>
+                )}
+              </>
+            )}
+
+            {message && (
+              <span className="text-sm text-primary-light">{`(${message})`}</span>
+            )}
             {errors[names] && (
               <div
                 className={clsx(
