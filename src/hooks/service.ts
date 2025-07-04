@@ -91,7 +91,7 @@ export const useAadhaarRegistrationBeneLazy = (
 
 export const useDigiData = () => {
     return useMutation({
-        mutationFn: async ({ digiToken, requestId, beneMobileKyc }: {digiToken: string,requestId:TODO,beneMobileKyc:string}) => {
+        mutationFn: async ({ digiToken, requestId, beneMobileKyc }: { digiToken: string, requestId: TODO, beneMobileKyc: string }) => {
             const headers = {
                 urn: generateRandom13DigitNumber(),
                 authToken: digiToken,
@@ -190,7 +190,7 @@ export const usePan = () => {
     })
     return query
 }
-export const useSessionInit = () => {
+export const useSessionInit = ({ enabled = true }: { enabled: boolean }) => {
     const sessionInit = useQuery({
         queryKey: ['SESSION_INIT'],
         queryFn: async () => {
@@ -199,6 +199,7 @@ export const useSessionInit = () => {
             })
             return response.data;
         },
+        enabled
     })
     return sessionInit
 }

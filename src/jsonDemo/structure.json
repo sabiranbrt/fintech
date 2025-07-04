@@ -178,8 +178,9 @@
           "key": "dob",
           "label": "Date of Birth",
           "placeholder": "YYYY-MM-DD",
-          "fieldType": "text",
+          "fieldType": "datePicker",
           "subType": "date",
+          "type": "date",
           "validation": {
             "required": "Y",
             "errorMessage": "Date of Birth is required",
@@ -363,27 +364,13 @@
           "key": "permanentDistrict",
           "label": "Permanent District",
           "placeholder": "District",
-          "fieldType": "dropdown",
-          "dropdownOptions": [
-            {
-              "label": "Morang",
-              "value": "morang",
-              "default": true
-            }
-          ]
+          "fieldType": "text"
         },
         {
           "key": "permanentState",
           "label": "Permanent State",
           "placeholder": "State",
-          "fieldType": "dropdown",
-          "dropdownOptions": [
-            {
-              "label": "Province 1",
-              "value": "province-1",
-              "default": true
-            }
-          ]
+          "fieldType": "text"
         },
         {
           "key": "sameAsPermanent",
@@ -425,27 +412,22 @@
           "key": "tempDistrict",
           "label": "Temporary District",
           "placeholder": "District",
-          "fieldType": "dropdown",
-          "dropdownOptions": [
-            {
-              "label": "Morang",
-              "value": "morang",
-              "default": true
-            }
-          ]
+          "fieldType": "text"
         },
         {
           "key": "tempState",
           "label": "Temporary State",
           "placeholder": "State",
-          "fieldType": "dropdown",
-          "dropdownOptions": [
-            {
-              "label": "Province 1",
-              "value": "province-1",
-              "default": true
-            }
-          ]
+          "fieldType": "text"
+        }
+      ]
+    },
+    "4": {
+      "status": "Review Details",
+      "displayRemarks": "Review Details",
+      "displayField": [
+        {
+          "fieldType":"review"
         }
       ]
     }

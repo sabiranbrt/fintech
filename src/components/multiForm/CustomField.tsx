@@ -12,16 +12,20 @@ import RadioButton from "./radioButton";
 import FileField from "./fileField";
 import CustomPassField from "./customPassField";
 import { FieldTypes, ValidationProps } from "@/types";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, UseFormWatch } from "react-hook-form";
 import SelectCusOpt from "./selectCusOpt";
+import DatePickers from "../datePicker";
+import ReviewSection from "./review";
 
 interface Options {
   label: string;
   value: string;
-  default: boolean;
+  default?: boolean;
 }
 
 interface IProps {
+  watch: UseFormWatch<TODO>;
+  displaylist: TODO;
   names: string;
   isPennyDropVerified?: boolean;
   chargeSlab?: string;
@@ -61,6 +65,7 @@ interface IProps {
   placeHolderStyle?: string;
   imageLink: string;
   disabled?: boolean;
+  onOptionChange?: () => void;
   onChange?: (text: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeImage?: (value: string) => void;
   onChangeArea?: (text: React.ChangeEvent<HTMLTextAreaElement>) => void;
@@ -75,6 +80,8 @@ interface IProps {
   ActionFetch?: string;
   onClick?: () => void;
   onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
+  reviewTitle: string;
+  fields: TODO;
 }
 
 const CustomField = ({
@@ -96,6 +103,7 @@ const CustomField = ({
   fetchData,
   UploadIcon,
   optionsData,
+  fields,
   onChangeImage,
   onClick,
   OptionFocusColor = "#fff",
@@ -120,6 +128,8 @@ const CustomField = ({
   textClassName,
   disableButton,
   type,
+  watch,
+  onOptionChange,
   fieldType,
   textSecurity = "&",
   onInput,
@@ -142,6 +152,59 @@ const CustomField = ({
 
   const { getValues } = useFormContext();
   const currentValue = getValues(names);
+
+  const generateReviewSections = () => {
+    const stepKeys = Object.keys(fields?.dataFields).slice(0, -1);
+    return stepKeys.map((key) => {
+      const stepKey = key as keyof typeof fields.dataFields;
+      const currentStep = fields.dataFields[stepKey];
+
+      if (!Array.isArray(currentStep) && currentStep?.displayField) {
+        const reviewFields =
+          currentStep.displayField
+            .filter((field: TODO) => field?.key && field?.label)
+            .map((field: TODO) => {
+              const key = field.key;
+              const rawValue = key ? watch(key) : undefined;
+
+              return {
+                label: field.label,
+                value:
+                  rawValue === undefined || rawValue === ""
+                    ? "-"
+                    : Array.isArray(rawValue)
+                    ? rawValue.join(", ")
+                    : String(rawValue),
+              };
+            }) ?? [];
+
+        console.log(
+          "watch",
+          currentStep.displayField
+            .filter((field: TODO) => field?.key && field?.label)
+            .map((field: TODO) => {
+              const key = field.key;
+              const rawValue = key ? watch(key) : undefined;
+
+              return {
+                label: field.label,
+                value:
+                  rawValue === undefined || rawValue === ""
+                    ? "-"
+                    : Array.isArray(rawValue)
+                    ? rawValue.join(", ")
+                    : String(rawValue),
+              };
+            })
+        );
+        return (
+          <ReviewSection title={currentStep.status} fields={reviewFields} />
+        );
+      }
+
+      return null;
+    });
+  };
 
   return (
     <div className=" text-start">
@@ -257,6 +320,7 @@ const CustomField = ({
             ValidClassName={ValidClassName}
             labelClassName={labelClassName}
             validation={validation}
+            onOptionChange={onOptionChange}
           />
         ) : fieldType === FieldTypes?.RADIOBUTTON ? (
           <RadioButton
@@ -381,6 +445,30 @@ const CustomField = ({
             label={label}
             fetchData={fetchData}
           />
+        ) : fieldType === FieldTypes?.DATEPICKER ? (
+          <DatePickers
+            names={names}
+            isFocused={isFocused}
+            handleBlur={handleBlur}
+            handleFocus={handleFocus}
+            placeHolder={placeHolder}
+            inputHeight={inputHeight}
+            inputWidth={inputWidth}
+            focusShadowColor={focusShadowColor}
+            focusErrorBgColor={focusErrorBgColor}
+            focusErrorShadowColor={focusErrorShadowColor}
+            ValidClassName={ValidClassName}
+            ActionFetch={ActionFetch}
+            placeHolderSize={placeHolderSize}
+            textClassName={textClassName}
+            focusBorderColor={focusBorderColor}
+            placeHoldercolor={placeHoldercolor}
+            focusErrorBorderColor={focusErrorBorderColor}
+            labelClassName={labelClassName}
+            validation={validation}
+          />
+        ) : fieldType === FieldTypes?.REVIEW ? (
+          <>{generateReviewSections()}</>
         ) : null}
       </div>
       <Tooltip id={`tooltip-${label}`} place="top" />

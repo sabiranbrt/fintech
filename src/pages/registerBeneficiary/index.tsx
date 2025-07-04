@@ -24,6 +24,9 @@ interface PennyDropResult {
 }
 
 const RegisterBeneficiary = () => {
+  const [token, setToken] = useState("");
+  const [district, setDistrict] = useState<TODO>([]);
+  const [state, setState] = useState<TODO>([]);
   const { mutateAsync: pennyDropMutant } = useDynamicMutation<TODO>();
 
   const [pennyDropResult, setPennyDropResult] =
@@ -40,7 +43,7 @@ const RegisterBeneficiary = () => {
   const mobileNumber = watch("senderMobileNumber");
   const bankDetails = watch("bankName");
   const ifscValue = watch("ifsc");
-  const pinCodeValue = watch("pinCode");
+  const [pinCodeValue, tempPinCodeValue] = watch(["pinCode", "tempPinCode"]);
 
   const { endpoints } = useSelector((state: RootState) => state.endPoints);
   const { selectedService } = useSelector((state: RootState) => state.service);
@@ -150,52 +153,87 @@ const RegisterBeneficiary = () => {
     return [];
   };
 
-  const { data: sessionInit } = useSessionInit();
-  const token = sessionInit?.apiResponseData?.responseData?.token;
-
-  useEffect(() => {
-    localStorage.setItem("access_token", token);
-  }, []);
+  const { refetch: refetchSession } = useSessionInit({
+    enabled: false,
+  });
 
   const { data: pinCode } = usePinCode(
-    pinCodeValue?.length === 6
-      ? { token, values: pinCodeValue }
-      : { token: "", values: "" }
+    pinCodeValue ? { token, values: pinCodeValue } : { token: "", values: "" }
   );
 
-  const handlePinCodeChangeWrapper = () => {
-    if (!token) {
-      toast.error("Error fetching PIN Code data");
+  const handlePinCodeChangeWrapper = async () => {
+    const sessionResult = await refetchSession();
+
+    const fetchedToken =
+      sessionResult.data?.apiResponseData?.responseData?.token;
+
+    if (!fetchedToken) {
+      toast.error("Token not received from session API");
       return;
     }
-  
-    if (pinCodeValue?.length === 6) {
+
+    localStorage.setItem("access_token", fetchedToken);
+    setToken(fetchedToken);
+    const codeToUse =
+      tempPinCodeValue?.length === 6 ? tempPinCodeValue : pinCodeValue;
+    if (codeToUse) {
       try {
         const response = pinCode;
         if (
-          response.data.apiResponseCode == "200" &&
-          response.data.apiResponseData?.responseCode == "200"
+          response?.apiResponseCode == "200" &&
+          response?.apiResponseData?.responseCode == "200"
         ) {
-          const parsedData = response?.data?.apiResponseData?.responseData;
+          const parsedData = response?.apiResponseData?.responseData;
 
           const postOffices = parsedData?.PostOffice;
           if (postOffices && postOffices.length > 0) {
-            // const districtNames = [
-            //   ...new Set(postOffices.map((p) => p.District)),
-            // ];
-            // const stateNames = [...new Set(postOffices.map((p) => p.State))];
-            // const cityNames = [...new Set(postOffices.map((p) => p.Region))];
+            const districtNames = [
+              ...new Set(postOffices.map((p: TODO) => p.District)),
+            ];
+            const stateNames = [
+              ...new Set(postOffices.map((p: TODO) => p.State)),
+            ];
+            const cityNames = [
+              ...new Set(postOffices.map((p: TODO) => p.Region)),
+            ];
+
+            setDistrict(districtNames);
+            setState(stateNames);
+            setValue("permanentCity", cityNames);
+            setValue("permanentState", stateNames);
+            setValue("permanentDistrict", districtNames);
           } else {
             const errorMessage =
               parsedData?.Message || "Could not load location data";
             console.log("error", errorMessage);
+            toast.error(errorMessage);
           }
         } else {
           console.log("error");
+          toast.error("Could not load data");
         }
       } catch (error) {
         console.error("Error fetching districts:", error);
       }
+    }
+  };
+
+  const handleCheckbox = () => {
+    const selected = getValues("sameAsPermanent");
+    if (selected && selected.length > 0) {
+      const perCity = getValues("permanentCity");
+      const perDistrict = getValues("permanentDistrict");
+      const perState = getValues("permanentState");
+
+      setValue("tempPinCode", pinCodeValue);
+      setValue("tempCity", perCity ?? "");
+      setValue("tempDistrict", perDistrict ?? "");
+      setValue("tempState", perState ?? "");
+    } else {
+      setValue("tempPinCode", "");
+      setValue("tempCity", "");
+      setValue("tempDistrict", "");
+      setValue("tempState", "");
     }
   };
 
@@ -207,9 +245,42 @@ const RegisterBeneficiary = () => {
     const currentStep = formList.dataFields[currentKey];
 
     if (!Array.isArray(currentStep)) {
+      // const fields =
+      //   currentStep?.displayField
+      //     ?.filter((f: TODO) => f?.key && f?.label)
+      //     .map((f: TODO) => ({
+      //       key: f.key,
+      //       label: f.label,
+      //     })) ?? [];
       return currentStep?.displayField?.map((displaylist: TODO) => {
+        // Dynamically assign options for district, state, city
+        let dynamicOptions: Array<{ label: string; value: string }> = [];
+
+        // Dynamically set select options
+        if (displaylist.fieldType === "dropdown") {
+          switch (displaylist.key) {
+            case "permanentDistrict":
+              dynamicOptions = district.map((item: string) => ({
+                label: item,
+                value: item,
+              }));
+              break;
+            case "permanentState":
+              dynamicOptions = state.map((item: string) => ({
+                label: item,
+                value: item,
+              }));
+              break;
+            default:
+              dynamicOptions = displaylist.dropdownOptions ?? [];
+          }
+        } else {
+          dynamicOptions = displaylist.dropdownOptions ?? [];
+        }
         return (
           <CustomField
+            watch={watch}
+            displaylist={displaylist}
             key={displaylist?.key ?? ""}
             names={displaylist?.key ?? ""}
             label={displaylist.label}
@@ -226,7 +297,8 @@ const RegisterBeneficiary = () => {
             focusErrorBorderColor={displaylist?.focusErrorBorderColor}
             placeHolder={displaylist?.placeholder}
             fieldType={displaylist?.fieldType}
-            options={displaylist?.dropdownOptions}
+            options={dynamicOptions}
+            onOptionChange={handleCheckbox}
             validation={displaylist?.validation}
             onInput={
               displaylist?.key === "panNumber"
@@ -250,6 +322,8 @@ const RegisterBeneficiary = () => {
             disabled={pennyDropResult?.isVerified}
             txnId={pennyDropResult?.transID}
             registeredName={pennyDropResult?.registeredName}
+            reviewTitle={""}
+            fields={formList}
           />
         );
       });

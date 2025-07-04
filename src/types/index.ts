@@ -2,6 +2,7 @@ import { AxiosRequestConfig } from "axios";
 
 export enum FieldTypes {
   TEXTFIELD = "text",
+  DATEPICKER ="datePicker",
   SELECTFIELD = "dropdown",
   TEXTAREA = "area",
   CHECKBOX = 'checkbox',
@@ -11,7 +12,8 @@ export enum FieldTypes {
   CUSTOMPASS = "custompass",
   MULTISELECT = "multiSelect",
   PREVIEW = "preview",
-  SELECTCUSFIELD="SELECTCUS"
+  SELECTCUSFIELD="SELECTCUS",
+  REVIEW = "review"
 };
 
 

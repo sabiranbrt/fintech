@@ -68,6 +68,9 @@ textarea {
     grid-template-columns: repeat(1, 1fr) !important;
   }
 }
+.react-datepicker-wrapper{
+  width: 100%;
+}
 
 .loader {
   position: relative;

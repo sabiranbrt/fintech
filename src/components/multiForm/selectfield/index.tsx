@@ -8,7 +8,7 @@ import Select from "react-select";
 interface Options {
   label: string;
   value: string;
-  default: boolean;
+  default?: boolean;
 }
 
 interface IProps {

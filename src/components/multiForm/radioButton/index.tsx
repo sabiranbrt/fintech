@@ -6,7 +6,7 @@ import { Controller, useFormContext } from "react-hook-form";
 interface Options {
   label: string;
   value: string;
-  default: boolean;
+  default?: boolean;
 }
 
 interface IProp {

@@ -23,7 +23,6 @@ interface IProp {
   ActionFetch?: string;
   placeHolderSize?: string;
   textClassName?: string;
-
   loading?: boolean;
   focusBorderColor?: string;
   placeHoldercolor?: string;

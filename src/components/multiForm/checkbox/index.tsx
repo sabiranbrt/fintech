@@ -6,7 +6,7 @@ import { Controller, useFormContext } from "react-hook-form";
 interface Options {
   label: string;
   value: string;
-  default: boolean;
+  default?: boolean;
 }
 
 interface IProp {
@@ -15,6 +15,7 @@ interface IProp {
   ValidClassName?: string;
   labelClassName?: string;
   validation?: ValidationProps;
+  onOptionChange?: () => void;
 }
 
 const CheckBox = ({
@@ -22,13 +23,14 @@ const CheckBox = ({
   options,
   ValidClassName,
   labelClassName,
+  onOptionChange,
   validation,
 }: IProp) => {
   const {
     control,
     formState: { errors },
   } = useFormContext();
-  
+
   return (
     <Controller
       control={control}
@@ -57,6 +59,11 @@ const CheckBox = ({
                         : currentValues.filter((v) => v !== opt.value);
 
                       field.onChange(newValues);
+
+                      // Trigger dependent field check on change
+                      if (onOptionChange) {
+                        onOptionChange();
+                      }
                     }}
                   />
                   <label
