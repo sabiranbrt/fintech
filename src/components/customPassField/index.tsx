@@ -167,12 +167,25 @@ const CustomPassField = ({
                   }
                 }}
                 onPaste={handlePaste}
+                
                 onKeyDown={(e) => {
                   if (fieldType === "card") {
-                    if (e.key === "Backspace" || e.key === "Delete") {
-                      e.preventDefault(); // Prevent default behavior
+                    const allowedKeys = [
+                      "ArrowLeft",
+                      "ArrowRight",
+                      "Tab",
+                    ];
 
-                      // Remove last digit from realValue on backspace or delete
+                    const isNumberKey = /^[0-9]$/.test(e.key);
+
+                    if (!isNumberKey && !allowedKeys.includes(e.key)) {
+                      e.preventDefault(); // prevent typing non-numeric characters
+                    }
+
+                    if (
+                      (e.key === "Backspace" || e.key === "Delete") &&
+                      realValue.length > 0
+                    ) {
                       const newVal = realValue.slice(0, -1);
                       setRealValue(newVal);
                       field.onChange(newVal);

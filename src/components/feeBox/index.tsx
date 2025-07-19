@@ -8,7 +8,7 @@ const FeeBox = ({title,value}:IProp) => {
   return (
     <div className="w-48 text-blue-800 text-sm bg-blue-50 border-l-4 border-blue-500 p-2 rounded-r-md ">
       <p>
-        {title}: <p>₹ {Number(value ?? 0).toFixed(2)}</p>
+        {title}: ₹ {Number(value ?? 0).toFixed(2)}
       </p>
     </div>
   );

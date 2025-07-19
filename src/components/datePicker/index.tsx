@@ -47,6 +47,7 @@ const DatePickers = ({
   handleBlur,
   handleFocus,
   isFocused,
+  disableButton,
   //   focusShadowColor,
   focusBorderColor,
   focusErrorBorderColor,
@@ -70,15 +71,23 @@ const DatePickers = ({
     const y = date.getFullYear();
     const m = (date.getMonth() + 1).toString().padStart(2, "0");
     const d = date.getDate().toString().padStart(2, "0");
-    return `${y}-${m}-${d}`;
+    return `${d}-${m}-${y}`;
   };
-
+  const parseDate = (dateStr: string): Date | null => {
+    if (!dateStr) return null;
+    const [day, month, year] = dateStr.split("-");
+    const isoString = `${year}-${month}-${day}`;
+    const date = new Date(isoString);
+    return isNaN(date.getTime()) ? null : date;
+  };
   return (
     <Controller
       control={control}
       name={names}
       rules={ValidationRules(validation)}
       render={({ field }) => {
+        console.log("field", field.value);
+
         return (
           <div
             className="relative"
@@ -86,7 +95,7 @@ const DatePickers = ({
             data-tooltip-content={`${placeHolder}`}
           >
             <DatePicker
-              {...field}
+             selected={parseDate(field.value)}
               className={clsx(
                 "outline-0 p-3",
                 textClassName
@@ -108,21 +117,14 @@ const DatePickers = ({
               )}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              // style={{
-              //   boxShadow: errors[names]
-              //     ? `0 1px 2px 0 ${focusErrorShadowColor}`
-              //     : isFocused
-              //     ? `0 1px 2px 0 ${focusShadowColor}`
-              //     : undefined,
-              // }}
+              disabled={disableButton}
               placeholderText="dd/mm/yyyy"
               onChange={(date: Date | null) => {
-                const val = formatDateToISO(date);
-                field.onChange(val);
-                onChange?.(val);
+                field.onChange(date);
+                onChange?.(formatDateToISO(date));
               }}
               readOnly={readOnly}
-              dateFormat="dd/MM/yyyy"
+              dateFormat="dd-MM-yyyy"
             />
 
             {errors[names] && (

@@ -74,7 +74,6 @@ const interceptor = (page_type = null) => {
             ),
           };
         }
-
         config.data = reqBody;
       } catch (error) {
         console.error("Error encrypting request data:", error);

@@ -31,6 +31,7 @@ import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { FaSyncAlt } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 interface FormData {
   mobileNumber: string;
@@ -38,6 +39,7 @@ interface FormData {
 
 const QuickLinksFormComponent = () => {
   const [senderData, setSenderData] = useState<TODO | null>(null);
+
   const SenderResponseData = senderData?.apiResponseData?.data[0];
 
   const [aadhaarParams, setAadhaarParams] = useState<{
@@ -81,8 +83,9 @@ const QuickLinksFormComponent = () => {
   const { refetch: fetchDigiToken } = useDigiTokenLazy();
 
   const { refetch: fetchAadhaar } = useAadhaarRegistrationBeneLazy(
-    aadhaarParams?.digiToken,
-    aadhaarParams?.mobile
+    aadhaarParams?.digiToken ?? "",
+    aadhaarParams?.mobile ?? "",
+    "FETCH"
   );
 
   const { mutateAsync: fetchDigiData } = useDigiData();
@@ -99,6 +102,7 @@ const QuickLinksFormComponent = () => {
     mutate(request, {
       onSuccess: (data) => {
         setSenderData(data);
+        dispatch(setAccount(data));
       },
       onError: () => {
         setSenderData(null);
@@ -168,49 +172,60 @@ const QuickLinksFormComponent = () => {
     if (!accessToken) return;
     setAadhaarParams({ digiToken: accessToken, mobile: mobileNumber });
 
-    const { url } = JSON.parse(
-      aadharRegister.data.apiResponseData.responseData
-    );
+    if (aadharRegister?.data?.apiResponseData?.responseCode === "200") {
+      const { url } = JSON.parse(
+        aadharRegister.data.apiResponseData.responseData
+      );
 
-    const { requestId } = JSON.parse(
-      aadharRegister.data.apiResponseData.responseData
-    );
+      const { requestId } = JSON.parse(
+        aadharRegister.data.apiResponseData.responseData
+      );
 
-    const newChildWindow = window.open(url, "_blank", "width=800,height=600");
+      const newChildWindow = window.open(url, "_blank", "width=800,height=600");
 
-    // Monitor the child window
-    const monitorWindow = setInterval(() => {
-      if (!newChildWindow || newChildWindow.closed) {
-        clearInterval(monitorWindow);
-        console.error("Child window closed before success.");
-      } else {
-        try {
-          const currentUrl = newChildWindow.location.href;
-          if (currentUrl.includes(import.meta.env.VITE_REDIRECTION_URL)) {
-            const params = new URLSearchParams(new URL(currentUrl).search);
-            const state = params.get("state");
+      // Monitor the child window
+      const monitorWindow = setInterval(() => {
+        if (!newChildWindow || newChildWindow.closed) {
+          clearInterval(monitorWindow);
+          console.error("Child window closed before success.");
+        } else {
+          try {
+            const currentUrl = newChildWindow.location.href;
+            if (currentUrl.includes(import.meta.env.VITE_REDIRECTION_URL)) {
+              const params = new URLSearchParams(new URL(currentUrl).search);
+              const state = params.get("state");
+              console.log("state", state);
+              console.log("params", params);
 
-            if (state || requestId) {
-              (async () => {
-                const digiDataResponse = await fetchDigiData({
-                  digiToken: accessToken,
-                  requestId: requestId!,
-                  beneMobileKyc: mobileNumber,
-                });
+              if (state || requestId) {
+                (async () => {
+                  const digiDataResponse = await fetchDigiData({
+                    digiToken: accessToken,
+                    requestId: requestId!,
+                    beneMobileKyc: mobileNumber,
+                  });
 
-                console.log("Fetched Digi Data:", digiDataResponse);
-              })();
+                  console.log("Fetched Digi Data:", digiDataResponse);
+                })();
+              }
+
+              newChildWindow.close();
+              clearInterval(monitorWindow);
             }
-
-            newChildWindow.close();
-            clearInterval(monitorWindow);
+          } catch (error) {
+            // Ignore errors due to cross-origin restrictions
+            console.log("error", error);
           }
-        } catch (error) {
-          // Ignore errors due to cross-origin restrictions
-          console.log("error", error);
         }
-      }
-    }, 500); // Poll every 500ms for better responsiveness
+      }, 500);
+      // Poll every 500ms for better responsiveness
+    } else {
+      toast.error(aadharRegister?.data?.apiResponseData?.responseMessage);
+      console.error(
+        "Error creating Digilocker URL:",
+        aadharRegister?.data?.apiResponseData?.responseMessage
+      );
+    }
   };
 
   return (

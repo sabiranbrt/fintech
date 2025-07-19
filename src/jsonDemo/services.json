@@ -87,7 +87,11 @@
         "uploadSlip",
         "initPgPayout",
         "initVerify",
-        "getPennyDrop"
+        "getPennyDrop",
+        "getBeneficiary",
+        "getBeneficiaryOld",
+        "getPAN",
+        "getAuthToken"
       ]
     },
     {
@@ -113,7 +117,9 @@
         "getSlabDetails",
         "getChargeDetails",
         "initPayout",
-        "getPennyDrop"
+        "getPennyDrop",
+        "getBeneficiaryDelete",
+        "getPAN"
       ]
     },
     {
@@ -182,7 +188,9 @@
         "getbankList",
         "getSlabDetails",
         "getChargeDetails",
-        "initPayout"
+        "initPayout",
+        "getChargeInfo",
+        "getCreateOrder"
       ]
     },
     {
@@ -269,10 +277,7 @@
     "getSlabDetails": {
       "method": "GET",
       "enc": false,
-      "url": "/api/v1/slab",
-      "headers": {
-        "urn": "{{urn}}"
-      }
+      "url": "/api/v1/slab"
     },
     "getSender": {
       "method": "POST",
@@ -297,6 +302,44 @@
     "getLedger": {
       "method": "POST",
       "url": "/api/v1/accounts/get-ledger"
+    },
+    "getBeneficiary": {
+      "method": "POST",
+      "url": "/api/v1/beneficiary"
+    },
+    "getBeneficiaryOld": {
+      "method": "POST",
+      "enc": true,
+      "url": "/api/v1/beneficiary/old"
+    },
+    "getBeneficiaryDelete": {
+      "method": "POST",
+      "enc": true,
+      "queryParams": [
+        "senderId",
+        "beneficiaryId"
+      ],
+      "url": "/api/v1/beneficiary/delete"
+    },
+    "getPAN": {
+      "method": "POST",
+      "enc": true,
+      "url": "/api/v1/pan"
+    },
+    "getChargeInfo": {
+      "method": "POST",
+      "enc": true,
+      "url": "/loadViaPg/getChargeInfo"
+    },
+    "getCreateOrder": {
+      "method": "POST",
+      "enc": true,
+      "url": "/loadViaPg/createOrder"
+    },
+    "getAuthToken": {
+      "method": "POST",
+      "enc": true,
+      "url": "/authToken"
     }
   }
 }

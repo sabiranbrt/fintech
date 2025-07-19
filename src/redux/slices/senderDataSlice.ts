@@ -59,14 +59,10 @@ interface AccountHolder {
 
 interface AccountState {
     sender: AccountHolder | null;
-    loading: boolean;
-    error: string | null;
 }
 
 const initialState: AccountState = {
     sender: null,
-    loading: false,
-    error: null,
 };
 
 const senderData = createSlice({

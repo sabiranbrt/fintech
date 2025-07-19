@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useDynamicMutation, useDynamicQuery } from "@/hooks/dynamicQuery";
 import { CCFormDataProps } from "@/pages/creditCardBillPayment/types";
 import PGModals from "@/pages/loadWallet/PGModals";
+import { updateLoading } from "@/redux/slices/appSlice";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
 import LocalStorageUtil from "@/utils/LocalStorageUtil";
@@ -10,11 +10,12 @@ import { getIpAddress } from "@/utils/getIpAddress";
 import { wordCapitalize } from "@/utils/wordCapitalize";
 import clsx from "clsx";
 import { toWords } from "number-to-words";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { FaSpinner } from "react-icons/fa";
 import { MdOutlineVerified } from "react-icons/md";
 import { VscUnverified } from "react-icons/vsc";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import SwitchGroup from "../buttons/switchBtn";
 import FeeBox from "../feeBox";
@@ -26,9 +27,9 @@ import TransferNotice from "../transferNotice";
 interface IProp {
   handleCancel: () => void;
   bankDetails?: string;
-  senderData?: any;
-  beneData?: any;
-  senderDataFW?: any;
+  senderData?: TODO;
+  beneData?: TODO;
+  senderDataFW?: TODO;
   CCFromData?: CCFormDataProps | null;
 }
 
@@ -37,18 +38,25 @@ const PaymentModal = ({
   bankDetails,
   senderData,
   beneData,
+  senderDataFW,
   CCFromData,
 }: IProp) => {
+  const dispatch = useDispatch();
+
   const [slipUrl, setSlipUrl] = useState("");
   const handleSlipUpload = (url: string) => {
     setSlipUrl(url);
   };
 
+  const [inputValue, setInputValue] = useState("");
+
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const { selectedService } = useSelector((state: RootState) => state.service);
   const { endpoints } = useSelector((state: RootState) => state.endPoints);
 
   const [modalContent, setModalContent] = useState("");
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+
   const handleClose = () => {
     setModalVisible(false);
   };
@@ -64,7 +72,7 @@ const PaymentModal = ({
   );
 
   const switchOptions = (selectedService?.paymentMethods || []).map(
-    (method: any) => ({
+    (method: TODO) => ({
       value: method.value,
       label: method.label,
     })
@@ -81,7 +89,7 @@ const PaymentModal = ({
     watch,
     setValue,
     formState: { errors },
-  } = useForm<any>({
+  } = useForm<TODO>({
     mode: "onChange",
   });
 
@@ -91,7 +99,7 @@ const PaymentModal = ({
   const chargeDetails = selectedService?.sequence?.[3];
   const initPayout = selectedService?.sequence?.[4];
 
-  const { mutateAsync } = useDynamicMutation<any>();
+  const { mutateAsync } = useDynamicMutation<TODO>();
 
   const request = useMemo(() => {
     return getDynamicRequest(stepName ?? "", endpoints ?? {}, {
@@ -135,7 +143,7 @@ const PaymentModal = ({
     bankDetails,
   ]);
 
-  const { data: slabs } = useDynamicQuery<any>(request!, {
+  const { data: slabs } = useDynamicQuery<TODO>(request!, {
     enabled: !!request && (!!selectedPaymentMethod || !!bankDetails),
     queryKey: [stepName, selectedPaymentMethod, bankDetails],
   });
@@ -148,21 +156,23 @@ const PaymentModal = ({
     }
   }, [slabs]);
 
-  const { data: Charge } = useDynamicQuery<any>(requestCharge!, {
-    enabled:
-      !!requestCharge &&
-      !!requestAmount &&
-      (!!selectedPaymentMethod || !!bankDetails),
-    queryKey: [
-      chargeDetails,
-      requestAmount,
-      selectedPaymentMethod,
-      bankDetails,
-    ],
-  });
+  const { data: Charge, isFetching: isChargeLoading } = useDynamicQuery<TODO>(
+    requestCharge!,
+    {
+      enabled: !!requestAmount,
+      queryKey: [chargeDetails, requestAmount],
+    }
+  );
 
   const slab = slabs?.apiResponseData?.data;
   const chargeDetail = Charge?.apiResponseData?.data;
+  const totalFee = chargeDetail?.totalCharge;
+
+  useEffect(() => {
+    if (totalFee) {
+      setValue("charges", parseFloat(totalFee).toFixed(2));
+    }
+  }, [setValue, totalFee]);
 
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
@@ -177,8 +187,20 @@ const PaymentModal = ({
     printWindow.print();
   };
 
+  useEffect(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+    debounceTimer.current = setTimeout(() => {
+      setRequestAmount(inputValue);
+    }, 500); // wait 500ms after last keystroke before updating requestAmount
+
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, [inputValue]);
+
   const onSubmit = async () => {
-    const userID =  localStorage.getItem("userId");
+    const userID = localStorage.getItem("userId");
     const ipAddress = await getIpAddress();
 
     const payload = {
@@ -251,17 +273,18 @@ const PaymentModal = ({
     );
 
     try {
+      dispatch(updateLoading({ isLoading: true }));
       await mutateAsync(requestPayout ?? { url: "", method: "POST" }, {
-        onSuccess: (data: any) => {
+        onSuccess: (data: TODO) => {
           setModalContent(data);
           setModalVisible(true);
         },
-        onError: (err: any) => {
-          toast.error(err);
-        },
       });
-    } catch (err) {
+    } catch (err: TODO) {
       console.log("err", err);
+      toast.error(err);
+    } finally {
+      dispatch(updateLoading({ isLoading: false }));
     }
   };
 
@@ -315,7 +338,7 @@ const PaymentModal = ({
           {/* Left Section - Details */}
           <div className="p-2 space-y-2">
             {/* Sender Details Card */}
-            {selectedService?.label === "Fund Withdrawal" ? (
+            {selectedService?.label === QuickLinksType?.FW ? (
               <>
                 <div className="flex justify-between gap-2">
                   <div className="space-y-3 bg-gray-50 rounded-xl p-2 w-full border-2">
@@ -325,25 +348,25 @@ const PaymentModal = ({
                     <div>
                       <p className="text-sm text-gray-500">First Name</p>
                       <p className="text-sm font-medium text-gray-800 capitalize">
-                        {senderData?.panCardData?.firstName || "N/A"}
+                        {senderDataFW?.panCardData?.firstName || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Middle Name</p>
                       <p className="text-sm font-medium text-gray-800 capitalize">
-                        {senderData?.panCardData?.middleName || "N/A"}
+                        {senderDataFW?.panCardData?.middleName || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Last Name</p>
                       <p className="text-sm font-medium text-gray-800 capitalize">
-                        {senderData?.panCardData?.lastName || "N/A"}
+                        {senderDataFW?.panCardData?.lastName || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Mobile</p>
                       <p className="text-sm font-medium text-gray-800">
-                        {senderData?.panCardData?.mobile_no || "N/A"}
+                        {senderDataFW?.panCardData?.mobile_no || "N/A"}
                       </p>
                     </div>
                     {/*  <div>
@@ -360,19 +383,19 @@ const PaymentModal = ({
                     <div>
                       <p className="text-sm text-gray-500">Account Number</p>
                       <p className="text-sm font-medium text-gray-800">
-                        {senderData?.accounts?.[0]?.accountNumber || "N/A"}
+                        {senderDataFW?.accounts?.[0]?.accountNumber || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Bank Name</p>
                       <p className="text-sm font-medium text-gray-800">
-                        {senderData?.accounts?.[0]?.bankName || "N/A"}
+                        {senderDataFW?.accounts?.[0]?.bankName || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Bank IFSC</p>
                       <p className="text-sm font-medium text-gray-800">
-                        {senderData?.accounts?.[0]?.ifscCode || "N/A"}
+                        {senderDataFW?.accounts?.[0]?.ifscCode || "N/A"}
                       </p>
                     </div>
                   </div>
@@ -565,7 +588,7 @@ const PaymentModal = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {slab?.slabDetails?.map((item: any, index: number) => (
+                    {slab?.slabDetails?.map((item: TODO, index: number) => (
                       <tr key={index} className="border-b last:border-b-0">
                         <td className="p-1">{item.slabSequence ?? "-"}</td>
                         <td className="p-1">
@@ -598,7 +621,7 @@ const PaymentModal = ({
                 <SwitchGroup
                   options={switchOptions}
                   defaultValue={selectedPaymentMethod}
-                  onOptionClick={(value: any) => handlePaymentOption(value)}
+                  onOptionClick={(value: TODO) => handlePaymentOption(value)}
                 />
               )}
               {selectedService?.label === QuickLinksType?.CC && (
@@ -645,14 +668,12 @@ const PaymentModal = ({
                       label="Request Amount"
                       placeHolder="0.00"
                       onChange={(value) => {
-                        setRequestAmount(value || "");
-                      }}
-                      InputBlur={() => {
-                        const totalFee = chargeDetail?.totalCharge;
-                        setValue(
-                          "charges",
-                          totalFee ? parseFloat(totalFee).toFixed(2) : ""
-                        );
+                        setInputValue(value || "");
+
+                        if (!value) {
+                          setValue("charges", "");
+                          return;
+                        }
                       }}
                     >
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
@@ -675,6 +696,11 @@ const PaymentModal = ({
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                         ₹
                       </span>
+                      {isChargeLoading && (
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                          <FaSpinner />
+                        </span>
+                      )}
                     </InputField>
                   </div>
                 </div>
@@ -706,8 +732,14 @@ const PaymentModal = ({
             <div className=" grid grid-cols-2 gap-2 mt-4">
               {selectedService?.type !== "pgPayout" && requestAmount && (
                 <>
-                  <FeeBox title="service Fee" value={chargeDetail?.feeAmount} />
-                  <FeeBox title="Markup" value={chargeDetail?.markUp} />
+                  <FeeBox
+                    title="Transfer Amount"
+                    value={chargeDetail?.finalAmount}
+                  />
+                  <FeeBox
+                    title="Debit Amount"
+                    value={chargeDetail?.requestAmount}
+                  />
                 </>
               )}
 
@@ -773,6 +805,7 @@ const PaymentModal = ({
               modalVisible={modalVisible}
               modalContent={modalContent}
               closeModal={handleClose}
+              handleCancel={handleCancel}
               handlePrint={handlePrint}
             />
           </div>

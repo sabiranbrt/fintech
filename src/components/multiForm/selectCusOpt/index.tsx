@@ -3,7 +3,8 @@ import { ValidationProps } from "@/types";
 import { ValidationRules } from "@/utils/ValidationRegister";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
+import { FaToggleOff, FaToggleOn } from "react-icons/fa";
 import { ImSpinner8 } from "react-icons/im";
 
 interface IProps {
@@ -23,6 +24,10 @@ interface IProps {
   focusShadowColor?: string;
   focusErrorBgColor?: string;
   focusErrorShadowColor?: string;
+  showToggle?: boolean;
+  isOn?: boolean;
+  toggleDisable?: boolean;
+  handleToggle: () => void;
   isLoading?: boolean;
   placeHoldercolor?: string;
   readOnly?: boolean;
@@ -53,6 +58,10 @@ const SelectCusOpt = ({
   inputWidth,
   optionsData,
   focusErrorBorderColor,
+  showToggle = false,
+  isOn,
+  toggleDisable,
+  handleToggle,
   focusBorderColor,
   focusErrorBgColor,
   placeHolderSize,
@@ -73,6 +82,8 @@ const SelectCusOpt = ({
 
   const [search, setSearch] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<any[]>([]);
+
+  const watchedValue = useWatch({ control, name: names });
 
   useEffect(() => {
     if (search?.trim()) {
@@ -95,6 +106,20 @@ const SelectCusOpt = ({
     // setTimeout(() => setIsFocused(false), 100);
     handleBlur?.();
   };
+
+  useEffect(() => {
+    if (
+      watchedValue &&
+      typeof watchedValue === "object" &&
+      watchedValue.bankName
+    ) {
+      setSearch(watchedValue.bankName);
+    } else if (typeof watchedValue === "string") {
+      setSearch(watchedValue);
+    } else {
+      setSearch("");
+    }
+  }, [watchedValue]);
 
   return (
     <Controller
@@ -190,6 +215,22 @@ const SelectCusOpt = ({
               <p className=" text-red-500 text-xs mt-2">
                 {errors[names]?.message as string}
               </p>
+            )}
+
+            {showToggle && search.trim() !== "" && (
+              <div className="flex items-center gap-3">
+                <p className=" text-sm font-medium text-gray-600">
+                  Scan Existing Customers ?
+                </p>
+                <button
+                  type="button"
+                  onClick={handleToggle}
+                  className="text-3xl text-blue-500"
+                  disabled={toggleDisable}
+                >
+                  {isOn ? <FaToggleOn /> : <FaToggleOff />}
+                </button>
+              </div>
             )}
           </div>
         );

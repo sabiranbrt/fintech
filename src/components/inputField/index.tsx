@@ -70,6 +70,7 @@ const InputField = ({
   placeHolder,
   ValidClassName,
   fieldType,
+  type,
   readOnly,
   children,
   focusShadowColor,
@@ -117,7 +118,7 @@ const InputField = ({
                 {...field}
                 className={clsx(
                   "w-full p-2 border rounded-lg focus:outline-none",
-                  textClassName ? textClassName : " bg-slate-50",
+                  textClassName ? textClassName : "bg-slate-50",
                   `placeholder:text-[${placeHoldercolor}] placeholder:text-[${placeHolderSize}]`,
                   children || wrapBorder
                     ? " pl-8 rounded-lg focus:border-[#14192E] focus:ring-2 focus:ring-[#14192E]/20 transition-all duration-200"
@@ -148,6 +149,7 @@ const InputField = ({
                 onBlur={handleBlur}
                 disabled={disabled}
                 readOnly={readOnly}
+                type={type}
                 onChange={(e) => {
                   const value = e.target.value;
                   field.onChange(value);
@@ -158,6 +160,7 @@ const InputField = ({
                     e.preventDefault();
                   }
                 }}
+                
                 onInput={
                   fieldType === "number"
                     ? (e) => {

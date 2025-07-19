@@ -4,9 +4,12 @@ import InputField from "@/components/inputField";
 import Loader from "@/components/LoaderComponent";
 import RadioButton from "@/components/radioButton";
 import SelectField from "@/components/selectfield";
-import { useChargeInfo, useCreateOrder } from "@/hooks/service";
+import { useDynamicMutation } from "@/hooks/dynamicQuery";
+import { updateLoading } from "@/redux/slices/appSlice";
 import { setValues } from "@/redux/slices/singleValueSlice";
+import { RootState } from "@/redux/store";
 import { decryptData3Des } from "@/utils/3desEncrypt";
+import { getDynamicRequest } from "@/utils/dynamicRequest";
 import LocalStorageUtil from "@/utils/LocalStorageUtil";
 import interceptor from "@/utils/services/interceptor";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
@@ -14,7 +17,7 @@ import clsx from "clsx";
 import { toWords } from "number-to-words";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import PGModals from "./PGModals";
 
@@ -46,8 +49,20 @@ interface OrderResponse {
 
 const RightSection = ({ slablist, refetchSlab }: IProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const { selectedService } = useSelector((state: RootState) => state.service);
+  const { endpoints } = useSelector((state: RootState) => state.endPoints);
+
+  const ChargeInfoNames = selectedService?.sequence?.find(
+    (item) => item === "getChargeInfo"
+  );
+
+  const createOrderName = selectedService?.sequence?.find(
+    (item) => item === "getCreateOrder"
+  );
+
   // order Api hooks call
-  const { mutateAsync: createOrder } = useCreateOrder();
+  const { mutateAsync: ChargeInfo } = useDynamicMutation<TODO>();
+  const { mutateAsync: createOrderMutant } = useDynamicMutation<TODO>();
 
   const [chargeData, setChargeData] = useState<ChargeData | null>(null);
   const [orderResponse, setOrderResponse] = useState<OrderResponse | null>(
@@ -89,20 +104,23 @@ const RightSection = ({ slablist, refetchSlab }: IProps) => {
   const getTypes = watch("radio");
   const getGateway = watch("gateway");
 
-  useEffect(() => {
-    dispatch(setValues(getTypes));
-  }, [getTypes]);
-
-  useEffect(() => {
-    refetchSlab();
-  }, [getGateway]);
-
-  const slab = slablist;
-
-  const { mutateAsync } = useChargeInfo();
-
-  const onCreateOrder = async () => {
-    const body = {
+  const requestChargeInfo = getDynamicRequest(
+    ChargeInfoNames ?? "",
+    endpoints ?? {},
+    {
+      amount: amt,
+      selectedCardType: getTypes,
+      selectedGateway: getGateway,
+    },
+    {},
+    {},
+    {},
+    "lw"
+  );
+  const requestCreateOrder = getDynamicRequest(
+    createOrderName ?? "",
+    endpoints ?? {},
+    {
       requestInfo: {
         requestIp: localStorage.getItem("privateip") || "192.168.1.9",
         latitude: JSON.parse(
@@ -128,18 +146,40 @@ const RightSection = ({ slablist, refetchSlab }: IProps) => {
         sgst: Number(chargeData?.sgst) || 0,
         crdrAmount: Number(chargeData?.finalAmount),
       },
-    };
+    },
+    {},
+    {},
+    {},
+    "lw"
+  );
+
+  useEffect(() => {
+    dispatch(setValues(getTypes));
+  }, [getTypes]);
+
+  useEffect(() => {
+    refetchSlab();
+  }, [getGateway]);
+
+  const slab = slablist;
+
+  const onCreateOrder = async () => {
     if (!chargeData) {
       alert("Please fill in all required fields and fetch charge details.");
       return;
     }
+  
+    if (!requestCreateOrder) return;
+
     try {
-      const response = await createOrder(body);
+      dispatch(updateLoading({ isLoading: true }));
+      const response = await createOrderMutant(requestCreateOrder);
+     
       if (
-        response.data.apiResponseCode === "200" &&
-        response.data.apiResponseData.responseCode === "200"
+        response.apiResponseCode === "200" &&
+        response.apiResponseData.responseCode === "200"
       ) {
-        const responseData = response.data.apiResponseData.data;
+        const responseData = response.apiResponseData.data;
         if (responseData.accessToken) {
           const encToken = responseData.accessToken;
           const decCode = decryptData3Des(
@@ -159,13 +199,12 @@ const RightSection = ({ slablist, refetchSlab }: IProps) => {
         //   setZaakPayUrl(redirectUrl);
         // }
       } else {
-        console.error(
-          "Failed to create order:",
-          response.data.apiResponseMessage
-        );
+        console.error("Failed to create order:", response.apiResponseMessage);
       }
     } catch (err) {
       console.log("error", err);
+    } finally {
+      dispatch(updateLoading({ isLoading: false }));
     }
   };
 
@@ -307,16 +346,14 @@ const RightSection = ({ slablist, refetchSlab }: IProps) => {
                 label="Request Amount"
                 placeHolder="0.00"
                 InputBlur={async () => {
+                  if (!requestChargeInfo) return;
                   if (amt) {
                     try {
-                      const response = await mutateAsync({
-                        amount: amt,
-                        selectedCardType: getTypes,
-                        selectedGateway: getGateway,
-                      });
-                      setChargeData(response?.data?.apiResponseData?.data);
+                      const response = await ChargeInfo(requestChargeInfo);
+                      console.log("ChargeInfo", response);
+                      setChargeData(response?.apiResponseData?.data);
                       const totalFee =
-                        response?.data?.apiResponseData?.data?.total_fee;
+                        response?.apiResponseData?.data?.total_fee;
                       setValue(
                         "charges",
                         totalFee ? parseFloat(totalFee).toFixed(2) : ""

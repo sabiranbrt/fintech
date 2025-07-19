@@ -6,13 +6,14 @@ import { getDynamicRequest } from "@/utils/dynamicRequest";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { IoClose } from "react-icons/io5";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import SubmitBtn from "./buttons/SubmitBtn";
 import InputField from "./inputField";
 import PassField from "./passfield";
 import SelectCusOpt from "./selectCusOpt.tsx";
 import SelectField from "./selectfield";
+import { updateLoading } from "@/redux/slices/appSlice";
 
 interface IProps {
   handleCancel: () => void;
@@ -29,6 +30,7 @@ interface PennyDropResult {
 }
 
 const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
+  const dispatch = useDispatch();
   const { mutateAsync: pennyDropMutant } = useDynamicMutation<TODO>();
   const { mutateAsync: agentAccountMutant } = useDynamicMutation<TODO>();
 
@@ -77,7 +79,7 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
       type: "SENDER",
     }
   );
-  
+
   const requestAgentAccount = getDynamicRequest(
     agentAccountName ?? "",
     endpoints ?? {},
@@ -130,17 +132,20 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
   const handleAddBank = async () => {
     if (!requestAgentAccount) return;
     try {
+      dispatch(updateLoading({ isLoading: true }));
       const response = await agentAccountMutant(requestAgentAccount);
       if (response?.apiResponseData?.responseCode === "401") {
         toast.error(response?.apiResponseData?.responseMessage);
       }
     } catch (err) {
       console.log("error", err);
+    } finally {
+      dispatch(updateLoading({ isLoading: false }));
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40">
       <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-4xl relative">
         <button
           onClick={() => {

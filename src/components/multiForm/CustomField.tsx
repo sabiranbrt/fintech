@@ -16,6 +16,9 @@ import { useFormContext, UseFormWatch } from "react-hook-form";
 import SelectCusOpt from "./selectCusOpt";
 import DatePickers from "../datePicker";
 import ReviewSection from "./review";
+import { RootState } from "@/redux/store";
+import { useSelector } from "react-redux";
+import { PDFViewer } from "../pdfViewer";
 
 interface Options {
   label: string;
@@ -26,13 +29,16 @@ interface Options {
 interface IProps {
   watch: UseFormWatch<TODO>;
   displaylist: TODO;
+  rules?: TODO;
   names: string;
   isPennyDropVerified?: boolean;
   chargeSlab?: string;
   registeredName?: string;
   txnId?: string;
   value?: string;
+  accountVerify?: boolean;
   ValidClassName?: string;
+  senderId?: number;
   isSearchable?: boolean;
   readOnly?: boolean;
   onlyFetchBtn?: boolean;
@@ -48,7 +54,15 @@ interface IProps {
   FileIcon?: string;
   CrossIcon?: string;
   isFocused: boolean;
+  staticFetchBtn?: boolean;
+  showToggle?: boolean;
+  isLoading?: boolean;
+  isOn?: boolean;
+  toggleDisable?: boolean;
+  handleToggle: () => void;
+  validTick?: boolean;
   loading?: boolean;
+  aadharCard?: boolean;
   placeHolder?: string;
   placeHolderSize?: string;
   focusBorderColor?: string;
@@ -65,6 +79,7 @@ interface IProps {
   placeHolderStyle?: string;
   imageLink: string;
   disabled?: boolean;
+  maxLength?: number;
   onOptionChange?: () => void;
   onChange?: (text: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeImage?: (value: string) => void;
@@ -74,6 +89,7 @@ interface IProps {
   textClassName?: string;
   fieldType: string;
   options?: Options[];
+  onEdit: (index: string) => void;
   validation?: ValidationProps;
   textSecurity?: string;
   fetchData?: TODO;
@@ -93,7 +109,15 @@ const CustomField = ({
   inputHeight = "10",
   inputWidth = "10",
   placeHolder,
+  validTick,
   loading,
+  staticFetchBtn,
+  onEdit,
+  showToggle,
+  isOn,
+  accountVerify,
+  toggleDisable,
+  handleToggle,
   onlyFetchBtn,
   ValidClassName,
   uploadType,
@@ -101,8 +125,11 @@ const CustomField = ({
   OptionSelectFocusColor = "#5081B9",
   isSearchable,
   fetchData,
+  rules,
   UploadIcon,
+  isLoading,
   optionsData,
+  maxLength,
   fields,
   onChangeImage,
   onClick,
@@ -113,12 +140,14 @@ const CustomField = ({
   FileIcon,
   ActionFetch,
   imageLink,
+  senderId,
   label,
   focusErrorBorderColor = "#f94d44",
   validation,
   labelClassName,
   nonlabelClassName,
   placeHolderSize,
+  aadharCard,
   placeHoldercolor,
   OptionTextColor = "#000",
   focusBorderColor,
@@ -135,6 +164,8 @@ const CustomField = ({
   onInput,
   options = [],
 }: IProps) => {
+  const aadharData = useSelector((state: RootState) => state.kyc.kyc);
+
   const [isFocused, setIsFocused] = useState(false);
   const handleFocus = () => {
     setIsFocused(true);
@@ -174,31 +205,112 @@ const CustomField = ({
                     ? "-"
                     : Array.isArray(rawValue)
                     ? rawValue.join(", ")
+                    : typeof rawValue === "object" && rawValue !== null
+                    ? rawValue.bankName || rawValue.path || "-"
                     : String(rawValue),
               };
             }) ?? [];
 
-        console.log(
-          "watch",
-          currentStep.displayField
-            .filter((field: TODO) => field?.key && field?.label)
-            .map((field: TODO) => {
-              const key = field.key;
-              const rawValue = key ? watch(key) : undefined;
-
-              return {
-                label: field.label,
-                value:
-                  rawValue === undefined || rawValue === ""
-                    ? "-"
-                    : Array.isArray(rawValue)
-                    ? rawValue.join(", ")
-                    : String(rawValue),
-              };
-            })
-        );
         return (
-          <ReviewSection title={currentStep.status} fields={reviewFields} />
+          <ReviewSection
+            title={currentStep.status}
+            fields={reviewFields}
+            onEdit={() => onEdit(stepKey as TODO)}
+          >
+            {aadharData?.panExtractedDetails?.maskedAadhaar && (
+              <div>
+                <p className="text-sm text-gray-600">Aadhaar Number</p>
+                <p className="font-medium">{watch("maskedAadhaarNo")}</p>
+              </div>
+            )}
+
+            {aadharData?.panExtractedDetails?.mobileNumber && (
+              <div>
+                <p className="text-sm text-gray-600">
+                  Mobile Number From Aadhaar
+                </p>
+                <p className="font-medium">{watch("maskedMobile")}</p>
+              </div>
+            )}
+            {aadharData && (
+              <>
+                {/* AAdhar Information Review */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-4 border-b pb-2">
+                    <h3 className="text-lg font-medium text-primary-dark">
+                      Aadhaar and PAN Documents
+                    </h3>
+                  </div>
+                  <div className="flex gap-72">
+                    <div className="">
+                      {/* Aadhaar Image (only if registerByAadhar is true) */}
+                      {aadharData && aadharData?.digilockerFiles?.aadharPdf && (
+                        <div>
+                          <p className="text-sm text-gray-600">
+                            Aadhaar Document
+                          </p>
+                          <div className="mt-2">
+                            <PDFViewer
+                              pdfUrl={aadharData?.digilockerFiles?.aadharPdf}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="">
+                      {/* Aadhaar Image (only if registerByAadhar is true) */}
+                      {aadharData && aadharData?.digilockerFiles?.panPdf && (
+                        <div>
+                          <p className="text-sm text-gray-600">PAN Document</p>
+                          <div className="mt-2">
+                            <PDFViewer
+                              pdfUrl={aadharData?.digilockerFiles?.panPdf}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {/*    <div className="mb-8">
+                              <div className="flex items-center gap-2 mb-4 border-b pb-2">
+                                <h3 className="text-lg font-medium text-primary-dark">
+                                  PAN Information
+                                </h3>
+                              </div>
+                            
+                            </div> */}
+                {aadharData && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-medium mb-2 border-b pb-2 text-primary-dark">
+                      Image Information
+                    </h3>
+                    <div className="flex gap-16 justify-center items-center">
+                      <div>
+                        <p className="text-sm text-gray-600">Profile Image</p>
+                        {aadharData?.digilockerAdhar?.photo ? (
+                          <div className="mt-2">
+                            <img
+                              // src={URL.createObjectURL(aadharData?.digilockerAdhar?.photo)}
+                              alt="Profile Preview"
+                              className="h-80 w-80 rounded-md object-cover cursor-pointer"
+                              // onClick={() =>
+                              //   setSelectedImage(
+                              //     URL.createObjectURL(aadharData)
+                              //   ) || openModal()
+                              // }
+                            />
+                          </div>
+                        ) : (
+                          <p className="font-medium">-</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </ReviewSection>
         );
       }
 
@@ -233,11 +345,15 @@ const CustomField = ({
         {fieldType === FieldTypes?.TEXTFIELD ? (
           <InputField
             names={names}
+            rules={rules}
+            accountVerify={accountVerify}
             isFocused={isFocused}
             handleBlur={handleBlur}
             handleFocus={handleFocus}
             placeHolder={placeHolder}
+            maxLength={maxLength}
             inputHeight={inputHeight}
+            aadharCard={aadharCard}
             inputWidth={inputWidth}
             focusShadowColor={focusShadowColor}
             focusErrorBgColor={focusErrorBgColor}
@@ -250,6 +366,9 @@ const CustomField = ({
             placeHoldercolor={placeHoldercolor}
             focusErrorBorderColor={focusErrorBorderColor}
             labelClassName={labelClassName}
+            staticFetchBtn={staticFetchBtn}
+            validTick={validTick}
+            senderId={senderId}
             validation={validation}
             onClick={onClick}
             readOnly={readOnly}
@@ -273,6 +392,7 @@ const CustomField = ({
             placeHolder={placeHolder}
             isSearchable={isSearchable}
             inputHeight={inputHeight}
+            disableButton={disableButton}
             inputWidth={inputWidth}
             focusShadowColor={focusShadowColor}
             focusErrorBgColor={focusErrorBgColor}
@@ -424,7 +544,12 @@ const CustomField = ({
             isFocused={isFocused}
             handleBlur={handleBlur}
             handleFocus={handleFocus}
+            isLoading={isLoading}
             placeHolder={placeHolder}
+            showToggle={showToggle}
+            isOn={isOn}
+            toggleDisable={toggleDisable}
+            handleToggle={handleToggle}
             inputHeight={inputHeight}
             inputWidth={inputWidth}
             focusShadowColor={focusShadowColor}
@@ -450,6 +575,7 @@ const CustomField = ({
             names={names}
             isFocused={isFocused}
             handleBlur={handleBlur}
+            disableButton={disableButton}
             handleFocus={handleFocus}
             placeHolder={placeHolder}
             inputHeight={inputHeight}

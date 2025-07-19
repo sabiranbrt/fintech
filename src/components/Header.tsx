@@ -5,7 +5,7 @@ import Icon from "@assets/icons/payment-svgrepo-com.svg";
 const Header = () => {
   return (
     <div className="text-white">
-      <div className="mb-3 flex flex-row flex-wrap items-center gap-2">
+      <div className="mb-3 flex flex-row items-center gap-2">
         {HeaderList.headerTitle.map((item,index) => {
           return (
             <div

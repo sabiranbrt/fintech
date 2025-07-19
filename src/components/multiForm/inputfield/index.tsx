@@ -3,22 +3,30 @@ import { ValidationProps } from "@/types";
 import { ValidationRules } from "@/utils/ValidationRegister";
 import clsx from "clsx";
 import { Controller, useFormContext } from "react-hook-form";
-import { IoInformationCircleOutline } from "react-icons/io5";
+import { BiCheckCircle, BiXCircle } from "react-icons/bi";
+// import { IoInformationCircleOutline } from "react-icons/io5";
 
 interface IProp {
   names: string;
   onlyFetchBtn?: boolean;
+  validTick?: boolean;
+  senderId?: number;
+  rules?: TODO;
   isPennyDropVerified?: boolean;
   chargeSlab?: string;
   registeredName?: string;
   txnId?: string;
   isFocused: boolean;
+  staticFetchBtn?: boolean;
+  accountVerify?: boolean;
+  aadharCard?: boolean;
   placeHolder?: string;
   inputHeight?: string;
   inputWidth?: string;
   focusShadowColor?: string;
   focusErrorBgColor?: string;
   focusErrorShadowColor?: string;
+  maxLength?: number;
   ValidClassName?: string;
   ActionFetch?: string;
   placeHolderSize?: string;
@@ -42,25 +50,30 @@ interface IProp {
 
 const InputField = ({
   isFocused,
-  chargeSlab,
+  // chargeSlab,
   isPennyDropVerified,
   handleBlur,
   handleFocus,
+  rules,
   names,
   txnId,
   registeredName,
   loading,
   message,
+  senderId,
+  validTick = false,
   ActionFetch,
   inputHeight,
   onlyFetchBtn,
   inputWidth,
   placeHolder,
   ValidClassName,
-  readOnly,
   focusErrorBorderColor,
   validation,
+  staticFetchBtn,
+  accountVerify,
   placeHolderSize,
+  maxLength,
   onChange,
   onClick,
   onInput,
@@ -73,7 +86,6 @@ const InputField = ({
   textClassName,
   type,
 }: IProp) => {
-
   const {
     control,
     formState: { errors },
@@ -83,7 +95,7 @@ const InputField = ({
     <Controller
       control={control}
       name={names}
-      rules={ValidationRules(validation)}
+      rules={rules ?? ValidationRules(validation)}
       render={({ field }) => {
         return (
           <div className="relative">
@@ -100,6 +112,8 @@ const InputField = ({
               style={{
                 borderColor: errors[names]
                   ? focusErrorBorderColor
+                  : validTick
+                  ? "#22c55e"
                   : isFocused
                   ? focusBorderColor ?? "#5081B9"
                   : "#F2F2F2",
@@ -120,8 +134,9 @@ const InputField = ({
               onFocus={handleFocus}
               onBlur={handleBlur}
               defaultValue={field.value}
-              disabled={field.value ? readOnly : false}
-              readOnly={readOnly}
+              disabled={validTick || disableButton}
+              readOnly={validTick}
+              maxLength={maxLength}
               type={type}
               onChange={(e) => {
                 const value = e.target.value;
@@ -133,7 +148,7 @@ const InputField = ({
               }}
             />
 
-            {ActionFetch ? (
+            {staticFetchBtn || ActionFetch ? (
               <div className=" absolute top-1.5 right-2.5">
                 <button
                   type="submit"
@@ -148,15 +163,16 @@ const InputField = ({
                   )}
                   onClick={onClick}
                 >
-                  {ActionFetch}
+                  {staticFetchBtn || ActionFetch}
                 </button>
               </div>
             ) : null}
-            {ActionFetch && (
+
+            {accountVerify && (
               <>
                 {isPennyDropVerified ? (
                   <>
-                    <div className="absolute right-12 top-6 mt-1 -mr-8 rounded-md text-xs">
+                    <div className="absolute right-12 top-3 mt-1 -mr-8 rounded-md text-xs">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="24"
@@ -192,12 +208,12 @@ const InputField = ({
                         <button
                           type="button"
                           onClick={onClick}
-                          className="absolute right-6 top-8 bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !py-[2px] !px-2 rounded text-sm cursor-pointer"
+                          className="absolute right-6 top-3 bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !py-[2px] !px-2 rounded text-sm cursor-pointer"
                         >
                           {loading ? "Verifying..." : "Click to Verify"}
                         </button>
 
-                        <div className="relative group">
+                        {/* <div className="relative group">
                           <IoInformationCircleOutline className="absolute right-1 -top-7 text-primary text-lg cursor-pointer" />
 
                           <div className="absolute right-0 bg-gray-100 border border-gray-200 shadow-md rounded-md opacity-0 group-hover:opacity-100 p-2 text-sm transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto z-20">
@@ -205,7 +221,7 @@ const InputField = ({
                               Charge : ₹ {chargeSlab}
                             </h3>
                           </div>
-                        </div>
+                        </div> */}
                       </div>
                     ) : null}
                   </>
@@ -216,6 +232,7 @@ const InputField = ({
             {message && (
               <span className="text-sm text-primary-light">{`(${message})`}</span>
             )}
+
             {errors[names] && (
               <div
                 className={clsx(
@@ -226,6 +243,22 @@ const InputField = ({
                 <p>{errors[names]?.message as string}</p>
               </div>
             )}
+
+            {validTick ? (
+              <>
+                {errors.senderMobile ? (
+                  <BiXCircle
+                    className="absolute right-3 top-[25px] transform -translate-y-1/2 text-red-500 pointer-events-none "
+                    size={20}
+                  />
+                ) : senderId !== 0 ? (
+                  <BiCheckCircle
+                    className="absolute right-3 top-[25px] transform -translate-y-1/2 text-green-500 pointer-events-none"
+                    size={20}
+                  />
+                ) : null}
+              </>
+            ) : null}
           </div>
         );
       }}

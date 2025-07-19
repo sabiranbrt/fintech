@@ -1,10 +1,10 @@
-import { getBalance, getPan, getService } from "@/libs"
+import { getBalance, getService } from "@/libs"
 import { axiosInstance, generateRandom13DigitNumber } from "@/libs/axios"
-import { ChargeInfoProps, RequestBody } from "@/types"
 import EncrptionInterceptor from "@/utils/encryptionInterceptor"
 import interceptor from "@/utils/services/interceptor"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import axios from "axios"
+
 
 export const useServicesList = () => {
     const serviceList = useQuery({
@@ -42,7 +42,7 @@ export const useAuthToken = () => {
     });
 
     return token;
-};
+}
 
 export const useDigiTokenLazy = () => {
     return useQuery({
@@ -59,26 +59,26 @@ export const useDigiTokenLazy = () => {
             );
             return response.data;
         },
-        enabled: false,
-        refetchOnWindowFocus: false,
     });
-};
+}
 
 export const useAadhaarRegistrationBeneLazy = (
-    digiToken?: string,
-    beneMobileKyc?: string
+    digiToken: string,
+    beneMobileKyc: string,
+    fetch: string
 ) => {
     return useQuery({
-        queryKey: ["AADHAAR_REGISTRATION_TOKEN", digiToken, beneMobileKyc],
+        queryKey: ["AADHAAR_REGISTRATION_TOKEN"],
         queryFn: async () => {
             const response = await axios.get(
-                "https://edge.finkeda.com/apigateway/fkKyc/kyc/digilocker/createDigiUrl",
+                "https://edgeuat.finkeda.com/apigateway/fkKyc/kyc/digilocker/createDigiUrl",
                 {
                     headers: {
                         urn: generateRandom13DigitNumber(),
-                        authToken: digiToken!,
-                        mobile: beneMobileKyc!,
+                        authToken: digiToken,
+                        mobile: beneMobileKyc,
                         redirectionUrl: import.meta.env.VITE_REDIRECTION_URL,
+                        fetchData: fetch
                     },
                 }
             );
@@ -87,7 +87,7 @@ export const useAadhaarRegistrationBeneLazy = (
         enabled: false,
         refetchOnWindowFocus: false,
     });
-};
+}
 
 export const useDigiData = () => {
     return useMutation({
@@ -100,7 +100,7 @@ export const useDigiData = () => {
             };
 
             const response = await axios.post(
-                "https://edge.finkeda.com/apigateway/fkKyc/kyc/digilocker/getDigiData",
+                "https://edgeuat.finkeda.com/apigateway/fkKyc/kyc/digilocker/getDigiData",
                 {},
                 { headers }
             );
@@ -113,28 +113,6 @@ export const useDigiData = () => {
             console.log("DigiData success:", data);
         },
     });
-};
-
-export const useChargeInfo = () => {
-    const query = useMutation({
-        mutationFn: (data: ChargeInfoProps) => {
-            return interceptor().post("loadViaPg/getChargeInfo", {
-                amount: data.amount,
-                selectedCardType: data.selectedCardType,
-                selectedGateway: data.selectedGateway
-            })
-        },
-        onError: (error) => {
-            console.log("error", error)
-        },
-
-        onSuccess: (response) => {
-            const data = response
-            console.log("data", data)
-            console.log("query", query)
-        },
-    })
-    return query
 }
 
 export const useSlabViaPG = (cardType: string) => {
@@ -161,35 +139,6 @@ export const useSlabViaPG = (cardType: string) => {
     return slab
 }
 
-export const useCreateOrder = () => {
-    const query = useMutation({
-        mutationFn: (body: RequestBody) => {
-            return interceptor().post("loadViaPg/createOrder",
-                body,)
-        },
-        onError: (error) => {
-            console.log("error", error)
-        },
-
-        onSuccess: (response) => {
-            console.log("data", response)
-        },
-    })
-    return query
-}
-
-export const usePan = () => {
-    const query = useMutation({
-        mutationFn: getPan,
-        onError: (error) => {
-            console.log("error", error)
-        },
-        onSuccess: (response) => {
-            console.log("data", response)
-        },
-    })
-    return query
-}
 export const useSessionInit = ({ enabled = true }: { enabled: boolean }) => {
     const sessionInit = useQuery({
         queryKey: ['SESSION_INIT'],
@@ -204,7 +153,7 @@ export const useSessionInit = ({ enabled = true }: { enabled: boolean }) => {
     return sessionInit
 }
 
-export const usePinCode = ({ token, values }: { token: string; values: string }) => {
+export const usePinCode = ({ token, values, enabled = true }: { token: string; values: string, enabled: boolean }) => {
     const pinCode = useQuery({
         queryKey: ['PINCODE'],
         queryFn: async () => {
@@ -218,8 +167,35 @@ export const usePinCode = ({ token, values }: { token: string; values: string })
             );
             return response.data;
         },
-        enabled: !!token && values.length === 6,
+        enabled: enabled && !!token && values.length === 6,
     })
     return pinCode
 }
 
+export const useFileUpload = () => {
+    const query = useMutation({
+        mutationFn: (formData: FormData) => {
+            return axios.post("https://docs.finkeda.com/doc/api/v1/upload",
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        authToken: localStorage?.getItem("authToken"),
+                        serviceName: "loadwallet",
+                        urn: 123
+                    },
+                },
+
+            )
+        },
+
+        onError: (error) => {
+            console.log("error", error)
+        },
+
+        onSuccess: (response) => {
+            console.log("data", response)
+        },
+    })
+    return query
+}

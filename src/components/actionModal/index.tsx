@@ -1,7 +1,6 @@
 interface IProps {
   title: string;
   subtitle: string;
-  data: string;
   confirmBtn: string;
   cancelBtn: string;
   confirm: () => void;
@@ -11,7 +10,6 @@ interface IProps {
 const ActionModal = ({
   title,
   subtitle,
-  data,
   confirm,
   cancel,
   confirmBtn,
@@ -21,9 +19,7 @@ const ActionModal = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white p-6 rounded shadow-md">
         <h2 className="text-lg font-bold mb-4">{title}</h2>
-        <p>
-          {subtitle} {data}?
-        </p>
+        <p>{subtitle}?</p>
         <div className="mt-4 flex justify-end space-x-4">
           <button
             className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500 transition-all duration-300"

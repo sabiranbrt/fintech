@@ -4,6 +4,7 @@ interface IProps {
   title: string;
   modalVisible: boolean;
   modalContent: string;
+  handleCancel?: () => void;
   closeModal: () => void;
   handlePrint: () => void;
 }
@@ -12,6 +13,7 @@ const PGModals = ({
   title,
   modalVisible,
   modalContent,
+  handleCancel,
   closeModal,
   handlePrint,
 }: IProps) => {
@@ -21,7 +23,10 @@ const PGModals = ({
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-gray-100 p-8 rounded-xl shadow-lg max-w-4xl max-h-[80vh] overflow-y-auto relative flex flex-col transform transition-transform duration-300 ease-in-out scale-95 hover:scale-100">
             <button
-              onClick={closeModal}
+              onClick={() => {
+                if (handleCancel) handleCancel();
+                closeModal();
+              }}
               className="absolute top-2 right-2 p-2 text-gray-600 focus:outline-none"
             >
               <ImCross />

@@ -1,22 +1,28 @@
+import { useDynamicMutation } from "@/hooks/dynamicQuery";
+import {
+  useAadhaarRegistrationBeneLazy,
+  useDigiData,
+  useDigiTokenLazy,
+} from "@/hooks/service";
+import { updateLoading } from "@/redux/slices/appSlice";
 import { updateIsText } from "@/redux/slices/serviceSlice";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
+import { getDynamicRequest } from "@/utils/dynamicRequest";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { GrUserSettings } from "react-icons/gr";
 import { MdOutlinePending, MdOutlineVerified } from "react-icons/md";
 import { VscUnverified } from "react-icons/vsc";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import ActionModal from "./actionModal";
 import AddBankAccount from "./AddBankAccount";
 import BtnPrimary from "./buttons/BtnPrimary";
 import ModalBtn from "./buttons/ModalBtn";
 import PaymentModal from "./paymentModal";
 import RegisterModal from "./registerModal";
-import {
-  useAadhaarRegistrationBeneLazy,
-  useDigiData,
-  useDigiTokenLazy,
-} from "@/hooks/service";
+import { setKycData } from "@/redux/slices/aadharSlice";
 
 interface IProps {
   onClick?: () => void;
@@ -31,10 +37,15 @@ const BeneficiaryDetails = ({
   senderDataFW,
 }: IProps) => {
   const dispatch = useDispatch();
+  const { mutateAsync: deleleBeneMutant } = useDynamicMutation<TODO>();
 
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<TODO | null>(null);
   const [beneData, setBeneData] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState("");
+  const { selectedService } = useSelector((state: RootState) => state.service);
+  const { endpoints } = useSelector((state: RootState) => state.endPoints);
 
   const handleCancel = () => {
     setIsModalOpen("");
@@ -49,8 +60,22 @@ const BeneficiaryDetails = ({
   } = useForm<TODO>({
     mode: "onChange",
   });
+
+  const deleteName = selectedService?.sequence?.find(
+    (item) => item === "getBeneficiaryDelete"
+  );
+
+  const requestDeleteBene = getDynamicRequest(
+    deleteName ?? "",
+    endpoints ?? {},
+    {
+      senderId: senderData?.id,
+      beneficiaryId: accountToDelete?.beneficiaryId,
+    }
+  );
+
   const mobileNumber = watch("beneficiary");
-  const { selectedService } = useSelector((state: RootState) => state.service);
+
   const [expandedAccount, setExpandedAccount] = useState(null);
 
   const toggleAccountAccordion = (account: TODO) => {
@@ -76,73 +101,119 @@ const BeneficiaryDetails = ({
     });
   }, [senderData?.beneficiaries, senderDataFW?.accounts, searchTerm]);
 
-  const [aadhaarParams, setAadhaarParams] = useState<{
-    digiToken: string;
-    mobile: string;
-  } | null>(null);
-
-  const { refetch: fetchDigiToken } = useDigiTokenLazy();
+  const { data: digitoken } = useDigiTokenLazy();
+  const accessToken = digitoken?.apiResponseData?.responseData?.accessToken;
 
   const { refetch: fetchAadhaar } = useAadhaarRegistrationBeneLazy(
-    aadhaarParams?.digiToken,
-    aadhaarParams?.mobile
+    accessToken ?? "",
+    mobileNumber ?? "",
+    "FETCH"
   );
 
   const { mutateAsync: fetchDigiData } = useDigiData();
 
   const handleSubmit = async () => {
-    const digiTokenRes = await fetchDigiToken();
+    if (!accessToken) {
+      toast.error("Access token not available.");
+      return;
+    }
+
     const aadharRegister = await fetchAadhaar();
+    if (aadharRegister?.data?.apiResponseData?.responseCode === "200") {
+      const { url } = JSON.parse(
+        aadharRegister?.data?.apiResponseData?.responseData
+      );
 
-    const accessToken =
-      digiTokenRes.data?.apiResponseData?.responseData?.accessToken;
+      const { requestId } = JSON.parse(
+        aadharRegister?.data?.apiResponseData?.responseData
+      );
 
-    if (!accessToken) return;
-    setAadhaarParams({ digiToken: accessToken, mobile: mobileNumber });
+      const aadharRegisterJSON = JSON.parse(
+        aadharRegister?.data?.apiResponseData?.responseData
+      );
 
-    const { url } = JSON.parse(
-      aadharRegister.data.apiResponseData.responseData
-    );
+      console.log("aadharRegisterJSON",aadharRegisterJSON)
 
-    const { requestId } = JSON.parse(
-      aadharRegister.data.apiResponseData.responseData
-    );
+      if (aadharRegisterJSON?.panAvaliable) {
+        // When PAN is available, directly set KYC data and update state
+        dispatch(setKycData(aadharRegisterJSON));
 
-    const newChildWindow = window.open(url, "_blank", "width=800,height=600");
-
-    // Monitor the child window
-    const monitorWindow = setInterval(() => {
-      if (!newChildWindow || newChildWindow.closed) {
-        clearInterval(monitorWindow);
-        console.error("Child window closed before success.");
+        dispatch(updateIsText(QuickLinksType.RB));
       } else {
-        try {
-          const currentUrl = newChildWindow.location.href;
-          if (currentUrl.includes(import.meta.env.VITE_REDIRECTION_URL)) {
-            const params = new URLSearchParams(new URL(currentUrl).search);
-            const state = params.get("state");
-
-            if (state || requestId) {
-              (async () => {
-                const digiDataResponse = await fetchDigiData({
-                  digiToken: accessToken,
-                  requestId: requestId!,
-                  beneMobileKyc: mobileNumber,
-                });
-
-                console.log("Fetched Digi Data:", digiDataResponse);
-              })();
-            }
-
-            newChildWindow.close();
+        const newChildWindow = window.open(
+          url,
+          "_blank",
+          "width=800,height=600"
+        );
+        // Only monitor the window when PAN is NOT available
+        const monitorWindow = setInterval(() => {
+          if (!newChildWindow || newChildWindow.closed) {
             clearInterval(monitorWindow);
+            console.error("Child window closed before success.");
+          } else {
+            try {
+              const currentUrl = newChildWindow.location.href;
+
+              if (currentUrl.includes(import.meta.env.VITE_REDIRECTION_URL)) {
+                const params = new URLSearchParams(new URL(currentUrl).search);
+                const state = params.get("state");
+
+                if (state || requestId) {
+                  (async () => {
+                    const digiDataResponse = await fetchDigiData({
+                      digiToken: accessToken,
+                      requestId: requestId!,
+                      beneMobileKyc: mobileNumber,
+                    });
+
+                    const digiResponse = JSON.parse(
+                      digiDataResponse?.apiResponseData?.responseData
+                    );
+
+                    dispatch(setKycData(digiResponse));
+
+                    if (
+                      digiDataResponse?.apiResponseData?.responseCode === "200"
+                    ) {
+                      dispatch(updateIsText(QuickLinksType.RB));
+                    }
+
+                    console.log("Fetched Digi Data:", digiResponse);
+                  })();
+                }
+
+                newChildWindow.close();
+                clearInterval(monitorWindow);
+              }
+            } catch (error) {
+              // Ignore errors due to cross-origin restrictions
+              console.debug("New Window Error", error);
+            }
           }
-        } catch (error) {
-          // Ignore errors due to cross-origin restrictions
-          console.log("error", error);
-        }
+        }, 500);
       }
-    }, 500); // Poll every 500ms for better responsiveness
+    } else {
+      toast.error(aadharRegister?.data?.apiResponseData?.responseMessage);
+      console.error(
+        "Error creating Digilocker URL:",
+        aadharRegister?.data?.apiResponseData?.responseMessage
+      );
+    }
+  };
+
+  const handleDeleteBene = async () => {
+    if (!requestDeleteBene?.url) return;
+    try {
+      dispatch(updateLoading({ isLoading: true }));
+      const response = await deleleBeneMutant(requestDeleteBene);
+      if (response?.apiResponseData?.responseCode === "200") {
+        setDeleteModal(false);
+      }
+    } catch (error: TODO) {
+      toast.error("Error:", error);
+    } finally {
+      dispatch(updateLoading({ isLoading: false }));
+    }
   };
 
   return (
@@ -199,6 +270,7 @@ const BeneficiaryDetails = ({
               const isExpanded =
                 expandedAccount ===
                 (senderData ? account.beneficiaryId : account.accountNumber);
+
               return (
                 <div key={index} className="mb-2 border rounded">
                   <div
@@ -341,6 +413,10 @@ const BeneficiaryDetails = ({
                       <button
                         type="button"
                         className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                        onClick={() => {
+                          setAccountToDelete(account);
+                          setDeleteModal(true);
+                        }}
                       >
                         <svg
                           stroke="currentColor"
@@ -505,6 +581,16 @@ const BeneficiaryDetails = ({
           senderData={senderData}
           beneData={beneData}
           senderDataFW={senderDataFW}
+        />
+      )}
+      {deleteModal && accountToDelete && (
+        <ActionModal
+          title="Confirm Deletion"
+          subtitle={`Are you sure you want to delete ${accountToDelete?.beneficiaryFirstName}`}
+          confirmBtn={"Confirm"}
+          cancelBtn={"Cancel"}
+          confirm={() => handleDeleteBene()}
+          cancel={() => setDeleteModal(false)}
         />
       )}
     </div>

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import clsx from "clsx";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Dropzone from "react-dropzone";
 import { Controller, useFormContext } from "react-hook-form";
 import Upload from "@assets/icons/upload.svg";
@@ -8,6 +8,7 @@ import File from "@assets/icons/file.svg";
 import Cross from "@assets/icons/cross.svg";
 import { ValidationProps } from "@/types";
 import { ValidationRules } from "@/utils/ValidationRegister";
+import PhotoModal from "../photoModal";
 
 interface IProp {
   names: string;
@@ -49,9 +50,32 @@ const FileField = ({
     formState: { errors },
   } = useFormContext();
 
-  const [selectFile, setSelectedFile] = useState("");
-  const handleRemoveFile = () => {
-    setSelectedFile("");
+  const [photoModal, setPhotoModal] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<string>("");
+
+  // Get current form value using watch
+  const { watch } = useFormContext();
+  const selectedFile = watch(names);
+
+  // Handle preview URL generation
+  useEffect(() => {
+    if (selectedFile) {
+      const url = URL.createObjectURL(selectedFile);
+      setPreviewUrl(url);
+      setFileType(selectedFile.type);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreviewUrl(null);
+      setFileType("");
+    }
+  }, [selectedFile]);
+
+  const handleRemoveFile = (onChange: (value: any) => void) => {
+    setPreviewUrl(null);
+    setFileType("");
+    onChange(null);
+    onChangeImage?.("");
   };
 
   const acceptOnlyImages = {
@@ -67,6 +91,11 @@ const FileField = ({
     "application/pdf": [".pdf"],
   };
 
+  // Check if file can be previewed in modal
+  const canPreview = (file: File) => {
+    return file.type.startsWith("image/") || file.type === "application/pdf";
+  };
+
   return (
     <Controller
       control={control}
@@ -74,7 +103,7 @@ const FileField = ({
       rules={ValidationRules(validation)}
       render={({ field }) => {
         return (
-          <div {...field} className="relative">
+          <div className="relative">
             <div className="flex flex-col items-center">
               <div
                 className={clsx(
@@ -88,13 +117,12 @@ const FileField = ({
                 <Dropzone
                   onDrop={(acceptedFiles: any) => {
                     if (acceptedFiles.length > 0) {
-                      const file = acceptedFiles[0].name;
-                      setSelectedFile(file);
+                      const file = acceptedFiles[0];
                       field.onChange(file);
-                      onChangeImage?.(file);
+                      onChangeImage?.(file.name);
                     }
                   }}
-                  maxFiles={maxFile ? maxFile : 1}
+                  maxFiles={maxFile}
                   accept={
                     uploadType === "image"
                       ? acceptOnlyImages
@@ -121,16 +149,15 @@ const FileField = ({
                             alt="Upload icon"
                           />
                           <p className="!p-2 bg-[#5081B9] text-white rounded-md hover:bg-[#3a6ea5] transition-colors">
-                            {selectFile ? "Replace File" : "Upload File"}
+                            {selectedFile ? "Replace File" : "Upload File"}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {selectFile
-                              ? selectFile
+                            {selectedFile
+                              ? selectedFile.name
                               : "Drag & drop or click to browse"}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {`${maxFile}`} files are the maximum number of files
-                            you can drop here
+                            {`${maxFile}`} file(s) maximum
                           </p>
                         </label>
                       </div>
@@ -139,23 +166,36 @@ const FileField = ({
                 </Dropzone>
               </div>
 
-              {selectFile && (
+              {selectedFile && (
                 <div className="flex flex-row items-center justify-between bg-gray-100 p-2 rounded-md !mt-2 w-full max-w-xs">
-                  <div className="flex flex-row items-center gap-2 overflow-hidden">
+                  <div
+                    className={clsx(
+                      "flex flex-row items-center gap-2 overflow-hidden",
+                      canPreview(selectedFile) && "cursor-pointer hover:bg-gray-200 rounded p-1 transition-colors"
+                    )}
+                    onClick={() => {
+                      if (canPreview(selectedFile)) {
+                        setPhotoModal(true);
+                      }
+                    }}
+                  >
                     <img
                       src={FileIcon || File}
                       width={20}
                       height={20}
                       alt="File icon"
                     />
-                    <p className="text-[12px] truncate flex-1">{selectFile}</p>
+                    <p className="text-[12px] truncate flex-1">
+                      {selectedFile.name}
+                    </p>
+                    {canPreview(selectedFile) && (
+                      <span className="text-xs text-blue-600 ml-1">
+                        (click to preview)
+                      </span>
+                    )}
                   </div>
                   <button
-                    onClick={() => {
-                      field.onChange(null);
-                      handleRemoveFile();
-                      onChangeImage?.("");
-                    }}
+                    onClick={() => handleRemoveFile(field.onChange)}
                     className="p-1 hover:bg-gray-200 rounded-full transition-colors"
                     aria-label="Remove file"
                   >
@@ -169,6 +209,15 @@ const FileField = ({
                 </div>
               )}
             </div>
+
+            <PhotoModal
+              isOpen={photoModal}
+              onClose={() => setPhotoModal(false)}
+              image={previewUrl}
+              fileType={fileType}
+              fileName={selectedFile?.name}
+            />
+
             {errors[names] && (
               <div
                 className={clsx(

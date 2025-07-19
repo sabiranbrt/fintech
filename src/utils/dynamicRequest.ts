@@ -7,6 +7,7 @@ export interface DynamicRequest {
   headers?: TODO;
   body?: Record<string, unknown> | { encryptedKey: string | false; encryptedBody: string } | null;
   responseType?: "json" | "text" | "blob";
+  page_type?: string;
 }
 
 type EndpointConfig = {
@@ -16,7 +17,8 @@ type EndpointConfig = {
   headers?: TODO;
   queryParams?: string[];
   body?: TODO;
-  responseType?: "json" | "text" | "blob"
+  responseType?: "json" | "text" | "blob";
+  page_type?: string;
 };
 
 type EndPointsMap = Record<string, EndpointConfig>;
@@ -27,8 +29,10 @@ export function getDynamicRequest(
   params: Record<string, TODO> = {},
   customHeaders: Record<string, TODO> = {},
   manualBody?: Record<string, unknown> | null,
-  responseType?: TODO
+  responseType?: TODO,
+  page_type?: string,
 ): DynamicRequest | null {
+  
   const config = endPoints[step];
   if (!config) return null;
 
@@ -101,13 +105,13 @@ export function getDynamicRequest(
     }
   }
 
-
   return {
     url: finalUrl,
     method: config.method.toUpperCase() as "GET" | "POST",
     params,
     headers: mergedHeaders,
     body: requestBody,
-    responseType: responseType
+    responseType: config.responseType ?? "json",
+    page_type: page_type ?? config.page_type,
   };
 }

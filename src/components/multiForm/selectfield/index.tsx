@@ -23,6 +23,7 @@ interface IProps {
   readOnly?: boolean;
   type?: string;
   OptionSelectColor?: string;
+  disableButton?: boolean;
   OptionFocusColor?: string;
   OptionTextColor?: string;
   placeHolder?: string;
@@ -51,6 +52,7 @@ const SelectField = ({
   focusErrorShadowColor,
   isSearchable,
   isMulti,
+  disableButton,
   OptionSelectFocusColor,
   OptionFocusColor,
   OptionTextColor,
@@ -65,7 +67,6 @@ const SelectField = ({
   handleFocus,
   handleBlur,
   validation,
-  readOnly,
 }: IProps) => {
   const {
     control,
@@ -146,7 +147,7 @@ const SelectField = ({
             data-tooltip-content={`${placeHolder}`}
           >
             <Select
-              isDisabled={field.value ? readOnly : false}
+              isDisabled={disableButton}
               isSearchable={isSearchable}
               placeholder={!isFocused ? placeHolder : ""}
               styles={customStyles}

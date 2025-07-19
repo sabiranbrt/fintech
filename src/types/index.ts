@@ -2,7 +2,7 @@ import { AxiosRequestConfig } from "axios";
 
 export enum FieldTypes {
   TEXTFIELD = "text",
-  DATEPICKER ="datePicker",
+  DATEPICKER = "datePicker",
   SELECTFIELD = "dropdown",
   TEXTAREA = "area",
   CHECKBOX = 'checkbox',
@@ -12,7 +12,7 @@ export enum FieldTypes {
   CUSTOMPASS = "custompass",
   MULTISELECT = "multiSelect",
   PREVIEW = "preview",
-  SELECTCUSFIELD="SELECTCUS",
+  SELECTCUSFIELD = "SELECTCUS",
   REVIEW = "review"
 };
 
@@ -39,6 +39,7 @@ export interface DynamicRequest {
   headers?: TODO;
   data?: unknown;
   responseType?: TODO
+  page_type?: string
 }
 
 export interface ValidationProps {
@@ -126,3 +127,46 @@ export type EndpointConfig = {
   headers?: Record<string, string>;
   queryParams?: string[];
 };
+
+// aadhar
+// types/KycResponseData.ts
+export interface KycResponseData {
+  kycFileId: string;
+  isPanAvaliable: boolean;
+  digilockerFiles: {
+    panPdf: string;
+    aadharPdf: string;
+  };
+  digilockerAdhar: {
+    uid: string;
+    address: string;
+    gender: string;
+    dob: string;
+    name: string;
+    photo: string;
+    splitAddress: {
+      pincode: string;
+      country: string;
+      city: string;
+      state: string;
+      addressLine: string;
+    };
+    aadharImage: string;
+    xmlFile: string;
+    ts: string;
+  };
+  panExtractedDetails: {
+    pincode: string;
+    country: string;
+    refreshDate: string;
+    address: string;
+    city: string;
+    dob: string;
+    mobileNumber: string;
+    name: string;
+    maskedAadhaar: string;
+    panNumber: string;
+    state: string;
+  };
+  documentPath: string;
+}

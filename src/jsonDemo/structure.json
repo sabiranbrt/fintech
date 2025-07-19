@@ -17,6 +17,7 @@
           "placeholder": "Enter your mobile number",
           "fieldType": "text",
           "subType": "number",
+          "validTick": true,
           "errorColor": "#ff4d4f",
           "focusErrorBgColor": "#DCFFDB",
           "focusErrorBorderColor": "#008000",
@@ -58,7 +59,7 @@
           "placeholder": "Enter Pan Number",
           "fieldType": "text",
           "onlyFetchBtn": false,
-          "ActionFetch": "Fetch Details",
+          "staticFetchBtn": "Fetch Details",
           "validation": {
             "required": "Y",
             "errorMessage": "Pan number is mandatory.",
@@ -70,6 +71,21 @@
               {
                 "regex": "^[a-zA-Z0-9 ]*$",
                 "errorMessage": "Non-alphanumeric characters not allowed."
+              }
+            ]
+          }
+        },
+        {
+          "key": "panPDF",
+          "label": "Upload PAN PDF",
+          "placeholder": "Upload PAN PDF",
+          "fieldType": "file",
+          "uploadType": "pdf",
+          "validation": {
+            "required": "N",
+            "validations": [
+              {
+                "errorMessage": "Please Upload Pdf"
               }
             ]
           }
@@ -161,8 +177,8 @@
               "value": "F"
             },
             {
-              "label": "Transgender",
-              "value": "T"
+              "label": "Other",
+              "value": "other"
             }
           ],
           "validation": {
@@ -211,10 +227,11 @@
           }
         },
         {
-          "key": "Upload Photo",
+          "key": "attachment",
           "label": "Photo",
           "placeholder": "Upload Photo",
           "fieldType": "file",
+          "uploadType": "image",
           "nonInputLabel": "Choose Gender",
           "validation": {
             "required": "N",
@@ -237,6 +254,7 @@
           "placeholder": "Enter Bank Name",
           "errorColor": "#ff4d4f",
           "fieldType": "SELECTCUS",
+          "showToggle": true,
           "validation": {
             "required": "Y",
             "errorMessage": "Bank Name is required"
@@ -284,7 +302,8 @@
           "label": "Confirm Account Number",
           "placeholder": "Enter Confirm Number",
           "fieldType": "text",
-          "ActionFetch": "click to verify",
+          "accountVerify": true,
+          "onlyFetchBtn": true,
           "validation": {
             "required": "Y",
             "errorMessage": "Account numbers must match",
@@ -314,11 +333,11 @@
           "dropdownOptions": [
             {
               "label": "Saving",
-              "value": "saving"
+              "value": "SAVINGS"
             },
             {
               "label": "Current",
-              "value": "current"
+              "value": "CURRENT"
             }
           ],
           "validation": {
@@ -352,7 +371,19 @@
           "key": "pinCode",
           "label": "Permanent Pin Code",
           "placeholder": "Enter Pin Code",
-          "fieldType": "text"
+          "fieldType": "text",
+          "subType": "number",
+          "maxLength": "6",
+          "validation": {
+            "required": "Y",
+            "errorMessage": "Pin Code is required",
+            "validations": [
+              {
+                "regex": "^\\d{6}$",
+                "errorMessage": "Pin Code must be exactly 6 digits"
+              }
+            ]
+          }
         },
         {
           "key": "permanentCity",
@@ -364,13 +395,13 @@
           "key": "permanentDistrict",
           "label": "Permanent District",
           "placeholder": "District",
-          "fieldType": "text"
+          "fieldType": "dropdown"
         },
         {
           "key": "permanentState",
           "label": "Permanent State",
           "placeholder": "State",
-          "fieldType": "text"
+          "fieldType": "dropdown"
         },
         {
           "key": "sameAsPermanent",
@@ -400,7 +431,19 @@
           "key": "tempPinCode",
           "label": "Temporary Pin Code",
           "placeholder": "Enter Pin Code",
-          "fieldType": "text"
+          "fieldType": "text",
+          "subType": "number",
+          "maxLength": "6",
+          "validation": {
+            "required": "Y",
+            "errorMessage": "Pin Code is required",
+            "validations": [
+              {
+                "regex": "^\\d{6}$",
+                "errorMessage": "Pin Code must be exactly 6 digits"
+              }
+            ]
+          }
         },
         {
           "key": "tempCity",
@@ -412,13 +455,13 @@
           "key": "tempDistrict",
           "label": "Temporary District",
           "placeholder": "District",
-          "fieldType": "text"
+          "fieldType": "dropdown"
         },
         {
           "key": "tempState",
           "label": "Temporary State",
           "placeholder": "State",
-          "fieldType": "text"
+          "fieldType": "dropdown"
         }
       ]
     },
@@ -427,7 +470,7 @@
       "displayRemarks": "Review Details",
       "displayField": [
         {
-          "fieldType":"review"
+          "fieldType": "review"
         }
       ]
     }

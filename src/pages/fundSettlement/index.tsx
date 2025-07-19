@@ -1,6 +1,5 @@
 import BeneficiaryDetails from "@/components/BeneficiaryDetails";
 import EmptyMessage from "@/components/EmptyMessage";
-import React from "react";
 
 interface IProps {
   senderData: TODO;

@@ -10,14 +10,18 @@ import { RootState } from "@/redux/store";
 import { getDynamicRequest } from "@/utils/dynamicRequest";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { CCFormDataProps } from "./types";
+import { updateLoading } from "@/redux/slices/appSlice";
+import { toast } from "react-toastify";
 
 interface IProps {
   senderData: TODO;
 }
 
 const CreditCardBillPayment = ({ senderData }: IProps) => {
+  const dispatch = useDispatch();
+
   const [isModalOpen, setIsModalOpen] = useState("");
   const [CCFromData, setCCFormData] = useState<CCFormDataProps | null>(null);
 
@@ -43,8 +47,15 @@ const CreditCardBillPayment = ({ senderData }: IProps) => {
   });
 
   const onSubmit = (data: TODO) => {
-    setIsModalOpen("creditCard");
-    setCCFormData(data);
+    try {
+      dispatch(updateLoading({ isLoading: true }));
+      setIsModalOpen("creditCard");
+      setCCFormData(data);
+    } catch (err: TODO) {
+      toast.error("Error", err);
+    } finally {
+      dispatch(updateLoading({ isLoading: false }));
+    }
   };
 
   const bankDetails = watch("bankName");

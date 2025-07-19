@@ -15,7 +15,7 @@ const BackButton = () => {
         </div>
         <div className="ml-2 w-full flex flex-row justify-center">
           <p className="text-secondary-dark text-xl font-semibold">
-            {selectedService?.label ? selectedService.label : isText}
+            {isText ? isText  : selectedService?.label}
           </p>
         </div>
       </div>

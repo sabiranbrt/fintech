@@ -6,6 +6,7 @@ import {
   fetchUserDetails,
 } from "./utils/services/userAndLocationDetails";
 import { toast } from "react-toastify";
+import FullPageLoader from "./components/loader/FullPageLoader";
 
 function App() {
   useEffect(() => {
@@ -70,7 +71,10 @@ function App() {
   }, []);
 
   return (
+    <>
+      <FullPageLoader />
       <Dashboard />
+    </>
   );
 }
 
