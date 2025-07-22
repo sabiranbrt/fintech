@@ -76,21 +76,6 @@
           }
         },
         {
-          "key": "panPDF",
-          "label": "Upload PAN PDF",
-          "placeholder": "Upload PAN PDF",
-          "fieldType": "file",
-          "uploadType": "pdf",
-          "validation": {
-            "required": "N",
-            "validations": [
-              {
-                "errorMessage": "Please Upload Pdf"
-              }
-            ]
-          }
-        },
-        {
           "key": "firstName",
           "label": "First Name",
           "placeholder": "Enter beneficiary first name",

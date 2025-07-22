@@ -85,7 +85,6 @@ export const createAxiosInstance = (page_type?: string) => {
             ) {
                 try {
                     let reqBody;
-
                     if (config.sendSessionToken) {
                         // Session token encryption (async)
                         const encrypted = await encryptWithKey(JSON.stringify(config.data));

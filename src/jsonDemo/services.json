@@ -75,8 +75,12 @@
       "subserviceStatus": "Y",
       "paymentMethods": [
         {
-          "value": "Ik Credit Pay",
+          "value": "Education Fees",
           "label": "Education Fees"
+        },
+        {
+          "value": "Ik Credit Pay",
+          "label": "Ik Credit Pay"
         }
       ],
       "sequence": [
@@ -119,7 +123,8 @@
         "initPayout",
         "getPennyDrop",
         "getBeneficiaryDelete",
-        "getPAN"
+        "getPAN",
+        "getBeneficiary"
       ]
     },
     {
@@ -144,7 +149,8 @@
         "getbankList",
         "getSlabDetails",
         "getChargeDetails",
-        "initPayout"
+        "initPayout",
+        "getDigiTokenLazy"
       ]
     },
     {
@@ -340,6 +346,10 @@
       "method": "POST",
       "enc": true,
       "url": "/authToken"
+    },
+    "getDigiTokenLazy": {
+      "method": "GET",
+      "url": ""
     }
   }
 }

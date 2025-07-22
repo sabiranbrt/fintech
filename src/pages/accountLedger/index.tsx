@@ -27,6 +27,7 @@ const AccountLedger = () => {
 
   useEffect(() => {
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const request = getDynamicRequest(stepName ?? "", endpoints ?? {}, {
@@ -222,14 +223,14 @@ const AccountLedger = () => {
     }
   };
   return (
-    <div className="mt-2 flex flex-col customTable h-full">
-      <div className="flex space-x-4 mb-4 justify-end items-center">
+    <div className="lg:mt-2 mt-0 flex flex-col customTable h-full">
+      <div className="flex space-x-4 mb-4 lg:justify-end lg:gap-0 gap-2 items-center lg:flex-nowrap flex-wrap">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search transactions . . . ."
-          className="px-4 py-2 border border-gray-200 rounded-md focus:outline-none mt-3"
+          className="px-4 py-2 border border-gray-200 rounded-md focus:outline-none mt-3 lg:mb-0 mb-2"
         />
 
         <div className="flex flex-col">

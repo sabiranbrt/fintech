@@ -3,11 +3,7 @@ import BackButton from "@/components/buttons/BackButton";
 import EmptyMessage from "@/components/EmptyMessage";
 import Loader from "@/components/LoaderComponent";
 import { useDynamicMutation, useDynamicQuery } from "@/hooks/dynamicQuery";
-import {
-  useAadhaarRegistrationBeneLazy,
-  useDigiData,
-  useDigiTokenLazy,
-} from "@/hooks/service";
+import { useAadhaarRegistrationBeneLazy, useDigiData } from "@/hooks/service";
 import service from "@/jsonDemo/services.json";
 import AccountLedger from "@/pages/accountLedger";
 import CreditCardBill from "@/pages/creditCardBillPayment";
@@ -21,8 +17,10 @@ import ContactCard from "@/pages/relationshipManager";
 import RentPayment from "@/pages/rentPayment";
 import TotalPayoutList from "@/pages/totalPayout";
 import TransactionsTabs from "@/pages/transaction";
+import { setKycData } from "@/redux/slices/aadharSlice";
+import { updateLoading } from "@/redux/slices/appSlice";
 import { setAccount } from "@/redux/slices/senderDataSlice";
-import { setSelectedService } from "@/redux/slices/serviceSlice";
+import { setSelectedService, updateIsText } from "@/redux/slices/serviceSlice";
 import { RootState } from "@/redux/store";
 import { QuickLinksType } from "@/types";
 import { getDynamicRequest } from "@/utils/dynamicRequest";
@@ -39,13 +37,7 @@ interface FormData {
 
 const QuickLinksFormComponent = () => {
   const [senderData, setSenderData] = useState<TODO | null>(null);
-
   const SenderResponseData = senderData?.apiResponseData?.data[0];
-
-  const [aadhaarParams, setAadhaarParams] = useState<{
-    digiToken: string;
-    mobile: string;
-  } | null>(null);
 
   const { selectedService, isText } = useSelector(
     (state: RootState) => state.service
@@ -80,16 +72,36 @@ const QuickLinksFormComponent = () => {
   const mobileNumber = watch("mobileNumber");
 
   const { mutate } = useDynamicMutation<TODO>();
-  const { refetch: fetchDigiToken } = useDigiTokenLazy();
+
+  const registerSenderName = "getDigiTokenLazy";
+
+  const requestRegisterSender = getDynamicRequest(
+    registerSenderName ?? "",
+    endpoints ?? {},
+    {},
+    {
+      Authorization: import.meta.env.VITE_AUTHORIZATION,
+      id: import.meta.env.VITE_TOKEN_ID,
+    },
+    {},
+    {},
+    "digi_auth_url"
+  );
+
+  const { data: digitoken } = useDynamicQuery<TODO>(requestRegisterSender!, {
+    enabled: !!requestRegisterSender,
+    queryKey: [registerSenderName],
+  });
+  // const { data: digitoken } = useDigiTokenLazy();
+  const accessToken = digitoken?.apiResponseData?.responseData?.accessToken;
 
   const { refetch: fetchAadhaar } = useAadhaarRegistrationBeneLazy(
-    aadhaarParams?.digiToken ?? "",
-    aadhaarParams?.mobile ?? "",
+    accessToken ?? "",
+    mobileNumber,
     "FETCH"
   );
 
   const { mutateAsync: fetchDigiData } = useDigiData();
-
   const stepName = selectedService?.sequence[0];
 
   const request = getDynamicRequest(stepName ?? "", endpoints ?? {}, {
@@ -163,86 +175,118 @@ const QuickLinksFormComponent = () => {
     !hiddenLabels.includes(selectedService.label as QuickLinksType);
 
   const handleKYC = async () => {
-    const digiTokenRes = await fetchDigiToken();
-    const aadharRegister = await fetchAadhaar();
+    if (!accessToken) {
+      toast.error("Access token not available.");
+      return;
+    }
+    dispatch(updateLoading({ isLoading: true }));
+    try {
+      const aadharRegister = await fetchAadhaar();
 
-    const accessToken =
-      digiTokenRes.data?.apiResponseData?.responseData?.accessToken;
+      if (aadharRegister?.data?.apiResponseData?.responseCode === "200") {
+        const { url } = JSON.parse(
+          aadharRegister?.data?.apiResponseData?.responseData
+        );
 
-    if (!accessToken) return;
-    setAadhaarParams({ digiToken: accessToken, mobile: mobileNumber });
+        const { requestId } = JSON.parse(
+          aadharRegister?.data?.apiResponseData?.responseData
+        );
 
-    if (aadharRegister?.data?.apiResponseData?.responseCode === "200") {
-      const { url } = JSON.parse(
-        aadharRegister.data.apiResponseData.responseData
-      );
+        const aadharRegisterJSON = JSON.parse(
+          aadharRegister?.data?.apiResponseData?.responseData
+        );
 
-      const { requestId } = JSON.parse(
-        aadharRegister.data.apiResponseData.responseData
-      );
+        if (aadharRegisterJSON?.panAvaliable) {
+          // When PAN is available, directly set KYC data and update state
+          dispatch(setKycData(aadharRegisterJSON));
 
-      const newChildWindow = window.open(url, "_blank", "width=800,height=600");
-
-      // Monitor the child window
-      const monitorWindow = setInterval(() => {
-        if (!newChildWindow || newChildWindow.closed) {
-          clearInterval(monitorWindow);
-          console.error("Child window closed before success.");
+          dispatch(updateIsText(QuickLinksType.RB));
         } else {
-          try {
-            const currentUrl = newChildWindow.location.href;
-            if (currentUrl.includes(import.meta.env.VITE_REDIRECTION_URL)) {
-              const params = new URLSearchParams(new URL(currentUrl).search);
-              const state = params.get("state");
-              console.log("state", state);
-              console.log("params", params);
-
-              if (state || requestId) {
-                (async () => {
-                  const digiDataResponse = await fetchDigiData({
-                    digiToken: accessToken,
-                    requestId: requestId!,
-                    beneMobileKyc: mobileNumber,
-                  });
-
-                  console.log("Fetched Digi Data:", digiDataResponse);
-                })();
-              }
-
-              newChildWindow.close();
+          const newChildWindow = window.open(
+            url,
+            "_blank",
+            "width=800,height=600"
+          );
+          // Only monitor the window when PAN is NOT available
+          const monitorWindow = setInterval(() => {
+            if (!newChildWindow || newChildWindow.closed) {
               clearInterval(monitorWindow);
+              console.error("Child window closed before success.");
+            } else {
+              try {
+                const currentUrl = newChildWindow.location.href;
+
+                if (currentUrl.includes(import.meta.env.VITE_REDIRECTION_URL)) {
+                  const params = new URLSearchParams(
+                    new URL(currentUrl).search
+                  );
+                  const state = params.get("state");
+
+                  if (state || requestId) {
+                    (async () => {
+                      const digiDataResponse = await fetchDigiData({
+                        digiToken: accessToken,
+                        requestId: requestId!,
+                        beneMobileKyc: mobileNumber,
+                      });
+
+                      const digiResponse = JSON.parse(
+                        digiDataResponse?.apiResponseData?.responseData
+                      );
+
+                      dispatch(setKycData(digiResponse));
+
+                      if (
+                        digiDataResponse?.apiResponseData?.responseCode ===
+                        "200"
+                      ) {
+                        dispatch(updateIsText(QuickLinksType.RB));
+                      }
+
+                      console.log("Fetched Digi Data:", digiResponse);
+                    })();
+                  }
+
+                  newChildWindow.close();
+                  clearInterval(monitorWindow);
+                }
+              } catch (error) {
+                // Ignore errors due to cross-origin restrictions
+                console.debug("New Window Error", error);
+              }
             }
-          } catch (error) {
-            // Ignore errors due to cross-origin restrictions
-            console.log("error", error);
-          }
+          }, 500);
         }
-      }, 500);
-      // Poll every 500ms for better responsiveness
-    } else {
-      toast.error(aadharRegister?.data?.apiResponseData?.responseMessage);
-      console.error(
-        "Error creating Digilocker URL:",
-        aadharRegister?.data?.apiResponseData?.responseMessage
-      );
+      } else {
+        toast.error(aadharRegister?.data?.apiResponseData?.responseMessage);
+        console.error(
+          "Error creating Digilocker URL:",
+          aadharRegister?.data?.apiResponseData?.responseMessage
+        );
+      }
+    } catch (error) {
+      toast.error("Error submitting");
+      console.log(error);
+    } finally {
+      dispatch(updateLoading({ isLoading: false }));
     }
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col lg:h-full min-h-0">
       <div>
         {selectedService?.type !== "pgPayout" || isText ? <BackButton /> : null}
       </div>
       {!isText ? (
-        <div className="flex flex-row gap-4 h-full min-h-0">
-          <div className={clsx("bg-white")}>
+        <div className="flex flex-col lg:flex-row lg:gap-4 gap-2 lg:h-full min-h-0 md:flex-col md:overflow-y-auto ">
+          <div className={clsx("lg:bg-white bg-transparent")}>
             {shouldShowMobileInput && (
               <form
                 autoComplete="off"
-                className="p-3 rounded-md w-full"
+                className="pb-2 lg:p-3 rounded-md w-full"
                 onSubmit={handleSubmit(onSubmit)}
               >
-                <label className="text-start text-md">
+                <label className="text-start text-sm lg:text-md lg:mb-0 mb-2">
                   Enter Mobile Number
                 </label>
                 <div className="relative rounded-lg h-9 w-full">
@@ -270,7 +314,7 @@ const QuickLinksFormComponent = () => {
                       <>
                         <div
                           className={clsx(
-                            "relative rounded-lg h-9 w-[230px]",
+                            "relative rounded-lg h-9 lg:w-[230px] w-full",
                             field.value?.length === 10
                               ? "border border-gray-400 bg-gray-200"
                               : "border-gradient"
@@ -371,7 +415,7 @@ const QuickLinksFormComponent = () => {
               </div>
             </div>
           ) : (
-            <div className="flex-1 h-full min-h-0 overflow-hidden">
+            <div className="flex-1 lg:h-full min-h-0 overflow-hidden">
               {selectedService ? (
                 selectedService.type === "pgPayout" ? (
                   <EducationFees senderData={sendData} />

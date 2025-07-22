@@ -146,7 +146,7 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40">
-      <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-4xl relative">
+      <div className="bg-white rounded-xl shadow-lg p-6 lg:w-3/4 w-[90%] relative">
         <button
           onClick={() => {
             handleCancel();
@@ -157,9 +157,9 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
         </button>
         <h2 className="text-xl font-semibold mb-4">Add Bank Account</h2>
 
-        <form className="space-y-4" autoComplete="off">
-          <div className="flex flex-wrap md:flex-nowrap gap-16 items-start">
-            <div className="flex flex-col gap-5 w-full justify-center">
+        <form className="space-y-2 lg:space-y-4" autoComplete="off">
+          <div className="flex flex-wrap md:flex-nowrap lg:gap-16 gap-2 items-start">
+            <div className="flex flex-col lg:gap-5 gap-0 w-full justify-center">
               <div className="relative">
                 <SelectCusOpt
                   control={control}
@@ -172,7 +172,7 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
                   fetchData={refetch}
                 />
               </div>
-              <div className="relative mt-3">
+              <div className="relative lg:mt-3 mt-2">
                 <PassField
                   control={control}
                   errors={errors}
@@ -191,7 +191,7 @@ const AddBankAccount = ({ handleCancel, senderMobileNumber }: IProps) => {
                 />
               </div>
 
-              <div className="relative mt-3">
+              <div className="relative lg:mt-3 mt-2">
                 <InputField
                   control={control}
                   errors={errors}

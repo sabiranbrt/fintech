@@ -51,12 +51,12 @@ const DetailedTransactionComponent = () => {
   const handleDateChange = () => {
     if (startDate && endDate) {
       setCurrentPage(0);
-      refetch()
+      refetch();
     } else {
       setError("  Please select both start and end dates.");
     }
   };
-  
+
   const fetchHtmlReceipt = async (id: number) => {
     try {
       const requestReceipt = getDynamicRequest(
@@ -257,7 +257,7 @@ const DetailedTransactionComponent = () => {
     );
 
   return (
-    <>
+    <div className=" mt-20 lg:mt-0">
       <div className="customTable min-w-full -mt-16 ">
         {/* Date Filter Section (Fixed at top of container) */}
         <div className=" flex justify-end gap-4 mb-3 items-center">
@@ -502,7 +502,7 @@ const DetailedTransactionComponent = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

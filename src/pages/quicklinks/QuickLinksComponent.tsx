@@ -1,19 +1,22 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import RegisterModal from "@/components/registerModal";
-import { useDynamicMutation } from "@/hooks/dynamicQuery";
+import { useDynamicMutation, useDynamicQuery } from "@/hooks/dynamicQuery";
 import {
   useAadhaarRegistrationBeneLazy,
-  useDigiData,
-  useDigiTokenLazy,
+  useDigiData
 } from "@/hooks/service";
 import {
   default as service,
   default as services,
 } from "@/jsonDemo/services.json";
+import { setKycData } from "@/redux/slices/aadharSlice";
+import { updateLoading } from "@/redux/slices/appSlice";
 import { setEndpoints } from "@/redux/slices/endpointsSlice";
 import { setSelectedService, updateIsText } from "@/redux/slices/serviceSlice";
+import { setToggle } from "@/redux/slices/toggleSlice";
 import { RootState } from "@/redux/store";
+import { QuickLinksType } from "@/types";
 import { getDynamicRequest } from "@/utils/dynamicRequest";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
@@ -27,6 +30,7 @@ import { IoPersonOutline } from "react-icons/io5";
 import { MdOutlinePayments, MdOutlineSwitchAccount } from "react-icons/md";
 import { PiHandWithdrawFill } from "react-icons/pi";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import QuickLinksTitle from "./components/QuickLinksTitle";
 
 const serviceIcons = {
@@ -116,6 +120,7 @@ const QuickLinksComponent = () => {
 
   const dispatch = useDispatch();
   const mobileNumber = watch("mobileNumber");
+  const { selectedService } = useSelector((state: RootState) => state.service);
   const { endpoints } = useSelector((state: RootState) => state.endPoints);
 
   useEffect(() => {
@@ -128,7 +133,6 @@ const QuickLinksComponent = () => {
     service?: (typeof services.services)[number];
     label?: string;
   }) => {
-
     if (opts.service) {
       if (opts.service.label === "Register Sender") {
         setIsModalOpen(true);
@@ -136,6 +140,7 @@ const QuickLinksComponent = () => {
       }
       dispatch(setSelectedService(opts.service as TODO));
       dispatch(updateIsText(""));
+      dispatch(setToggle(false));
     } else if (opts.label) {
       if (opts.label === "Register Sender") {
         setIsModalOpen(true);
@@ -143,13 +148,33 @@ const QuickLinksComponent = () => {
       }
       dispatch(updateIsText(opts.label));
       dispatch(setSelectedService(null));
+      dispatch(setToggle(false));
     }
   };
 
   const stepName = "getSender";
+  const registerSenderName = "getDigiTokenLazy"
 
   const request = getDynamicRequest(stepName ?? "", endpoints ?? {}, {
     mobileNumber: mobileNumber,
+  });
+
+  const requestRegisterSender = getDynamicRequest(
+    registerSenderName ?? "",
+    endpoints ?? {},
+    {},
+    {
+      Authorization: import.meta.env.VITE_AUTHORIZATION,
+      id: import.meta.env.VITE_TOKEN_ID,
+    },
+    {},
+    {},
+    "digi_auth_url"
+  );
+
+  const { data: digitoken } = useDynamicQuery<TODO>(requestRegisterSender!, {
+    enabled: !!selectedService,
+    queryKey: [registerSenderName],
   });
 
   const { mutate } = useDynamicMutation<TODO>();
@@ -186,79 +211,123 @@ const QuickLinksComponent = () => {
     }
   }, [userRegisterNumber]);
 
-  const [aadhaarParams, setAadhaarParams] = useState<{
-    digiToken: string;
-    mobile: string;
-  } | null>(null);
-
-  const { refetch: fetchDigiToken } = useDigiTokenLazy();
+  // const { data: digitoken } = useDigiTokenLazy();
+  const accessToken = digitoken?.apiResponseData?.responseData?.accessToken;
 
   const { refetch: fetchAadhaar } = useAadhaarRegistrationBeneLazy(
-    aadhaarParams?.digiToken,
-    aadhaarParams?.mobile
+    accessToken ?? "",
+    mobileNumber,
+    "FETCH"
   );
 
   const { mutateAsync: fetchDigiData } = useDigiData();
 
   const handleSubmit = async () => {
-    const digiTokenRes = await fetchDigiToken();
-    const aadharRegister = await fetchAadhaar();
+    if (!accessToken) {
+      toast.error("Access token not available.");
+      return;
+    }
+    dispatch(updateLoading({ isLoading: true }));
+    try {
+      const aadharRegister = await fetchAadhaar();
 
-    const accessToken =
-      digiTokenRes.data?.apiResponseData?.responseData?.accessToken;
+      if (aadharRegister?.data?.apiResponseData?.responseCode === "200") {
+        const { url } = JSON.parse(
+          aadharRegister?.data?.apiResponseData?.responseData
+        );
 
-    if (!accessToken) return;
-    setAadhaarParams({ digiToken: accessToken, mobile: mobileNumber });
+        const { requestId } = JSON.parse(
+          aadharRegister?.data?.apiResponseData?.responseData
+        );
 
-    const { url } = JSON.parse(
-      aadharRegister.data.apiResponseData.responseData
-    );
+        const aadharRegisterJSON = JSON.parse(
+          aadharRegister?.data?.apiResponseData?.responseData
+        );
 
-    const { requestId } = JSON.parse(
-      aadharRegister.data.apiResponseData.responseData
-    );
+        if (aadharRegisterJSON?.panAvaliable) {
+          // When PAN is available, directly set KYC data and update state
+          dispatch(setKycData(aadharRegisterJSON));
 
-    const newChildWindow = window.open(url, "_blank", "width=800,height=600");
+          dispatch(updateIsText(QuickLinksType.RB));
+        } else {
+          const newChildWindow = window.open(
+            url,
+            "_blank",
+            "width=800,height=600"
+          );
+          // Only monitor the window when PAN is NOT available
+          const monitorWindow = setInterval(() => {
+            if (!newChildWindow || newChildWindow.closed) {
+              clearInterval(monitorWindow);
+              console.error("Child window closed before success.");
+            } else {
+              try {
+                const currentUrl = newChildWindow.location.href;
 
-    // Monitor the child window
-    const monitorWindow = setInterval(() => {
-      if (!newChildWindow || newChildWindow.closed) {
-        clearInterval(monitorWindow);
-        console.error("Child window closed before success.");
-      } else {
-        try {
-          const currentUrl = newChildWindow.location.href;
-          if (currentUrl.includes(import.meta.env.VITE_REDIRECTION_URL)) {
-            const params = new URLSearchParams(new URL(currentUrl).search);
-            const state = params.get("state");
+                if (currentUrl.includes(import.meta.env.VITE_REDIRECTION_URL)) {
+                  const params = new URLSearchParams(
+                    new URL(currentUrl).search
+                  );
+                  const state = params.get("state");
 
-            if (state || requestId) {
-              (async () => {
-                const digiDataResponse = await fetchDigiData({
-                  digiToken: accessToken,
-                  requestId: requestId!,
-                  beneMobileKyc: mobileNumber,
-                });
+                  if (state || requestId) {
+                    (async () => {
+                      const digiDataResponse = await fetchDigiData({
+                        digiToken: accessToken,
+                        requestId: requestId!,
+                        beneMobileKyc: mobileNumber,
+                      });
 
-                console.log("Fetched Digi Data:", digiDataResponse);
-              })();
+                      const digiResponse = JSON.parse(
+                        digiDataResponse?.apiResponseData?.responseData
+                      );
+
+                      dispatch(setKycData(digiResponse));
+
+                      if (
+                        digiDataResponse?.apiResponseData?.responseCode ===
+                        "200"
+                      ) {
+                        dispatch(updateIsText(QuickLinksType.RB));
+                      }
+
+                      console.log("Fetched Digi Data:", digiResponse);
+                    })();
+                  }
+
+                  newChildWindow.close();
+                  clearInterval(monitorWindow);
+                }
+              } catch (error) {
+                // Ignore errors due to cross-origin restrictions
+                console.debug("New Window Error", error);
+              }
             }
-
-            newChildWindow.close();
-            clearInterval(monitorWindow);
-          }
-        } catch (error) {
-          // Ignore errors due to cross-origin restrictions
-          console.log("error", error);
+          }, 500);
         }
+      } else {
+        toast.error(aadharRegister?.data?.apiResponseData?.responseMessage);
+        console.error(
+          "Error creating Digilocker URL:",
+          aadharRegister?.data?.apiResponseData?.responseMessage
+        );
       }
-    }, 500); // Poll every 500ms for better responsiveness
+    } catch (error) {
+      toast.error("Error Submitting Sender");
+      console.log(error);
+    } finally {
+      dispatch(updateLoading({ isLoading: false }));
+    }
   };
 
   return (
     <>
       <div className=" whitespace-nowrap">
-        <p className="text-base text-center font-bold md:text-xl mb-5">
+        <p
+          className={clsx(
+            "text-base text-center font-bold md:text-xl mb-5 block lg:block md:hidden"
+          )}
+        >
           Quick Links
         </p>
 

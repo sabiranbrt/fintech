@@ -75,7 +75,6 @@ const BeneficiaryDetails = ({
   );
 
   const mobileNumber = watch("beneficiary");
-
   const [expandedAccount, setExpandedAccount] = useState(null);
 
   const toggleAccountAccordion = (account: TODO) => {
@@ -217,8 +216,8 @@ const BeneficiaryDetails = ({
   };
 
   return (
-    <div className=" w-full p-4 shadow-md bg-white min-h-0 h-full">
-      <div className=" flex flex-row gap-2 justify-between items-center mb-3">
+    <div className=" w-full p-4 shadow-md bg-white min-h-0 lg:h-full">
+      <div className=" flex lg:flex-row flex-col gap-2 justify-between lg:items-center mb-3">
         <div className=" w-full">
           {(selectedService?.label === QuickLinksType.FS ||
             selectedService?.label === QuickLinksType.RP ||
@@ -262,7 +261,7 @@ const BeneficiaryDetails = ({
           )}
         </div>
       </div>
-      <div className="max-h-[48.5vh] min-h-0 h-full">
+      <div className="lg:max-h-[48.5vh] min-h-0 h-full">
         <p className="block font-medium my-2">{tableName}</p>
         <div className=" overflow-y-auto min-h-0 h-[80%]">
           {filteredAccounts && filteredAccounts.length > 0 ? (
@@ -279,7 +278,7 @@ const BeneficiaryDetails = ({
                       toggleAccountAccordion(account);
                     }}
                   >
-                    <div className="flex items-center flex-grow">
+                    <div className="flex items-center flex-grow lg:w-full w-3/4">
                       <div className="flex items-center">
                         <label
                           htmlFor={`account-${index}`}
@@ -292,7 +291,8 @@ const BeneficiaryDetails = ({
                           </div>
 
                           <div>
-                            <h3 className="flex items-center gap-2 text-md font-medium text-grey-900">
+                            <>
+                            <h3 className="flex items-center gap-2 lg:text-base text-sm font-medium text-grey-900">
                               {selectedService?.label === QuickLinksType?.FW
                                 ? account.bankName
                                 : `${account?.beneficiaryFirstName} ${account?.beneficiaryMiddleName} ${account?.beneficiaryLastName}`}
@@ -316,8 +316,9 @@ const BeneficiaryDetails = ({
                                   </span>
                                 )}
                             </h3>
+                            </>
 
-                            <div className="flex gap-4 text-gray-700 text-sm">
+                            <div className="flex lg:gap-4 gap-0 text-gray-700 text-sm lg:flex-nowrap flex-wrap">
                               <h3 className="w-80">
                                 Account Number: {account.accountNumber}
                               </h3>
@@ -462,47 +463,47 @@ const BeneficiaryDetails = ({
                     </div>
                   </div>
                   {isExpanded && (
-                    <div className="bg-gray-50 p-6 border-t  border-gray-200 overflow-hidden">
+                    <div className="bg-gray-50 lg:p-6 p-3 border-t  border-gray-200 overflow-hidden">
                       {selectedService?.label === QuickLinksType.FW && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-2 lg:gap-6 gap-1">
                           <div>
-                            <p className="font-medium">Bank Name:</p>
-                            <p>{account.bankName}</p>
+                            <p className="font-medium lg:text-lg text-sm">Bank Name:</p>
+                            <p className="text-sm">{account.bankName}</p>
                           </div>
                           <div>
-                            <p className="font-medium">Account Number:</p>
-                            <p>{account.accountNumber}</p>
+                            <p className="font-medium lg:text-lg text-sm">Account Number:</p>
+                            <p className="text-sm">{account.accountNumber}</p>
                           </div>
                           <div>
-                            <p className="font-medium">IFSC Code:</p>
-                            <p>{account.ifscCode}</p>
+                            <p className="font-medium lg:text-lg text-sm">IFSC Code:</p>
+                            <p className="text-sm">{account.ifscCode}</p>
                           </div>
                         </div>
                       )}
 
                       {selectedService?.label !== QuickLinksType.FW && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:gap-6">
                           <div className="space-y-1">
                             <p className="text-sm text-gray-500 w-10">Mobile</p>
-                            <p className="font-medium">
+                            <p className="font-medium text-sm">
                               {account.beneficiaryMobile}
                             </p>
                           </div>
                           <div className="space-y-1">
                             <p className="text-sm text-gray-500">Bank Name</p>
-                            <p className="font-medium w-52">
+                            <p className="font-medium text-sm">
                               {account.bankName}
                             </p>
                           </div>
                           <div className="space-y-1">
                             <p className="text-sm text-gray-500">Bank IFSC</p>
-                            <p className="font-medium">{account.accountIfsc}</p>
+                            <p className="font-medium text-sm">{account.accountIfsc}</p>
                           </div>
                           <div className="space-y-1">
                             <p className="text-sm text-gray-500">
                               Account Number
                             </p>
-                            <p className="font-medium">
+                            <p className="font-medium text-sm">
                               {account.accountNumber}
                             </p>
                           </div>

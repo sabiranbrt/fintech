@@ -14,7 +14,7 @@ const BtnPrimary = ({ onClick, title }: IProps) => {
           onClick?.();
         }
       }}
-      className={`m-4 px-8 py-1 h-10 bg-secondary text-white rounded-md hover:bg-secondary-light transition-all duration-200 text-sm ml-0`}
+      className={`lg:m-4 m-2 lg:px-8 px-2 py-1 bg-secondary text-white rounded-md hover:bg-secondary-light transition-all duration-200 text-sm ml-0`}
       style={{
         border: "3px solid transparent",
         borderRadius: "8px",

@@ -216,101 +216,7 @@ const CustomField = ({
             title={currentStep.status}
             fields={reviewFields}
             onEdit={() => onEdit(stepKey as TODO)}
-          >
-            {aadharData?.panExtractedDetails?.maskedAadhaar && (
-              <div>
-                <p className="text-sm text-gray-600">Aadhaar Number</p>
-                <p className="font-medium">{watch("maskedAadhaarNo")}</p>
-              </div>
-            )}
-
-            {aadharData?.panExtractedDetails?.mobileNumber && (
-              <div>
-                <p className="text-sm text-gray-600">
-                  Mobile Number From Aadhaar
-                </p>
-                <p className="font-medium">{watch("maskedMobile")}</p>
-              </div>
-            )}
-            {aadharData && (
-              <>
-                {/* AAdhar Information Review */}
-                <div className="mb-8">
-                  <div className="flex items-center gap-2 mb-4 border-b pb-2">
-                    <h3 className="text-lg font-medium text-primary-dark">
-                      Aadhaar and PAN Documents
-                    </h3>
-                  </div>
-                  <div className="flex gap-72">
-                    <div className="">
-                      {/* Aadhaar Image (only if registerByAadhar is true) */}
-                      {aadharData && aadharData?.digilockerFiles?.aadharPdf && (
-                        <div>
-                          <p className="text-sm text-gray-600">
-                            Aadhaar Document
-                          </p>
-                          <div className="mt-2">
-                            <PDFViewer
-                              pdfUrl={aadharData?.digilockerFiles?.aadharPdf}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="">
-                      {/* Aadhaar Image (only if registerByAadhar is true) */}
-                      {aadharData && aadharData?.digilockerFiles?.panPdf && (
-                        <div>
-                          <p className="text-sm text-gray-600">PAN Document</p>
-                          <div className="mt-2">
-                            <PDFViewer
-                              pdfUrl={aadharData?.digilockerFiles?.panPdf}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                {/*    <div className="mb-8">
-                              <div className="flex items-center gap-2 mb-4 border-b pb-2">
-                                <h3 className="text-lg font-medium text-primary-dark">
-                                  PAN Information
-                                </h3>
-                              </div>
-                            
-                            </div> */}
-                {aadharData && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-medium mb-2 border-b pb-2 text-primary-dark">
-                      Image Information
-                    </h3>
-                    <div className="flex gap-16 justify-center items-center">
-                      <div>
-                        <p className="text-sm text-gray-600">Profile Image</p>
-                        {aadharData?.digilockerAdhar?.photo ? (
-                          <div className="mt-2">
-                            <img
-                              // src={URL.createObjectURL(aadharData?.digilockerAdhar?.photo)}
-                              alt="Profile Preview"
-                              className="h-80 w-80 rounded-md object-cover cursor-pointer"
-                              // onClick={() =>
-                              //   setSelectedImage(
-                              //     URL.createObjectURL(aadharData)
-                              //   ) || openModal()
-                              // }
-                            />
-                          </div>
-                        ) : (
-                          <p className="font-medium">-</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </ReviewSection>
+          ></ReviewSection>
         );
       }
 
@@ -347,6 +253,7 @@ const CustomField = ({
             names={names}
             rules={rules}
             accountVerify={accountVerify}
+            aadharData={!aadharData}
             isFocused={isFocused}
             handleBlur={handleBlur}
             handleFocus={handleFocus}
@@ -594,7 +501,102 @@ const CustomField = ({
             validation={validation}
           />
         ) : fieldType === FieldTypes?.REVIEW ? (
-          <>{generateReviewSections()}</>
+          <>
+            {generateReviewSections()}
+            {aadharData?.panExtractedDetails?.maskedAadhaar && (
+              <div>
+                <p className="text-sm text-gray-600">Aadhaar Number</p>
+                <p className="font-medium">{watch("maskedAadhaarNo")}</p>
+              </div>
+            )}
+
+            {aadharData?.panExtractedDetails?.mobileNumber && (
+              <div>
+                <p className="text-sm text-gray-600">
+                  Mobile Number From Aadhaar
+                </p>
+                <p className="font-medium">{watch("maskedMobile")}</p>
+              </div>
+            )}
+            {aadharData && (
+              <>
+                {/* AAdhar Information Review */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-4 border-b pb-2">
+                    <h3 className="text-lg font-medium text-primary-dark">
+                      Aadhaar and PAN Documents
+                    </h3>
+                  </div>
+                  <div className="flex gap-72">
+                    <div className="">
+                      {/* Aadhaar Image (only if registerByAadhar is true) */}
+                      {aadharData && aadharData?.digilockerFiles?.aadharPdf && (
+                        <div>
+                          <p className="text-sm text-gray-600">
+                            Aadhaar Document
+                          </p>
+                          <div className="mt-2">
+                            <PDFViewer
+                              pdfUrl={aadharData?.digilockerFiles?.aadharPdf}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="">
+                      {/* Aadhaar Image (only if registerByAadhar is true) */}
+                      {aadharData && aadharData?.digilockerFiles?.panPdf && (
+                        <div>
+                          <p className="text-sm text-gray-600">PAN Document</p>
+                          <div className="mt-2">
+                            <PDFViewer
+                              pdfUrl={aadharData?.digilockerFiles?.panPdf}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {/*    <div className="mb-8">
+                              <div className="flex items-center gap-2 mb-4 border-b pb-2">
+                                <h3 className="text-lg font-medium text-primary-dark">
+                                  PAN Information
+                                </h3>
+                              </div>
+                            
+                            </div> */}
+                {aadharData && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-medium mb-2 border-b pb-2 text-primary-dark">
+                      Image Information
+                    </h3>
+                    <div className="flex gap-16 justify-center items-center">
+                      <div>
+                        <p className="text-sm text-gray-600">Profile Image</p>
+                        {aadharData?.digilockerAdhar?.photo ? (
+                          <div className="mt-2">
+                            <img
+                              // src={URL.createObjectURL(aadharData?.digilockerAdhar?.photo)}
+                              alt="Profile Preview"
+                              className="h-80 w-80 rounded-md object-cover cursor-pointer"
+                              // onClick={() =>
+                              //   setSelectedImage(
+                              //     URL.createObjectURL(aadharData)
+                              //   ) || openModal()
+                              // }
+                            />
+                          </div>
+                        ) : (
+                          <p className="font-medium">-</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </>
         ) : null}
       </div>
       <Tooltip id={`tooltip-${label}`} place="top" />

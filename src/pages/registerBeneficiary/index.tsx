@@ -2,10 +2,20 @@ import Loader from "@/components/LoaderComponent";
 import CustomField from "@/components/multiForm/CustomField";
 import MultiFormHeader from "@/components/multiForm/multiFormHeader";
 import { useDynamicMutation, useDynamicQuery } from "@/hooks/dynamicQuery";
-import { useFileUpload, usePinCode, useSessionInit } from "@/hooks/service";
+import {
+  useAadhaarRegistrationBeneLazy,
+  useDigiData,
+  useFileUpload,
+  usePanFileUpload,
+  usePinCode,
+  useSessionInit,
+} from "@/hooks/service";
 import formList from "@/jsonDemo/structure.json";
+import { setKycData } from "@/redux/slices/aadharSlice";
 import { updateLoading } from "@/redux/slices/appSlice";
+import { updateIsText } from "@/redux/slices/serviceSlice";
 import { RootState } from "@/redux/store";
+import { QuickLinksType } from "@/types";
 import { base64ToFile } from "@/utils/base64ToFile";
 import { getDynamicRequest } from "@/utils/dynamicRequest";
 import { getIpAddress } from "@/utils/getIpAddress";
@@ -17,6 +27,8 @@ import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
+import PrefetchDecisionModal from "./components/PrefetchDecisionModal";
 
 interface PennyDropResult {
   registeredName?: string;
@@ -39,12 +51,15 @@ const RegisterBeneficiary = () => {
   const [isOld, setIsOld] = useState(false);
   const [district, setDistrict] = useState<TODO>([]);
   const [state, setState] = useState<TODO>([]);
+  const [panUploaded, setPanUploaded] = useState(false);
+  const [showPrefetchModal, setShowPrefetchModal] = useState(false);
 
   const { mutateAsync: pennyDropMutant } = useDynamicMutation<TODO>();
   const { mutateAsync: beneMutant } = useDynamicMutation<TODO>();
   const { mutateAsync: beneOldMutant } = useDynamicMutation<TODO>();
   const { mutateAsync: panMutant } = useDynamicMutation<TODO>();
   const { mutateAsync: fileUpload } = useFileUpload();
+  const { mutateAsync: panFileUpload } = usePanFileUpload();
 
   const [pennyDropResult, setPennyDropResult] =
     useState<PennyDropResult | null>(null);
@@ -80,9 +95,21 @@ const RegisterBeneficiary = () => {
   const beneOld = selectedService?.sequence?.find(
     (item) => item === "getBeneficiaryOld"
   );
+  const registerSenderName = "getDigiTokenLazy";
 
+  const requestRegisterSender = getDynamicRequest(
+    registerSenderName ?? "",
+    endpoints ?? {},
+    {},
+    {
+      Authorization: import.meta.env.VITE_AUTHORIZATION,
+      id: import.meta.env.VITE_TOKEN_ID,
+    },
+    {},
+    {},
+    "digi_auth_url"
+  );
   const panNo = selectedService?.sequence?.find((item) => item === "getPAN");
-
   const request = getDynamicRequest(stepName ?? "", endpoints ?? {});
 
   const { data, refetch, isLoading } = useDynamicQuery<TODO>(request!, {
@@ -130,7 +157,9 @@ const RegisterBeneficiary = () => {
       gender: getValues("gender") ?? "",
       dob: getValues("dob") ?? "",
       panNumber: pan ?? "",
-      profileImageId: getValues("attachment") ?? "", // Sending the profileImageId here
+      profileImageId: getValues("attachment") ?? "",
+      panUrl: getValues("panPDF"),
+      panVerificationType: panUploaded ? "manual" : "digiLocker",
     },
     bankAccountInfo: {
       accountName: "",
@@ -161,7 +190,6 @@ const RegisterBeneficiary = () => {
       addressState: getValues("tempState") ?? "",
       postalPinCode: getValues("tempPinCode") ?? "",
     },
-
     documents: [
       {
         documentFor: "documentFor_cda6df4abf49",
@@ -219,7 +247,7 @@ const RegisterBeneficiary = () => {
         setValue("attachment", photoFile);
       }
       // Set First Name
-      const firstName = aadharData?.digilockerAdhar?.name.split(" ")[0];
+      const firstName = aadharData?.digilockerAdhar?.name?.split(" ")[0];
       setValue("firstName", firstName);
       // setFieldsEditable((prev: TODO) => ({ ...prev, firstName: true }));
 
@@ -246,7 +274,7 @@ const RegisterBeneficiary = () => {
           /\s{2,}/g,
           " "
         ) ?? "";
-      setValue("completeAddress1", address1);
+      setValue("permanentAddressLine1", address1);
       // setFieldsEditable((prev) => ({ ...prev, address1: !!address1 }));
 
       // Set Pin Code
@@ -255,13 +283,15 @@ const RegisterBeneficiary = () => {
       // setFieldsEditable((prev) => ({ ...prev, pinCode: !!pinCode }));
 
       // Set District
-      const district = aadharData?.digilockerAdhar?.splitAddress?.city ?? "";
-      setValue("addressDistrict", district);
+      const district = aadharData?.digilockerAdhar?.splitAddress?.state ?? "";
+      setDistrict([district]);
+      setValue("permanentDistrict", district);
       // setFieldsEditable((prev) => ({ ...prev, district: !!district }));
 
       // Set State
       const state = aadharData?.digilockerAdhar?.splitAddress?.state ?? "";
-      setValue("addressState", state);
+      setState([state]);
+      setValue("permanentState", state);
       // setFieldsEditable((prev) => ({ ...prev, state: !!state }));
 
       // Set City
@@ -270,18 +300,16 @@ const RegisterBeneficiary = () => {
           /\s{2,}/g,
           " "
         ) ?? "";
-      setValue("addressCity", city);
+      setValue("permanentCity", city);
       // setFieldsEditable((prev) => ({ ...prev, city: !!city }));
 
       // Set Date of Birth
       const dobString = aadharData?.digilockerAdhar?.dob;
-
       setValue("dob", dobString);
       // setFieldsEditable((prev) => ({ ...prev, dob: true }));
 
       // Set Gender
       const genderValue = aadharData?.digilockerAdhar?.gender;
-
       setValue("gender", genderValue);
       // setFieldsEditable((prev) => ({ ...prev, gender: true }));
 
@@ -323,8 +351,6 @@ const RegisterBeneficiary = () => {
     try {
       dispatch(updateLoading({ isLoading: true }));
       const response = await panMutant(requestPan);
-      console.log("Pan Response", response);
-      // const response = await mutateAsync({ pan: pan, mobile: mobileNumber });
       const data = response?.apiResponseData?.data;
       setValue("firstName", data?.firstName);
       setValue("lastName", data?.lastName);
@@ -480,7 +506,9 @@ const RegisterBeneficiary = () => {
 
   const onSubmitBene = async () => {
     if (!requestBene) return;
+
     dispatch(updateLoading({ isLoading: true }));
+
     try {
       const response = await beneMutant(requestBene);
       if (response?.apiResponseData?.responseCode === "401") {
@@ -517,6 +545,62 @@ const RegisterBeneficiary = () => {
     }
   };
 
+  const handlePanFileUpload = async () => {
+    const file = getValues("panPDF");
+
+    // 1. Refetch session token if missing
+    const sessionResult = await refetchSession();
+    const fetchedToken =
+      sessionResult.data?.apiResponseData?.responseData?.token;
+
+    if (!fetchedToken) {
+      toast.error("Token not received from session API");
+      return;
+    }
+
+    setToken(fetchedToken);
+    localStorage.setItem("access_token", fetchedToken);
+
+    // Step 2: Get Upload URL & Fields
+    try {
+      const response = await panFileUpload({
+        fileType: "application/pdf",
+        serviceType: "PG_SERVICE",
+        subServiceType: "EDC_RECEIPT/RNT_RECEIPT",
+        documentType: "subServiceType",
+      });
+      const responseData = response?.data?.apiResponseData?.responseData;
+
+      const { url, fields, cdnUrl } = responseData;
+
+      // Step 3: Upload to S3
+      const formData = new FormData();
+      Object.entries(fields).forEach(([key, value]: TODO) => {
+        formData.append(key, value);
+      });
+
+      formData.append("panPDF", file);
+
+      const s3Response = await fetch(url, {
+        method: "POST",
+        body: formData,
+        mode: "no-cors", // required for direct S3 upload
+      });
+
+      // Step 4: Check success
+      if (s3Response.status === 0) {
+        setValue("panPdf", cdnUrl, { shouldValidate: true });
+        setPanUploaded(true);
+        Swal.fire("Success", "PAN uploaded successfully.", "success");
+      } else {
+        Swal.fire("Error", "Failed to upload file to S3.", "error");
+      }
+      console.log("uploadPanResponse", response);
+    } catch (error) {
+      console.log("Error", error);
+    }
+  };
+
   const onEdit = (stepKey: string) => {
     const stepKeys = Object.keys(formList?.dataFields) as Array<
       keyof typeof formList.dataFields
@@ -529,6 +613,126 @@ const RegisterBeneficiary = () => {
     }
   };
 
+  const { data: digitoken } = useDynamicQuery<TODO>(requestRegisterSender!, {
+    enabled: !!requestRegisterSender,
+    queryKey: [registerSenderName],
+  });
+
+  const accessToken = digitoken?.apiResponseData?.responseData?.accessToken;
+
+  const { refetch: fetchAadhaar } = useAadhaarRegistrationBeneLazy(
+    accessToken ?? "",
+    mobileNumber ?? "",
+    "FETCH"
+  );
+
+  const { mutateAsync: fetchDigiData } = useDigiData();
+
+  const handleReKYC = async () => {
+    if (!accessToken) {
+      toast.error("Access token not available.");
+      return;
+    }
+    dispatch(updateLoading({ isLoading: true }));
+    try {
+      const aadharRegister = await fetchAadhaar();
+      if (aadharRegister?.data?.apiResponseData?.responseCode === "200") {
+        const { url } = JSON.parse(
+          aadharRegister?.data?.apiResponseData?.responseData
+        );
+
+        const { requestId } = JSON.parse(
+          aadharRegister?.data?.apiResponseData?.responseData
+        );
+
+        const aadharRegisterJSON = JSON.parse(
+          aadharRegister?.data?.apiResponseData?.responseData
+        );
+
+        if (aadharRegisterJSON?.panAvaliable) {
+          // When PAN is available, directly set KYC data and update state
+          dispatch(setKycData(aadharRegisterJSON));
+
+          dispatch(updateIsText(QuickLinksType.RB));
+        } else {
+          const newChildWindow = window.open(
+            url,
+            "_blank",
+            "width=800,height=600"
+          );
+          // Only monitor the window when PAN is NOT available
+          const monitorWindow = setInterval(() => {
+            if (!newChildWindow || newChildWindow.closed) {
+              clearInterval(monitorWindow);
+              console.error("Child window closed before success.");
+            } else {
+              try {
+                const currentUrl = newChildWindow.location.href;
+
+                if (currentUrl.includes(import.meta.env.VITE_REDIRECTION_URL)) {
+                  const params = new URLSearchParams(
+                    new URL(currentUrl).search
+                  );
+                  const state = params.get("state");
+
+                  if (state || requestId) {
+                    (async () => {
+                      const digiDataResponse = await fetchDigiData({
+                        digiToken: accessToken,
+                        requestId: requestId!,
+                        beneMobileKyc: mobileNumber,
+                      });
+
+                      const digiResponse = JSON.parse(
+                        digiDataResponse?.apiResponseData?.responseData
+                      );
+
+                      dispatch(setKycData(digiResponse));
+
+                      if (
+                        digiDataResponse?.apiResponseData?.responseCode ===
+                        "200"
+                      ) {
+                        dispatch(updateIsText(QuickLinksType.RB));
+                      }
+
+                      console.log("Fetched Digi Data:", digiResponse);
+                    })();
+                  }
+
+                  newChildWindow.close();
+                  clearInterval(monitorWindow);
+                }
+              } catch (error) {
+                // Ignore errors due to cross-origin restrictions
+                console.debug("New Window Error", error);
+              }
+            }
+          }, 500);
+        }
+      } else {
+        toast.error(aadharRegister?.data?.apiResponseData?.responseMessage);
+        console.error(
+          "Error creating Digilocker URL:",
+          aadharRegister?.data?.apiResponseData?.responseMessage
+        );
+      }
+    } catch (error) {
+      toast.error("Error Submitting Re-KYC");
+      console.log(error);
+    } finally {
+      dispatch(updateLoading({ isLoading: false }));
+    }
+  };
+
+  const handleNextStepAfterPrefetch = async () => {
+    const fieldsToValidate = getCurrentStepFieldNames();
+    const isStepValid = await trigger(fieldsToValidate);
+    if (isStepValid) {
+      setIndex((prev) => prev + 1);
+    }
+  };
+
   const render = () => {
     const stepKeys = Object.keys(formList?.dataFields) as Array<
       keyof typeof formList.dataFields
@@ -537,31 +741,42 @@ const RegisterBeneficiary = () => {
     const currentStep = formList.dataFields[currentKey];
 
     if (!Array.isArray(currentStep)) {
-      return currentStep?.displayField?.map((displaylist: TODO) => {
+      const fields = [...(currentStep?.displayField ?? [])];
+
+      // Inject PAN PDF upload field only in Step 1 and if Aadhar data is present
+      if (index === 0 && aadharData) {
+        fields.push({
+          key: "panPDF",
+          label: "Upload PAN PDF",
+          placeholder: "Upload PAN PDF",
+          fieldType: "file",
+          uploadType: "pdf",
+          validation: {
+            required: "N",
+            validations: [
+              {
+                errorMessage: "Please Upload Pdf",
+              },
+            ],
+          },
+        });
+      }
+
+      // Now render fields with your existing logic preserved
+      return fields.map((displaylist: TODO) => {
         // Dynamically assign options for district, state, city
         let dynamicOptions: Array<{ label: string; value: string }> = [];
 
-        // Dynamically set select options
         if (displaylist.fieldType === "dropdown") {
           switch (displaylist.key) {
             case "permanentDistrict":
-              dynamicOptions = district.map((item: string) => ({
-                label: item,
-                value: item,
-              }));
-              break;
-            case "permanentState":
-              dynamicOptions = state.map((item: string) => ({
-                label: item,
-                value: item,
-              }));
-              break;
             case "tempDistrict":
               dynamicOptions = district.map((item: string) => ({
                 label: item,
                 value: item,
               }));
               break;
+            case "permanentState":
             case "tempState":
               dynamicOptions = state.map((item: string) => ({
                 label: item,
@@ -628,7 +843,11 @@ const RegisterBeneficiary = () => {
                 : undefined
             }
             disableButton={hasInputError}
-            onChangeImage={handleFileUpload} // for image formData change
+            onChangeImage={() =>
+              displaylist?.key === "attachment"
+                ? handleFileUpload()
+                : handlePanFileUpload()
+            } // for image formData change
             onClick={() =>
               displaylist?.key === "panNumber"
                 ? onSubmitForData()
@@ -659,11 +878,11 @@ const RegisterBeneficiary = () => {
   if (isLoading) return <Loader />;
 
   return (
-    <div className=" min-h-0 h-full">
+    <div className=" min-h-0 lg:h-full">
       <FormProvider {...methods}>
         <div
           className={clsx(
-            " h-full flex-row gap-8 min-h-0",
+            " lg:h-full flex-row gap-8 min-h-0",
             formList?.layout === "horizontallayout" ? "bg-[#F2F2F2]" : "flex"
           )}
         >
@@ -684,9 +903,9 @@ const RegisterBeneficiary = () => {
 
           <div
             className={clsx(
-              " relative flex flex-col gap-5 !px-8 !py-10 h-[400px] min-h-0 overflow-y-auto",
+              " relative flex flex-col gap-5 !px-8 !py-10 lg:h-[400px] min-h-0 overflow-y-auto",
               formList?.layout === "horizontallayout"
-                ? "!mx-10 shadow-xl rounded-md bg-white"
+                ? "lg:mx-10 shadow-xl rounded-md bg-white"
                 : "w-[80%]"
             )}
           >
@@ -717,12 +936,11 @@ const RegisterBeneficiary = () => {
                 {index < Object.keys(formList?.dataFields).length - 1 ? (
                   formList?.formType === "multiple" && (
                     <div
-                      onClick={async () => {
-                        const fieldsToValidate = getCurrentStepFieldNames();
-                        const isStepValid = await trigger(fieldsToValidate);
-                        if (isStepValid) {
-                          setIndex((prev) => prev + 1);
+                      onClick={() => {
+                        if (aadharData) {
+                          setShowPrefetchModal(true);
                         }
+                        handleNextStepAfterPrefetch();
                       }}
                       className=" flex flex-row items-center gap-2 bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !px-4 !py-2 rounded cursor-pointer"
                     >
@@ -735,7 +953,7 @@ const RegisterBeneficiary = () => {
                     type="submit"
                     className="bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !px-4 !py-2 rounded cursor-pointer"
                     title="Submit Now"
-                    onClick={onSubmitBene}
+                    onClick={() => onSubmitBene()}
                   >
                     Submit
                   </button>
@@ -744,6 +962,14 @@ const RegisterBeneficiary = () => {
             </div>
           </div>
         </div>
+
+        <PrefetchDecisionModal
+          onReKYC={handleReKYC}
+          isOpen={showPrefetchModal}
+          onProceed={handleNextStepAfterPrefetch}
+          onClose={() => setShowPrefetchModal(false)}
+          form="beneficiary"
+        />
       </FormProvider>
     </div>
   );

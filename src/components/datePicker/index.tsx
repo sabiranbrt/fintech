@@ -86,7 +86,6 @@ const DatePickers = ({
       name={names}
       rules={ValidationRules(validation)}
       render={({ field }) => {
-        console.log("field", field.value);
 
         return (
           <div

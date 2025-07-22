@@ -8,13 +8,13 @@ const BackButton = () => {
   );
 
   return (
-    <div className=" mr-5 rounded-md w-full">
+    <div className=" mr-5 rounded-md w-full lg:mb-0 mb-2">
       <div className="flex items-center justify-center">
         <div>
           <BtnPrimary title="Back" />
         </div>
         <div className="ml-2 w-full flex flex-row justify-center">
-          <p className="text-secondary-dark text-xl font-semibold">
+          <p className="text-secondary-dark lg:text-xl md:text-sm text-sm font-semibold">
             {isText ? isText  : selectedService?.label}
           </p>
         </div>

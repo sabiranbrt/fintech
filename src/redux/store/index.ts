@@ -8,6 +8,7 @@ import formReducer from '../slices/customFormSlice';
 import stringValueReducer from '../slices/singleValueSlice';
 import accountReducer from '../slices/senderDataSlice';
 import kycReducer from '../slices/aadharSlice';
+import toggleReducer from '../slices/toggleSlice';
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     stringValue: stringValueReducer,
     senderData: accountReducer,
     kyc: kycReducer,
+    toggle: toggleReducer
   },
 });
 

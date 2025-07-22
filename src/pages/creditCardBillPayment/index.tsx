@@ -82,7 +82,7 @@ const CreditCardBillPayment = ({ senderData }: IProps) => {
   return (
     <>
       {senderData ? (
-        <div className=" !p-4 bg-white w-full h-full overflow-y-auto">
+        <div className=" !p-4 bg-white w-full lg:h-full lg:overflow-y-auto">
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-1 mt-2 relative">
               <SelectCusOpt

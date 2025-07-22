@@ -1,16 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { FaEye, FaEyeSlash, FaHome } from "react-icons/fa";
 import { IoMdQrScanner } from "react-icons/io";
 import { MdFullscreenExit } from "react-icons/md";
 import logo from "@assets/images/logo.png";
 import { useBalance } from "@/hooks/service";
+import hamburgerMenu from "@assets/icons/hamburger-maenu.svg";
+import CrossMenu from "@assets/icons/menu-close.svg";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { setToggle } from "@/redux/slices/toggleSlice";
 
 export const TopNavbar = () => {
+  const { isToggled } = useSelector((state: RootState) => state.toggle);
+  const dispatch = useDispatch();
   const { data: balanceData } = useBalance();
 
   const balance = balanceData?.apiResponseData?.data;
-
   const totalBalance = balance?.current_balance;
 
   const [showBalance, setShowBalance] = useState(false);
@@ -30,7 +35,7 @@ export const TopNavbar = () => {
   };
 
   const isInFullscreen = () => {
-    const d: any = document;
+    const d: TODO = document;
     return (
       d.fullscreenElement ||
       d.webkitFullscreenElement ||
@@ -38,9 +43,10 @@ export const TopNavbar = () => {
       d.msFullscreenElement
     );
   };
+
   const handleFullscreen = () => {
-    const d: any = document;
-    const el: any = d.documentElement;
+    const d: TODO = document;
+    const el: TODO = d.documentElement;
 
     if (!isInFullscreen()) {
       /* ENTER fullscreen */
@@ -60,16 +66,16 @@ export const TopNavbar = () => {
   };
 
   return (
-    <nav className=" bg-gradient-to-r from-[#dcdfec] to-[#a0ddde] flex items-center justify-between px-4 py-1 shadow-md">
+    <nav className=" sticky top-0 z-50 bg-gradient-to-r from-[#dcdfec] to-[#a0ddde] flex items-center justify-between px-4 py-1 shadow-md">
       <img
         src={logo}
         alt="Logo"
-        className="h-16 cursor-pointer"
+        className="h-7 lg:h-16 cursor-pointer mr-2"
         onClick={redirectHome}
       />
-      <div className="flex justify-center items-center gap-7">
-        <div className="flex items-center gap-5">
-          <div className="text-sm">
+      <div className="flex justify-center items-center gap-2 lg:gap-7">
+        <div className="items-center justify-between gap-1 lg:gap-5 flex">
+          <div className="text-sm hidden lg:block">
             <span className="font-bold text-primary-dark">Email: </span>
             <span>help@finkeda.com</span>
           </div>
@@ -93,7 +99,7 @@ export const TopNavbar = () => {
           </div>
         </div>
         <div
-          className="flex items-center p-2 bg-transparent border border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:text-primary transition-all duration-300"
+          className="hidden lg:flex items-center whitespace-nowrap p-2 md-2 sm:p-1 bg-transparent border border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:text-primary transition-all duration-300"
           onClick={handleFullscreen}
           style={{
             border: "3px solid transparent",
@@ -114,15 +120,17 @@ export const TopNavbar = () => {
               </span>
             ) : (
               <span className="flex">
-                <IoMdQrScanner className="text-xl mr-2" title="Full Screen" />
+                <IoMdQrScanner
+                  className="text-xl mr-2 md:text-xl sm:text-sm"
+                  title="Full Screen"
+                />
                 <p>Full Screen</p>
               </span>
             )}
           </span>
         </div>
-
         <div
-          className="flex items-center p-2 bg-transparent mr-2 border border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:text-primary transition-all duration-300"
+          className="flex items-center p-1 lg:p-2 bg-transparent mr-2 border border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:text-primary transition-all duration-300"
           onClick={redirectHome}
           style={{
             border: "3px solid transparent",
@@ -132,8 +140,20 @@ export const TopNavbar = () => {
             WebkitMaskImage: "linear-gradient(white, white)",
           }}
         >
-          <FaHome className="text-xl mr-2" title="Home" />
-          <span className="text-sm">Home</span>
+          <FaHome className=" mr-0 lg:mr-2 lg:text-xl text-sm" title="Home" />
+          <span className="text-sm hidden lg:block">Home</span>
+        </div>
+
+        <div className=" block md:hidden">
+          {!isToggled ? (
+            <div onClick={() => dispatch(setToggle(true))}>
+              <img src={hamburgerMenu} alt="hamburger-menu" className=" h-8" />
+            </div>
+          ) : (
+            <div onClick={() => dispatch(setToggle(false))}>
+              <img src={CrossMenu} alt="close-menu" className=" h-8" />
+            </div>
+          )}
         </div>
       </div>
     </nav>

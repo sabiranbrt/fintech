@@ -199,3 +199,22 @@ export const useFileUpload = () => {
     })
     return query
 }
+
+export const usePanFileUpload = () => {
+    const query = useMutation({
+        mutationFn: (formData: TODO) => {
+            return EncrptionInterceptor("support_ticket").post("upload/file",
+                formData,
+            )
+        },
+
+        onError: (error) => {
+            console.log("error", error)
+        },
+
+        onSuccess: (response) => {
+            console.log("data", response)
+        },
+    })
+    return query
+}

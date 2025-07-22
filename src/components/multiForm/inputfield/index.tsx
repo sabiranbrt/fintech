@@ -32,6 +32,7 @@ interface IProp {
   placeHolderSize?: string;
   textClassName?: string;
   loading?: boolean;
+  aadharData?: boolean;
   focusBorderColor?: string;
   placeHoldercolor?: string;
   focusErrorBorderColor?: string;
@@ -57,6 +58,7 @@ const InputField = ({
   rules,
   names,
   txnId,
+  aadharData,
   registeredName,
   loading,
   message,
@@ -148,7 +150,7 @@ const InputField = ({
               }}
             />
 
-            {staticFetchBtn || ActionFetch ? (
+            {(staticFetchBtn || ActionFetch ) && aadharData ? (
               <div className=" absolute top-1.5 right-2.5">
                 <button
                   type="submit"

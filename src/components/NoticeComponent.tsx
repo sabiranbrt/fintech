@@ -1,9 +1,9 @@
 const NoticeComponent = () => {
   return (
     <div
-      className="bg-white rounded-md px-5 py-4 h-full overflow-y-auto"
+      className="bg-white rounded-md px-5 py-4 lg:h-full lg:overflow-y-auto"
       style={{
-        boxShadow: "rgba(0, 0, 0, 0.09) 0px 3px 12px",
+        boxShadow: "rgba(0, 0, 0, 0.09) 0px 3px 12px"
       }}
     >
       <div className="text-center">
