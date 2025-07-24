@@ -49,7 +49,7 @@ interface IProps {
   OptionSelectColor?: string;
   OptionFocusColor?: string;
   OptionTextColor?: string;
-  disableButton?: boolean;
+  disableButton?: string[];
   UploadIcon?: string;
   FileIcon?: string;
   CrossIcon?: string;

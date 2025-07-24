@@ -43,7 +43,7 @@ const RegisterBeneficiary = () => {
   const senderAccount = useSelector(
     (state: RootState) => state.senderData.sender
   );
-
+  const [prefetchModalShown, setPrefetchModalShown] = useState(false);
   const aadharData = useSelector((state: RootState) => state.kyc.kyc);
   const dispatch = useDispatch();
 
@@ -53,6 +53,7 @@ const RegisterBeneficiary = () => {
   const [state, setState] = useState<TODO>([]);
   const [panUploaded, setPanUploaded] = useState(false);
   const [showPrefetchModal, setShowPrefetchModal] = useState(false);
+  const [aadhaarPinCode, setAadharPinCode] = useState("");
 
   const { mutateAsync: pennyDropMutant } = useDynamicMutation<TODO>();
   const { mutateAsync: beneMutant } = useDynamicMutation<TODO>();
@@ -95,6 +96,7 @@ const RegisterBeneficiary = () => {
   const beneOld = selectedService?.sequence?.find(
     (item) => item === "getBeneficiaryOld"
   );
+
   const registerSenderName = "getDigiTokenLazy";
 
   const requestRegisterSender = getDynamicRequest(
@@ -231,7 +233,56 @@ const RegisterBeneficiary = () => {
   const bank = data?.apiResponseData?.data;
 
   const { sender } = useSelector((state: RootState) => state.senderData);
-  const [hasInputError, setHasInputError] = useState(false);
+  const [disabledFields, setDisabledFields] = useState<string[]>([]);
+
+  const onSubmitForData = async () => {
+    if (!requestPan) return;
+    try {
+      dispatch(updateLoading({ isLoading: true }));
+      const response = await panMutant(requestPan);
+      const data = response?.apiResponseData?.data;
+      setValue("firstName", data?.firstName);
+      setValue("lastName", data?.lastName);
+      setValue("middleName", data?.middleName);
+      setValue("dob", data?.dob);
+      setValue("gender", data?.gender);
+      setValue("permanentAddressLine1", data?.address);
+      setValue("pinCode", data?.pincode);
+      setValue("permanentCity", data?.city);
+      setValue("permanentState", data?.state);
+      setAadharPinCode(data.pincode);
+      handlePinCodeChangeWrapper(data.pincode);
+      console.log("data.pincode", data.pincode);
+
+      if (response?.apiResponseData?.responseCode === "200") {
+        const fieldsToCheck = [
+          "firstName",
+          "lastName",
+          "middleName",
+          "dob",
+          "gender",
+        ];
+        const disabled: string[] = [];
+
+        fieldsToCheck.forEach((fieldName) => {
+          const value = data?.[fieldName];
+          if (value) {
+            setValue(fieldName, value);
+            disabled.push(fieldName);
+          }
+        });
+
+        setDisabledFields(disabled); // Disable only those fields with values
+      }
+      if (response?.apiResponseData?.responseCode === "411") {
+        toast.error(response?.apiResponseData?.responseMessage);
+      }
+    } catch (err) {
+      console.log("Error", err);
+    } finally {
+      dispatch(updateLoading({ isLoading: false }));
+    }
+  };
 
   useEffect(() => {
     if (bankDetails?.ifsc) {
@@ -241,6 +292,7 @@ const RegisterBeneficiary = () => {
 
   useEffect(() => {
     if (aadharData) {
+      const tempDisabled: TODO[] = [];
       if (aadharData?.digilockerAdhar?.photo) {
         // Convert base64 to File object
         const photoFile = base64ToFile(aadharData?.digilockerAdhar?.photo);
@@ -249,6 +301,7 @@ const RegisterBeneficiary = () => {
       // Set First Name
       const firstName = aadharData?.digilockerAdhar?.name?.split(" ")[0];
       setValue("firstName", firstName);
+      tempDisabled.push("firstName");
       // setFieldsEditable((prev: TODO) => ({ ...prev, firstName: true }));
 
       // Set Middle Name
@@ -258,6 +311,7 @@ const RegisterBeneficiary = () => {
           ?.slice(1, aadharData?.digilockerAdhar?.name?.split(" ")?.length - 1)
           ?.join(" ") ?? "";
       setValue("middleName", middleName);
+      tempDisabled.push("middleName");
       // setFieldsEditable((prev) => ({ ...prev, middleName: !!middleName }));
 
       // Set Last Name
@@ -266,7 +320,7 @@ const RegisterBeneficiary = () => {
           aadharData?.digilockerAdhar?.name?.split(" ")?.length - 1
         ] || "";
       setValue("lastName", lastName);
-      // setFieldsEditable((prev) => ({ ...prev, lastName: !!lastName }));
+      tempDisabled.push("lastName");
 
       // Set Address 1
       const address1 =
@@ -275,24 +329,24 @@ const RegisterBeneficiary = () => {
           " "
         ) ?? "";
       setValue("permanentAddressLine1", address1);
-      // setFieldsEditable((prev) => ({ ...prev, address1: !!address1 }));
+      tempDisabled.push("permanentAddressLine1");
 
       // Set Pin Code
       const pinCode = aadharData?.digilockerAdhar?.splitAddress?.pincode ?? "";
       setValue("pinCode", pinCode);
-      // setFieldsEditable((prev) => ({ ...prev, pinCode: !!pinCode }));
+      tempDisabled.push("pinCode");
 
       // Set District
       const district = aadharData?.digilockerAdhar?.splitAddress?.state ?? "";
       setDistrict([district]);
       setValue("permanentDistrict", district);
-      // setFieldsEditable((prev) => ({ ...prev, district: !!district }));
+      tempDisabled.push("permanentDistricts");
 
       // Set State
       const state = aadharData?.digilockerAdhar?.splitAddress?.state ?? "";
       setState([state]);
       setValue("permanentState", state);
-      // setFieldsEditable((prev) => ({ ...prev, state: !!state }));
+      tempDisabled.push("permanentState");
 
       // Set City
       const city =
@@ -301,28 +355,31 @@ const RegisterBeneficiary = () => {
           " "
         ) ?? "";
       setValue("permanentCity", city);
-      // setFieldsEditable((prev) => ({ ...prev, city: !!city }));
+      tempDisabled.push("permanentCity");
 
       // Set Date of Birth
       const dobString = aadharData?.digilockerAdhar?.dob;
       setValue("dob", dobString);
+      tempDisabled.push("dob");
       // setFieldsEditable((prev) => ({ ...prev, dob: true }));
 
       // Set Gender
       const genderValue = aadharData?.digilockerAdhar?.gender;
       setValue("gender", genderValue);
-      // setFieldsEditable((prev) => ({ ...prev, gender: true }));
+      tempDisabled.push("gender");
 
       // Set PAN Number
       const panNumber = aadharData?.panExtractedDetails?.panNumber || "";
       setValue("panNumber", panNumber);
-      // setFieldsEditable((prev) => ({ ...prev, panNumber: !!panNumber }));
+      tempDisabled.push(["panNumber"]);
       // Set masked Number and maskedmobile
       const maskedAadhaarNo =
         aadharData?.panExtractedDetails?.maskedAadhaar || "";
       setValue("maskedAadhaarNo", maskedAadhaarNo);
       const maskedMobile = aadharData?.panExtractedDetails?.mobileNumber || "";
       setValue("maskedMobile", maskedMobile);
+
+      setDisabledFields(tempDisabled);
     }
   }, [aadharData, setValue]);
 
@@ -346,34 +403,13 @@ const RegisterBeneficiary = () => {
     }
   };
 
-  const onSubmitForData = async () => {
-    if (!requestPan) return;
-    try {
-      dispatch(updateLoading({ isLoading: true }));
-      const response = await panMutant(requestPan);
-      const data = response?.apiResponseData?.data;
-      setValue("firstName", data?.firstName);
-      setValue("lastName", data?.lastName);
-      setValue("middleName", data?.middleName);
-      setValue("dob", data?.dob);
-      setValue("gender", data?.gender);
-      if (response?.apiResponseData?.responseCode === "200") {
-        setHasInputError(true);
-      }
-    } catch (err) {
-      console.log("Error", err);
-    } finally {
-      dispatch(updateLoading({ isLoading: false }));
-    }
-  };
-
   const handlePanInput = (e: React.FormEvent<HTMLInputElement>) => {
     const value = e.currentTarget.value.toUpperCase();
     if (sender?.pan && value.toUpperCase() === sender.pan.toUpperCase()) {
       toast.error("Sender And Beneficiary Pan Number Cannot Be Same");
-      setHasInputError(true);
+      // setHasInputError(true);
     } else {
-      setHasInputError(false);
+      // setHasInputError(false);
     }
   };
 
@@ -426,14 +462,15 @@ const RegisterBeneficiary = () => {
 
   const { refetch: refetchPinCode } = usePinCode({
     token: token,
-    values: pinCodeValue,
+    values: pinCodeValue ?? aadhaarPinCode,
     enabled: false, // prevent auto-fetch
   });
 
   const handlePinCodeChangeWrapper = async (
     e: React.FormEvent<HTMLInputElement>
   ) => {
-    const pin = e.currentTarget.value;
+    const pin = typeof e === "string" ? e : e.currentTarget.value;
+    console.log("pin", pin);
     // Set the new pincode value in form
     setValue("pinCode", pin);
 
@@ -518,7 +555,7 @@ const RegisterBeneficiary = () => {
           toast.success(response.apiResponseData.responseMessage);
         }
       } else {
-        toast.error(response?.data?.apiResponseData.responseMessage);
+        toast.error(response?.apiResponseData.responseMessage);
       }
     } catch (err) {
       console.log("err", err);
@@ -652,7 +689,6 @@ const RegisterBeneficiary = () => {
         if (aadharRegisterJSON?.panAvaliable) {
           // When PAN is available, directly set KYC data and update state
           dispatch(setKycData(aadharRegisterJSON));
-
           dispatch(updateIsText(QuickLinksType.RB));
         } else {
           const newChildWindow = window.open(
@@ -842,7 +878,7 @@ const RegisterBeneficiary = () => {
                 ? handlePinCodeChangeWrapper
                 : undefined
             }
-            disableButton={hasInputError}
+            disableButton={disabledFields}
             onChangeImage={() =>
               displaylist?.key === "attachment"
                 ? handleFileUpload()
@@ -937,10 +973,12 @@ const RegisterBeneficiary = () => {
                   formList?.formType === "multiple" && (
                     <div
                       onClick={() => {
-                        if (aadharData) {
+                        if (aadharData && !prefetchModalShown) {
                           setShowPrefetchModal(true);
+                          setPrefetchModalShown(true);
+                        } else {
+                          handleNextStepAfterPrefetch();
                         }
-                        handleNextStepAfterPrefetch();
                       }}
                       className=" flex flex-row items-center gap-2 bg-[#5081B9] hover:bg-[#000769] transition-[2000] text-white !px-4 !py-2 rounded cursor-pointer"
                     >

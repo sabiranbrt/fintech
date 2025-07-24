@@ -34,11 +34,12 @@ interface IProp {
   onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
   readOnly?: boolean;
   validation?: ValidationProps;
-  disableButton?: boolean;
+  disableButton?: string[];
   type?: string;
   onChange?: (value: string) => void;
   onClick?: () => void;
 }
+
 const DatePickers = ({
   names,
   placeHolder,
@@ -73,20 +74,96 @@ const DatePickers = ({
     const d = date.getDate().toString().padStart(2, "0");
     return `${d}-${m}-${y}`;
   };
-  const parseDate = (dateStr: string): Date | null => {
-    if (!dateStr) return null;
-    const [day, month, year] = dateStr.split("-");
-    const isoString = `${year}-${month}-${day}`;
-    const date = new Date(isoString);
-    return isNaN(date.getTime()) ? null : date;
+
+  const parseDate = (value: TODO): Date | null => {
+    if (!value) return null;
+
+    // If it's already a Date object, return it
+    if (value instanceof Date) {
+      return isNaN(value.getTime()) ? null : value;
+    }
+
+    // If it's a string, try to parse it
+    if (typeof value === "string") {
+      const trimmedValue = value.trim();
+
+      // Handle dd-mm-yyyy format
+      if (trimmedValue.includes("-")) {
+        const parts = trimmedValue.split("-");
+        if (parts.length === 3) {
+          const [day, month, year] = parts.map((p) => p.trim());
+          const dayNum = parseInt(day, 10);
+          const monthNum = parseInt(month, 10);
+          const yearNum = parseInt(year, 10);
+
+          // Validate ranges
+          if (
+            dayNum >= 1 &&
+            dayNum <= 31 &&
+            monthNum >= 1 &&
+            monthNum <= 12 &&
+            yearNum > 0
+          ) {
+            const date = new Date(yearNum, monthNum - 1, dayNum);
+            return date;
+          }
+        }
+      }
+
+      // Handle dd/mm/yyyy format (day first) or mm/dd/yyyy format (month first)
+      if (trimmedValue.includes("/")) {
+        const parts = trimmedValue.split("/");
+        if (parts.length === 3) {
+          const [first, second, year] = parts.map((p) => p.trim());
+          const firstNum = parseInt(first, 10);
+          const secondNum = parseInt(second, 10);
+          const yearNum = parseInt(year, 10);
+
+          let day, month;
+
+          if (firstNum > 12) {
+            // dd/mm/yyyy format
+            day = firstNum;
+            month = secondNum;
+          } else if (secondNum > 12) {
+            // mm/dd/yyyy format
+            month = firstNum;
+            day = secondNum;
+          } else {
+            // Ambiguous case, assume dd/mm/yyyy based on your example
+            day = firstNum;
+            month = secondNum;
+          }
+
+          // Validate ranges
+          if (
+            day >= 1 &&
+            day <= 31 &&
+            month >= 1 &&
+            month <= 12 &&
+            yearNum > 0
+          ) {
+            const date = new Date(yearNum, month - 1, day);
+            return date;
+          }
+        }
+      }
+
+      // Try to parse other string formats
+      const date = new Date(trimmedValue);
+      return isNaN(date.getTime()) ? null : date;
+    }
+
+    return null;
   };
+
   return (
     <Controller
       control={control}
       name={names}
       rules={ValidationRules(validation)}
       render={({ field }) => {
-
+      
         return (
           <div
             className="relative"
@@ -94,7 +171,7 @@ const DatePickers = ({
             data-tooltip-content={`${placeHolder}`}
           >
             <DatePicker
-             selected={parseDate(field.value)}
+              selected={parseDate(field.value)}
               className={clsx(
                 "outline-0 p-3",
                 textClassName
@@ -116,14 +193,13 @@ const DatePickers = ({
               )}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              disabled={disableButton}
+              disabled={disableButton?.includes(names)}
               placeholderText="dd/mm/yyyy"
               onChange={(date: Date | null) => {
                 field.onChange(date);
                 onChange?.(formatDateToISO(date));
               }}
               readOnly={readOnly}
-              dateFormat="dd-MM-yyyy"
             />
 
             {errors[names] && (

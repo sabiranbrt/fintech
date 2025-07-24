@@ -43,7 +43,7 @@ interface IProp {
   onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
   readOnly?: boolean;
   validation?: ValidationProps;
-  disableButton?: boolean;
+  disableButton?: string[];
   type?: string;
   onChange?: (value: string) => void;
   onClick?: () => void;
@@ -136,7 +136,7 @@ const InputField = ({
               onFocus={handleFocus}
               onBlur={handleBlur}
               defaultValue={field.value}
-              disabled={validTick || disableButton}
+              disabled={validTick || disableButton?.includes(names)}
               readOnly={validTick}
               maxLength={maxLength}
               type={type}
@@ -150,16 +150,16 @@ const InputField = ({
               }}
             />
 
-            {(staticFetchBtn || ActionFetch ) && aadharData ? (
+            {(staticFetchBtn || ActionFetch) && aadharData ? (
               <div className=" absolute top-1.5 right-2.5">
                 <button
                   type="submit"
                   disabled={
-                    !field.value?.trim() || !!errors[names] || disableButton
+                    !field.value?.trim() || !!errors[names] || disableButton?.includes(names)
                   }
                   className={clsx(
                     " transition-[2000] text-white !px-2 !py-1 rounded cursor-pointer",
-                    !field.value?.trim() || !!errors[names] || disableButton
+                    !field.value?.trim() || !!errors[names] || disableButton?.includes(names)
                       ? "bg-gray-300"
                       : "bg-[#5081B9]"
                   )}

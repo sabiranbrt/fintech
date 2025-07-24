@@ -15,9 +15,14 @@ export const TopNavbar = () => {
   const dispatch = useDispatch();
   const { data: balanceData } = useBalance();
 
-  const balance = balanceData?.apiResponseData?.data;
-  const totalBalance = balance?.current_balance;
+  // const balance = balanceData?.apiResponseData?.data;
+  const rawBalance = parseFloat(balanceData?.apiResponseData?.data?.operative_balance).toLocaleString();
+  const mainAmount = parseFloat(balanceData?.apiResponseData?.data?.mainwallet).toLocaleString();
+  const lienAmount = parseFloat(balanceData?.apiResponseData?.data?.lien_amount).toLocaleString();
+  const creditAmount = parseFloat(balanceData?.apiResponseData?.data?.creditwallet).toLocaleString();
+  // const totalBalance = parseFloat(balance?.current_balance).toLocaleString();
 
+  const [showTooltip, setShowTooltip] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -28,10 +33,12 @@ export const TopNavbar = () => {
 
   const handleMouseUp = () => {
     setShowBalance(false);
+    setShowTooltip(false);
   };
 
   const handleMouseDown = () => {
     setShowBalance(true);
+    setShowTooltip(true);
   };
 
   const isInFullscreen = () => {
@@ -83,9 +90,9 @@ export const TopNavbar = () => {
             <span className="font-bold text-primary-dark">Toll Free No: </span>
             <span>08069627000</span>
           </div>
-          <div className="text-sm">
+          <div className="text-sm relative">
             <span className="font-bold text-primary-dark">Total Balance: </span>
-            <span>{showBalance ? totalBalance : "XXX"}</span>
+            <span>{showBalance ? rawBalance : "XXX"}</span>
             <button
               onMouseDown={handleMouseDown}
               onMouseUp={handleMouseUp}
@@ -96,6 +103,36 @@ export const TopNavbar = () => {
             >
               {showBalance ? <FaEye /> : <FaEyeSlash />}
             </button>
+
+            {showTooltip && (
+              <div className="absolute top-full left-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-3 min-w-64 z-10">
+                <div className="text-xs text-gray-600 mb-2 font-bold text-center">
+                  Account Balances
+                </div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Main</span>
+                    <span className="font-medium">
+                      {showBalance ? mainAmount : "XXX"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Credit</span>
+                    <span className="font-medium">
+                      {showBalance ? creditAmount : "XXX"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Reserve</span>
+                    <span className="font-medium">
+                      {showBalance ? lienAmount : "XXX"}
+                    </span>
+                  </div>
+                </div>
+                {/* Arrow pointing up */}
+                <div className="absolute -top-2 left-4 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-white"></div>
+              </div>
+            )}
           </div>
         </div>
         <div

@@ -23,7 +23,7 @@ interface IProps {
   readOnly?: boolean;
   type?: string;
   OptionSelectColor?: string;
-  disableButton?: boolean;
+  disableButton?: string[];
   OptionFocusColor?: string;
   OptionTextColor?: string;
   placeHolder?: string;
@@ -147,7 +147,7 @@ const SelectField = ({
             data-tooltip-content={`${placeHolder}`}
           >
             <Select
-              isDisabled={disableButton}
+              isDisabled={disableButton?.includes(names)}
               isSearchable={isSearchable}
               placeholder={!isFocused ? placeHolder : ""}
               styles={customStyles}

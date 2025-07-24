@@ -130,10 +130,8 @@ const BeneficiaryDetails = ({
       const aadharRegisterJSON = JSON.parse(
         aadharRegister?.data?.apiResponseData?.responseData
       );
-
-      console.log("aadharRegisterJSON",aadharRegisterJSON)
-
-      if (aadharRegisterJSON?.panAvaliable) {
+      console.log("aadharRegisterJSON", aadharRegisterJSON);
+      if (aadharRegisterJSON?.isModal) {
         // When PAN is available, directly set KYC data and update state
         dispatch(setKycData(aadharRegisterJSON));
 
@@ -292,30 +290,30 @@ const BeneficiaryDetails = ({
 
                           <div>
                             <>
-                            <h3 className="flex items-center gap-2 lg:text-base text-sm font-medium text-grey-900">
-                              {selectedService?.label === QuickLinksType?.FW
-                                ? account.bankName
-                                : `${account?.beneficiaryFirstName} ${account?.beneficiaryMiddleName} ${account?.beneficiaryLastName}`}
-                              {account.defaultAccount && (
-                                <span className="flex items-center text-xs text-blue-500">
-                                  <GrUserSettings className="mr-1" />
-                                  (Primary Account)
-                                </span>
-                              )}
-                              {account.selfAccount && (
-                                <span className="flex items-center text-xs text-secondary-dark">
-                                  <GrUserSettings className="mr-1" />
-                                  (Self Account)
-                                </span>
-                              )}
-                              {!account.selfAccount &&
-                                !account.defaultAccount && (
-                                  <span className="flex items-center text-xs text-primary">
+                              <h3 className="flex items-center gap-2 lg:text-base text-sm font-medium text-grey-900">
+                                {selectedService?.label === QuickLinksType?.FW
+                                  ? account.bankName
+                                  : `${account?.beneficiaryFirstName} ${account?.beneficiaryMiddleName} ${account?.beneficiaryLastName}`}
+                                {account.defaultAccount && (
+                                  <span className="flex items-center text-xs text-blue-500">
                                     <GrUserSettings className="mr-1" />
-                                    (Whitelisted Account)
+                                    (Primary Account)
                                   </span>
                                 )}
-                            </h3>
+                                {account.selfAccount && (
+                                  <span className="flex items-center text-xs text-secondary-dark">
+                                    <GrUserSettings className="mr-1" />
+                                    (Self Account)
+                                  </span>
+                                )}
+                                {!account.selfAccount &&
+                                  !account.defaultAccount && (
+                                    <span className="flex items-center text-xs text-primary">
+                                      <GrUserSettings className="mr-1" />
+                                      (Whitelisted Account)
+                                    </span>
+                                  )}
+                              </h3>
                             </>
 
                             <div className="flex lg:gap-4 gap-0 text-gray-700 text-sm lg:flex-nowrap flex-wrap">
@@ -467,15 +465,21 @@ const BeneficiaryDetails = ({
                       {selectedService?.label === QuickLinksType.FW && (
                         <div className="grid grid-cols-2 lg:gap-6 gap-1">
                           <div>
-                            <p className="font-medium lg:text-lg text-sm">Bank Name:</p>
+                            <p className="font-medium lg:text-lg text-sm">
+                              Bank Name:
+                            </p>
                             <p className="text-sm">{account.bankName}</p>
                           </div>
                           <div>
-                            <p className="font-medium lg:text-lg text-sm">Account Number:</p>
+                            <p className="font-medium lg:text-lg text-sm">
+                              Account Number:
+                            </p>
                             <p className="text-sm">{account.accountNumber}</p>
                           </div>
                           <div>
-                            <p className="font-medium lg:text-lg text-sm">IFSC Code:</p>
+                            <p className="font-medium lg:text-lg text-sm">
+                              IFSC Code:
+                            </p>
                             <p className="text-sm">{account.ifscCode}</p>
                           </div>
                         </div>
@@ -497,7 +501,9 @@ const BeneficiaryDetails = ({
                           </div>
                           <div className="space-y-1">
                             <p className="text-sm text-gray-500">Bank IFSC</p>
-                            <p className="font-medium text-sm">{account.accountIfsc}</p>
+                            <p className="font-medium text-sm">
+                              {account.accountIfsc}
+                            </p>
                           </div>
                           <div className="space-y-1">
                             <p className="text-sm text-gray-500">
@@ -510,13 +516,16 @@ const BeneficiaryDetails = ({
                         </div>
                       )}
 
-                      <BtnPrimary
-                        onClick={() => {
-                          setBeneData(account);
-                          setIsModalOpen("paymentModal");
-                        }}
-                        title="Proceed"
-                      />
+                      {!(account.selfAccount &&
+                        selectedService?.type === "pgPayout") && (
+                          <BtnPrimary
+                            onClick={() => {
+                              setBeneData(account);
+                              setIsModalOpen("paymentModal");
+                            }}
+                            title="Proceed"
+                          />
+                        )}
                     </div>
                   )}
                 </div>

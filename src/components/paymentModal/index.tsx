@@ -199,6 +199,7 @@ const PaymentModal = ({
     };
   }, [inputValue]);
 
+  console.log("initPayout", initPayout);
   const onSubmit = async () => {
     const userID = localStorage.getItem("userId");
     const ipAddress = await getIpAddress();
@@ -272,6 +273,7 @@ const PaymentModal = ({
       payload
     );
 
+    console.log("requestPayout", requestPayout);
     try {
       dispatch(updateLoading({ isLoading: true }));
       await mutateAsync(requestPayout ?? { url: "", method: "POST" }, {
@@ -716,7 +718,8 @@ const PaymentModal = ({
 
               {selectedService?.label !== QuickLinksType?.CC &&
                 selectedService?.label !== QuickLinksType?.FW &&
-                selectedService?.label !== QuickLinksType?.FS && (
+                selectedService?.label !== QuickLinksType?.FS &&
+                selectedService?.label !== QuickLinksType?.EF && (
                   <InputField
                     wrapBorder
                     type="number"

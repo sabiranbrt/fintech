@@ -72,7 +72,6 @@ const QuickLinksFormComponent = () => {
   const mobileNumber = watch("mobileNumber");
 
   const { mutate } = useDynamicMutation<TODO>();
-
   const registerSenderName = "getDigiTokenLazy";
 
   const requestRegisterSender = getDynamicRequest(
@@ -92,9 +91,8 @@ const QuickLinksFormComponent = () => {
     enabled: !!requestRegisterSender,
     queryKey: [registerSenderName],
   });
-  // const { data: digitoken } = useDigiTokenLazy();
-  const accessToken = digitoken?.apiResponseData?.responseData?.accessToken;
 
+  const accessToken = digitoken?.apiResponseData?.responseData?.accessToken;
   const { refetch: fetchAadhaar } = useAadhaarRegistrationBeneLazy(
     accessToken ?? "",
     mobileNumber,
@@ -110,14 +108,17 @@ const QuickLinksFormComponent = () => {
 
   const fetchSender = () => {
     if (!request?.url) return;
+    dispatch(updateLoading({ isLoading: true }));
 
     mutate(request, {
       onSuccess: (data) => {
         setSenderData(data);
         dispatch(setAccount(data));
+        dispatch(updateLoading({ isLoading: false }));
       },
       onError: () => {
         setSenderData(null);
+        dispatch(updateLoading({ isLoading: false }));
       },
     });
   };
@@ -278,7 +279,7 @@ const QuickLinksFormComponent = () => {
         {selectedService?.type !== "pgPayout" || isText ? <BackButton /> : null}
       </div>
       {!isText ? (
-        <div className="flex flex-col lg:flex-row lg:gap-4 gap-2 lg:h-full min-h-0 md:flex-col md:overflow-y-auto ">
+        <div className="flex flex-col lg:flex-row lg:gap-4 gap-2 lg:h-full min-h-0 md:flex-col overflow-y-auto lg:overflow-hidden ">
           <div className={clsx("lg:bg-white bg-transparent")}>
             {shouldShowMobileInput && (
               <form
